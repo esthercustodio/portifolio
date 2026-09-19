@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Esther Silva Custódio | Portfólio UGC</title>
+<meta name="description" content="Portfólio de Esther Silva Custódio, UGC Creator em Hortolândia: vídeos e fotos autênticos para marcas de beleza, skincare, moda, casa, fitness e viagem.">
+<meta name="theme-color" content="#f3eee9">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230049a4'/%3E%3Ctext x='32' y='46' font-size='40' text-anchor='middle' fill='%23f3eee9' font-family='Georgia,serif' font-style='italic'%3EE%3C/text%3E%3C/svg%3E">
+
+<!-- Fontes: única coisa carregada de fora (Google Fonts) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* =========================================================
+   TOKENS DE COR E TIPOGRAFIA
+   Paleta editorial: creme, tinta, azul royal e laranja queimado
+   ========================================================= */
+:root{
+  --cream:#f3eee9;
+  --cream-2:#ebe4dc;
+  --paper:#fbf9f6;
+  --ink:#14110d;
+  --blue:#0049a4;
+  --orange:#df7900;
+  --muted:#5c554d;
+  --line:rgba(20,17,13,.16);
+  --radius:8px;
+  --radius-lg:16px;
+  --shadow:0 1px 2px rgba(20,17,13,.06), 0 14px 34px -14px rgba(20,17,13,.22);
+  --serif:'Fraunces',Georgia,'Times New Roman',serif;
+  --sans:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  --nav-h:68px;
+}
+
+/* =========================================================
+   BASE
+   ========================================================= */
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:calc(var(--nav-h) + 8px);-webkit-text-size-adjust:100%}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+body{
+  margin:0;background:var(--cream);color:var(--ink);
+  font-family:var(--sans);font-size:1.0625rem;line-height:1.65;
+  overflow-x:clip;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+body.sem-rolagem{overflow:hidden}
+h1,h2,h3,p,ul,ol,figure,blockquote{margin:0}
+ul,ol{padding:0;list-style:none}
+a{color:inherit}
+img{display:block;max-width:100%;height:auto}
+button,input,textarea{font:inherit;color:inherit}
+[hidden]{display:none!important}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px;border-radius:4px}
+.escuro :focus-visible,.site-footer :focus-visible,.marcas :focus-visible{outline-color:var(--cream)}
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.pular{position:absolute;left:1rem;top:-4rem;z-index:100;background:var(--ink);color:var(--cream);padding:.7rem 1.1rem;border-radius:var(--radius);transition:top .2s}
+.pular:focus{top:1rem}
+
+.container{width:100%;max-width:1200px;margin-inline:auto;padding-inline:clamp(1.25rem,5vw,3rem)}
+.secao{padding-block:clamp(4.5rem,10vw,8rem)}
+.secao-topo{max-width:44rem;margin-bottom:clamp(2rem,5vw,3.5rem)}
+
+.eyebrow{
+  display:flex;align-items:center;gap:.75rem;
+  font-size:.78rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--blue);
+  margin-bottom:1.1rem;
+}
+.eyebrow::before{content:"";width:34px;height:1px;background:currentColor;flex:none}
+.eyebrow b{font-weight:700;color:var(--ink)}
+.eyebrow i{width:7px;height:7px;border-radius:50%;background:var(--orange);flex:none}
+.escuro .eyebrow{color:var(--orange)}
+.escuro .eyebrow b{color:var(--cream)}
+
+.titulo{
+  font-family:var(--serif);font-weight:400;
+  font-size:clamp(2.3rem,5.4vw,4.2rem);line-height:1.02;letter-spacing:-.02em;
+}
+.titulo em{font-style:italic;font-weight:300;color:var(--blue)}
+.escuro .titulo em{color:var(--orange)}
+.lead{color:var(--muted);font-size:1.1rem;margin-top:1.1rem;max-width:36rem}
+.escuro .lead{color:rgba(243,238,233,.78)}
+
+/* Botões */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.6rem;
+  padding:.95rem 1.6rem;border-radius:var(--radius);
+  font-weight:600;font-size:.98rem;text-decoration:none;border:1.5px solid transparent;cursor:pointer;
+  transition:background .25s,color .25s,border-color .25s,transform .25s;
+}
+.btn:hover{transform:translateY(-2px)}
+.btn svg{width:18px;height:18px;flex:none}
+.btn-primario{background:var(--blue);color:var(--cream)}
+.btn-primario:hover{background:var(--ink)}
+.btn-secundario{border-color:var(--ink);color:var(--ink);background:transparent}
+.btn-secundario:hover{background:var(--ink);color:var(--cream)}
+
+/* Placeholders de foto e vídeo (blocos com degradê e legenda do formato) */
+.ph{
+  position:relative;overflow:hidden;isolation:isolate;
+  display:flex;align-items:flex-end;padding:1rem;
+  border-radius:var(--radius-lg);
+  background:var(--grad);
+}
+.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-1}
+.ph::after{content:"";position:absolute;inset:10px;border:1px solid rgba(243,238,233,.45);border-radius:calc(var(--radius-lg) - 6px);pointer-events:none}
+.ph-legenda{
+  position:relative;z-index:1;
+  background:rgba(243,238,233,.95);color:var(--ink);
+  font-size:.72rem;font-weight:700;letter-spacing:.04em;
+  padding:.35rem .65rem;border-radius:6px;
+}
+.g0{--grad:radial-gradient(120% 70% at 15% 0%,rgba(223,121,0,.55),transparent 55%),linear-gradient(160deg,#0049a4 0%,#2a65b8 55%,#a9c0e2 100%)}
+.g1{--grad:linear-gradient(155deg,#df7900 0%,#eea24a 50%,#f3eee9 110%)}
+.g2{--grad:linear-gradient(160deg,#14110d 0%,#1d3a68 55%,#0049a4 110%)}
+.g3{--grad:linear-gradient(160deg,#0049a4 0%,#5b8bd0 55%,#d3dff2 100%)}
+.g4{--grad:linear-gradient(160deg,#14110d 0%,#6a3a0c 55%,#df7900 115%)}
+.g5{--grad:linear-gradient(160deg,#d3dff2 0%,#5b8bd0 50%,#0049a4 110%)}
+
+/* Animação de entrada ao rolar */
+.js .reveal{opacity:0;transform:translateY(24px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0s)}
+.js .reveal.in{opacity:1;transform:none}
+
+/* =========================================================
+   MENU
+   ========================================================= */
+.site-header{
+  position:fixed;inset:0 0 auto 0;z-index:50;height:var(--nav-h);
+  background:rgba(243,238,233,.9);
+  -webkit-backdrop-filter:saturate(1.2) blur(10px);backdrop-filter:saturate(1.2) blur(10px);
+  border-bottom:1px solid transparent;transition:border-color .3s,box-shadow .3s;
+}
+.site-header.rolou{border-bottom-color:var(--line);box-shadow:0 8px 24px -18px rgba(20,17,13,.35)}
+.nav{height:100%;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.brand{font-family:var(--serif);font-weight:600;font-size:1.2rem;letter-spacing:-.01em;text-decoration:none;white-space:nowrap}
+.brand em{font-weight:400}
+.nav-links{display:flex;align-items:center;gap:clamp(1.25rem,2.6vw,2.25rem)}
+.nav-links a{position:relative;text-decoration:none;font-size:.92rem;font-weight:500;padding-block:.4rem}
+.nav-links a::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--orange);transform:scaleX(0);transform-origin:left;transition:transform .3s}
+.nav-links a:hover::after,.nav-links a[aria-current="true"]::after{transform:scaleX(1)}
+.nav-toggle{
+  display:none;width:44px;height:44px;border:1px solid var(--line);border-radius:var(--radius);
+  background:transparent;cursor:pointer;align-items:center;justify-content:center;flex-direction:column;gap:5px;
+}
+.nav-toggle span{display:block;width:20px;height:2px;background:var(--ink);transition:transform .3s,opacity .3s}
+.nav-toggle[aria-expanded="true"] span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav-toggle[aria-expanded="true"] span:nth-child(2){opacity:0}
+.nav-toggle[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+@media (max-width:900px){
+  .nav-toggle{display:inline-flex}
+  .nav-links{
+    display:none;position:absolute;top:100%;left:0;right:0;
+    flex-direction:column;align-items:stretch;gap:0;
+    background:var(--cream);border-bottom:1px solid var(--line);
+    padding:.4rem clamp(1.25rem,5vw,3rem) 1.2rem;
+    box-shadow:0 24px 30px -20px rgba(20,17,13,.35);
+  }
+  .nav-links.aberto{display:flex}
+  .nav-links a{display:block;padding:.95rem 0;font-size:1.15rem;border-bottom:1px solid var(--line)}
+  .nav-links a::after{display:none}
+  .nav-links a[aria-current="true"]{color:var(--blue)}
+}
+
+/* =========================================================
+   1. CAPA
+   ========================================================= */
+.hero{padding-top:calc(var(--nav-h) + clamp(2.5rem,6vw,5rem))}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr);gap:clamp(2rem,5vw,4.5rem);align-items:end}
+.hero-nome{
+  font-family:var(--serif);font-weight:400;
+  font-size:clamp(3.3rem,9.6vw,8.6rem);line-height:.92;letter-spacing:-.035em;
+  margin:.2rem 0 1.6rem;
+}
+.hero-nome span{display:block}
+.hero-nome .it{padding-left:.7em}
+.hero-nome em{font-style:italic;font-weight:300;color:var(--blue)}
+.hero-frase{font-size:clamp(1.1rem,1.6vw,1.3rem);max-width:30rem;color:var(--ink)}
+.hero-frase strong{font-family:var(--serif);font-style:italic;font-weight:400;font-size:1.25em;color:var(--blue)}
+.hero-botoes{display:flex;flex-wrap:wrap;gap:.9rem;margin-top:2rem}
+.hero-foto{position:relative;width:100%;max-width:440px;margin-left:auto}
+.foto-45{aspect-ratio:4/5}
+.selo{
+  position:absolute;left:-2.4rem;top:2.6rem;width:112px;height:112px;border-radius:50%;
+  background:var(--orange);color:var(--ink);display:grid;place-items:center;
+  box-shadow:0 12px 28px -10px rgba(20,17,13,.45);
+}
+.selo svg{width:100%;height:100%;overflow:visible}
+.selo .anel{transform-origin:60px 60px;animation:girar 28s linear infinite}
+.selo text{font-family:var(--sans);font-size:8.6px;font-weight:700;letter-spacing:.06em;fill:var(--ink)}
+.selo .estrela{position:absolute;top:50%;left:50%;width:26px;height:26px;margin:-13px 0 0 -13px}
+@keyframes girar{to{transform:rotate(360deg)}}
+
+.hero-numeros{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  border-top:1px solid var(--ink);margin-top:clamp(2.5rem,6vw,4.5rem);
+}
+.hero-numeros li{padding:1.3rem 1rem 1.6rem 0}
+.hero-numeros li + li{padding-left:clamp(.75rem,3vw,2rem);border-left:1px solid var(--line)}
+.hero-numeros .contador{display:block;font-family:var(--serif);font-size:clamp(2rem,5.2vw,3.8rem);line-height:1;letter-spacing:-.03em;color:var(--blue)}
+.numero-rotulo{display:block;margin-top:.5rem;font-size:clamp(.68rem,1.6vw,.85rem);font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+/* Faixa de marcas */
+.marcas{margin-top:clamp(1rem,3vw,2rem);background:var(--blue);color:var(--cream);overflow:hidden;padding-block:.95rem}
+.marcas-track{display:flex;width:max-content;animation:rolar 45s linear infinite}
+.marcas:hover .marcas-track{animation-play-state:paused}
+.marcas-lista{display:flex;flex:none}
+.marcas-lista li{display:flex;align-items:center;white-space:nowrap;font-family:var(--serif);font-style:italic;font-size:1.15rem;padding-inline:1.5rem}
+.marcas-lista li::after{content:"";width:6px;height:6px;border-radius:50%;background:var(--orange);margin-left:3rem}
+@keyframes rolar{to{transform:translateX(-50%)}}
+
+/* =========================================================
+   2. SOBRE
+   ========================================================= */
+.sobre-grid{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1fr);gap:clamp(2.5rem,6vw,5.5rem);align-items:center}
+.sobre-foto{position:relative;isolation:isolate;max-width:460px}
+.sobre-foto::before{content:"";position:absolute;inset:14px -14px -14px 14px;border:1px solid var(--orange);border-radius:var(--radius-lg);z-index:-1}
+.sobre-texto p{margin-top:1.1rem;color:var(--muted)}
+.sobre-texto p.abre{font-family:var(--serif);font-size:clamp(1.3rem,2.3vw,1.7rem);line-height:1.35;color:var(--ink);margin-top:1.4rem}
+.promessas-titulo{margin-top:2rem;font-size:.78rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--blue)}
+.promessas{display:grid;gap:.85rem;margin-top:1rem}
+.promessas li{display:flex;align-items:center;gap:.9rem;font-weight:600;padding-bottom:.85rem;border-bottom:1px solid var(--line)}
+.check{flex:none;width:28px;height:28px;border-radius:50%;background:var(--blue);color:var(--cream);display:grid;place-items:center}
+.check svg{width:14px;height:14px}
+.assinatura{margin-top:2rem;display:flex;flex-direction:column;gap:.15rem}
+.assinatura small{font-size:.85rem;color:var(--muted)}
+.assinatura strong{font-family:var(--serif);font-style:italic;font-weight:300;font-size:clamp(1.7rem,3.4vw,2.4rem);color:var(--blue);letter-spacing:-.01em}
+
+/* =========================================================
+   3. DESTAQUES
+   ========================================================= */
+.escuro{background:var(--ink);color:var(--cream)}
+.destaques-grid{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:clamp(1.25rem,3vw,2.5rem);max-width:1080px;margin-inline:auto;
+}
+.destaque{display:block;text-decoration:none;border-radius:var(--radius-lg)}
+.destaque-capa{aspect-ratio:9/16;box-shadow:0 24px 50px -26px rgba(0,0,0,.8);transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.destaque:hover .destaque-capa{transform:translateY(-8px)}
+.play{
+  position:absolute;top:50%;left:50%;width:74px;height:74px;margin:-37px 0 0 -37px;z-index:2;
+  border-radius:50%;background:var(--cream);color:var(--blue);display:grid;place-items:center;
+  box-shadow:0 12px 30px rgba(0,0,0,.35);transition:transform .35s cubic-bezier(.2,.7,.2,1);
+}
+.play svg{width:26px;height:26px;margin-left:4px}
+.destaque:hover .play{transform:scale(1.1)}
+.destaque-info{padding-top:1.4rem}
+.destaque-num{font-family:var(--serif);font-size:clamp(2.6rem,5vw,3.6rem);line-height:1;letter-spacing:-.03em;color:var(--orange)}
+.destaque-rotulo{margin-top:.5rem;font-size:.76rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(243,238,233,.78)}
+.destaque h3{font-family:var(--serif);font-weight:400;font-size:1.5rem;line-height:1.2;margin-top:1.1rem}
+.destaque-ctx{margin-top:.45rem;font-size:.95rem;color:rgba(243,238,233,.74)}
+.assistir{display:inline-flex;align-items:center;gap:.5rem;margin-top:1rem;font-size:.9rem;font-weight:600;border-bottom:1px solid var(--orange);padding-bottom:.15rem}
+.assistir svg{width:14px;height:14px;transition:transform .3s}
+.destaque:hover .assistir svg{transform:translate(3px,-3px)}
+
+/* =========================================================
+   4. TRABALHOS
+   ========================================================= */
+.filtros{display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:.9rem}
+.filtro{
+  padding:.65rem 1.15rem;border:1.5px solid var(--ink);border-radius:var(--radius);
+  background:transparent;font-size:.92rem;font-weight:600;cursor:pointer;
+  transition:background .25s,color .25s,transform .25s;
+}
+.filtro:hover{transform:translateY(-2px)}
+.filtro[aria-pressed="true"]{background:var(--ink);color:var(--cream)}
+.filtro-status{font-size:.9rem;color:var(--muted);margin-bottom:1.75rem}
+.galeria{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(.75rem,2vw,1.5rem)}
+.trabalho.entrar{animation:aparecer .55s cubic-bezier(.2,.7,.2,1) both}
+.trabalho .ph{aspect-ratio:4/5;transition:transform .45s cubic-bezier(.2,.7,.2,1),box-shadow .45s}
+.trabalho:hover .ph{transform:translateY(-6px);box-shadow:var(--shadow)}
+.trabalho-nicho{margin-top:.9rem;font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--blue)}
+.trabalho h3{font-family:var(--serif);font-weight:400;font-size:1.25rem;line-height:1.2;margin-top:.15rem}
+.trabalho-marca{font-size:.9rem;color:var(--muted)}
+.trabalho-marca a{font-weight:600;color:var(--ink)}
+@keyframes aparecer{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+/* =========================================================
+   5. SERVIÇOS
+   ========================================================= */
+.bg-2{background:var(--cream-2)}
+.servicos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:clamp(1.5rem,4vw,3.5rem);row-gap:1rem}
+.servico{border-top:1px solid var(--ink);padding:1.4rem 0 2rem;transition:border-color .3s}
+.servico:hover{border-top-color:var(--orange)}
+.servico-num{font-family:var(--serif);font-style:italic;font-weight:300;font-size:2.8rem;line-height:1;color:var(--blue)}
+.servico h3{font-family:var(--serif);font-weight:500;font-size:1.55rem;line-height:1.15;margin-top:1rem}
+.servico p{margin-top:.6rem;color:var(--muted)}
+
+/* =========================================================
+   6. NÚMEROS E DEPOIMENTOS
+   ========================================================= */
+.metricas{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--ink)}
+.metricas li{padding:1.4rem 1rem 1.6rem 0}
+.metricas li + li{padding-left:clamp(.9rem,2.4vw,2rem);border-left:1px solid var(--line)}
+.metricas .contador{display:block;font-family:var(--serif);font-size:clamp(2.6rem,6vw,4.6rem);line-height:1;letter-spacing:-.03em;color:var(--blue)}
+.resultados{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(1rem,2.4vw,1.75rem);margin-top:clamp(2.5rem,6vw,4rem)}
+.resultado{background:var(--ink);color:var(--cream);border-radius:var(--radius-lg);padding:clamp(1.5rem,3vw,2.2rem);box-shadow:var(--shadow)}
+.resultado-num{font-family:var(--serif);font-size:clamp(2.8rem,5vw,3.8rem);line-height:1;letter-spacing:-.03em;color:var(--orange)}
+.resultado h3{font-family:var(--serif);font-weight:400;font-size:1.35rem;margin-top:1.1rem}
+.resultado-marca{font-size:.74rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(243,238,233,.78);margin-top:.2rem}
+.resultado p.txt{margin-top:.8rem;font-size:.97rem;color:rgba(243,238,233,.82)}
+.depoimentos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(1rem,2.4vw,1.75rem);margin-top:clamp(1rem,2.4vw,1.75rem)}
+.depoimento{position:relative;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-lg);padding:clamp(1.6rem,3vw,2.3rem);box-shadow:var(--shadow);display:flex;flex-direction:column;gap:1.4rem}
+.depoimento::before{content:"\201C";font-family:var(--serif);font-size:4.5rem;line-height:.6;color:var(--orange);height:1.6rem}
+.depoimento blockquote{font-family:var(--serif);font-size:clamp(1.15rem,1.9vw,1.4rem);line-height:1.4;font-weight:300}
+.depoimento figcaption{margin-top:auto;display:flex;flex-direction:column;padding-top:1rem;border-top:1px solid var(--line)}
+.depoimento figcaption strong{font-weight:700}
+.depoimento figcaption span{font-size:.9rem;color:var(--muted)}
+
+/* =========================================================
+   7. CONTATO
+   ========================================================= */
+.contato-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:clamp(2.5rem,6vw,5.5rem);align-items:start}
+.canais{display:grid;gap:.8rem;margin-top:2rem}
+.canal{
+  display:flex;align-items:center;gap:1rem;text-decoration:none;
+  padding:1rem 1.15rem;border:1.5px solid var(--ink);border-radius:var(--radius);
+  transition:background .25s,color .25s,transform .25s;
+}
+.canal:hover{transform:translateX(4px);background:var(--ink);color:var(--cream)}
+.canal.principal{background:var(--blue);border-color:var(--blue);color:var(--cream)}
+.canal.principal:hover{background:var(--ink);border-color:var(--ink)}
+.canal-icone{flex:none;width:42px;height:42px;border-radius:50%;background:rgba(20,17,13,.08);display:grid;place-items:center}
+.canal.principal .canal-icone,.canal:hover .canal-icone{background:rgba(243,238,233,.18)}
+.canal-icone svg{width:20px;height:20px}
+.canal-texto{display:flex;flex-direction:column;line-height:1.3;min-width:0}
+.canal-texto strong{font-weight:700}
+.canal-texto span{font-size:.9rem;opacity:.85;overflow-wrap:anywhere}
+.canal-seta{margin-left:auto;width:18px;height:18px;flex:none}
+.cidade{margin-top:1.6rem;font-size:.95rem;color:var(--muted)}
+
+.form-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-lg);padding:clamp(1.5rem,3.5vw,2.5rem);box-shadow:var(--shadow)}
+.campo{display:flex;flex-direction:column;gap:.45rem;margin-bottom:1.15rem}
+.campo label{font-weight:600;font-size:.92rem}
+.campo input,.campo textarea{
+  width:100%;padding:.85rem 1rem;background:#fff;
+  border:1px solid rgba(20,17,13,.4);border-radius:var(--radius);
+  transition:border-color .2s,box-shadow .2s;
+}
+.campo textarea{min-height:140px;resize:vertical}
+.campo input:focus,.campo textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,73,164,.25)}
+.form-card .btn{width:100%}
+.form-nota{margin-top:.9rem;font-size:.85rem;color:var(--muted);text-align:center}
+.confirmacao{text-align:center;padding:1.5rem .5rem}
+.confirmacao:focus{outline:none}
+.confirmacao .ok{width:64px;height:64px;border-radius:50%;background:var(--blue);color:var(--cream);display:grid;place-items:center;margin:0 auto 1.2rem}
+.confirmacao .ok svg{width:28px;height:28px}
+.confirmacao h3{font-family:var(--serif);font-weight:400;font-size:clamp(1.7rem,3vw,2.2rem);line-height:1.1}
+.confirmacao h3 em{font-style:italic;color:var(--blue)}
+.confirmacao p{margin:.8rem auto 1.5rem;color:var(--muted);max-width:26rem}
+.confirmacao .btn{width:auto}
+
+/* =========================================================
+   8. RODAPÉ
+   ========================================================= */
+.site-footer{background:var(--ink);color:var(--cream);padding-block:clamp(3rem,7vw,5rem) 2rem}
+.rodape-topo{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:2rem}
+.rodape-nome{font-family:var(--serif);font-weight:400;font-size:clamp(2rem,5vw,3.6rem);line-height:1;letter-spacing:-.025em}
+.rodape-nome em{font-weight:300;color:var(--orange)}
+.rodape-sub{margin-top:.8rem;color:rgba(243,238,233,.75);font-size:.95rem}
+.redes{display:flex;flex-wrap:wrap;gap:.7rem}
+.redes a{display:inline-flex;align-items:center;gap:.55rem;text-decoration:none;padding:.65rem 1.05rem;border:1px solid rgba(243,238,233,.4);border-radius:var(--radius);font-size:.92rem;font-weight:500;transition:background .25s,color .25s,border-color .25s}
+.redes a:hover{background:var(--cream);color:var(--ink);border-color:var(--cream)}
+.redes svg{width:17px;height:17px}
+.rodape-base{margin-top:clamp(2rem,5vw,3.5rem);padding-top:1.4rem;border-top:1px solid rgba(243,238,233,.22);font-size:.85rem;color:rgba(243,238,233,.72);display:flex;flex-wrap:wrap;justify-content:space-between;gap:.5rem 2rem}
+
+/* =========================================================
+   CARD DE CAPTURA (aparece após 7 segundos)
+   ========================================================= */
+.captura-dialog{border:0;padding:0;background:transparent;width:min(92vw,460px);max-width:none;max-height:none;overflow:visible;color:var(--ink)}
+.captura-dialog::backdrop{background:rgba(20,17,13,.66);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.captura{
+  position:relative;background:var(--cream);border-radius:var(--radius-lg);
+  padding:2.4rem clamp(1.4rem,5vw,2.2rem) 2rem;border-top:6px solid var(--orange);
+  box-shadow:0 34px 80px -24px rgba(0,0,0,.55);max-height:calc(100vh - 2rem);overflow:auto;
+}
+.captura-dialog[open] .captura{animation:subir .55s cubic-bezier(.2,.7,.2,1)}
+@keyframes subir{from{opacity:0;transform:translateY(26px) scale(.98)}to{opacity:1;transform:none}}
+.captura-fechar{position:absolute;top:.8rem;right:.8rem;width:40px;height:40px;border:0;border-radius:50%;background:transparent;cursor:pointer;display:grid;place-items:center;transition:background .2s}
+.captura-fechar:hover{background:rgba(20,17,13,.08)}
+.captura-fechar svg{width:20px;height:20px}
+.captura h2{font-family:var(--serif);font-weight:400;font-size:clamp(1.8rem,5vw,2.3rem);line-height:1.05;letter-spacing:-.02em}
+.captura h2 em{font-style:italic;font-weight:300;color:var(--blue)}
+.captura p.sub{margin:.8rem 0 1.4rem;color:var(--muted);font-size:.98rem}
+.captura .btn{width:100%}
+.captura .confirmacao{padding:.5rem 0}
+
+/* =========================================================
+   RESPONSIVO
+   ========================================================= */
+@media (max-width:980px){
+  .galeria{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .servicos{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:820px){
+  .hero-grid{grid-template-columns:1fr;align-items:start}
+  .hero-foto{margin-inline:0;max-width:380px}
+  .selo{left:auto;right:-.75rem;top:1.5rem;width:98px;height:98px}
+  .sobre-grid,.contato-grid{grid-template-columns:1fr}
+  .sobre-foto{max-width:380px}
+  .destaques-grid{grid-template-columns:1fr;max-width:380px}
+  .resultados{grid-template-columns:1fr}
+  .depoimentos{grid-template-columns:1fr}
+  .metricas{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .metricas li:nth-child(3){border-left:0;padding-left:0}
+  .metricas li:nth-child(n+3){border-top:1px solid var(--line)}
+}
+@media (max-width:620px){
+  .galeria{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .trabalho h3{font-size:1.05rem}
+  .trabalho-marca{font-size:.82rem}
+  .ph{padding:.7rem}
+  .ph-legenda{font-size:.66rem}
+  .servicos{grid-template-columns:1fr}
+  .hero-botoes .btn{flex:1 1 100%}
+  .hero-numeros li{padding-right:.5rem}
+  .rodape-topo{align-items:flex-start}
+}
+
+/* =========================================================
+   MOVIMENTO REDUZIDO
+   ========================================================= */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .js .reveal{opacity:1;transform:none}
+  .marcas-track{animation:none;width:auto;justify-content:center}
+  .marcas-lista{flex-wrap:wrap;justify-content:center}
+  .marcas-lista + .marcas-lista{display:none}
+  .selo .anel{animation:none}
+}
+</style>
+
+<script>
+/* =========================================================
+   DADOS DO SITE
+   Edite as listas abaixo para trocar textos, números e links.
+   Você não precisa mexer no HTML.
+   ========================================================= */
+
+/* ---- NÚMEROS DA CAPA (três números logo abaixo do botão) ----
+   valor: número que o contador vai mostrar.
+   Use null enquanto você não tiver o número: aparece "00" para você achar e trocar.
+   prefixo e sufixo são opcionais (exemplo: prefixo "+" ou sufixo " mil"). */
+const NUMEROS_CAPA = [
+  { valor: 250,  prefixo: "", sufixo: "", rotulo: "vídeos entregues" },
+  { valor: null, prefixo: "", sufixo: "", rotulo: "marcas atendidas" },   /* TROCAR: quantas marcas você já atendeu */
+  { valor: null, prefixo: "", sufixo: "", rotulo: "views somadas" }       /* TROCAR: soma de views dos seus vídeos */
+];
+
+/* ---- FAIXA DE MARCAS (fecha a capa) ----
+   Troque "Marca 04" a "Marca 12" pelos nomes das marcas com quem você trabalhou. */
+const MARCAS = [
+  "Creamy", "iFood", "Truss",
+  "Marca 04", "Marca 05", "Marca 06", "Marca 07", "Marca 08",
+  "Marca 09", "Marca 10", "Marca 11", "Marca 12"
+];
+
+/* ---- CONTEÚDOS DE DESTAQUE (três cards grandes) ----
+   link:    ONDE ENTRA O LINK DO VÍDEO. Cole aqui o endereço (YouTube, Instagram, TikTok...).
+            O card inteiro vira um link que abre esse vídeo em uma nova aba.
+   capa:    ONDE ENTRA A CAPA. Coloque o caminho da imagem vertical 9:16, por exemplo "img/capa1.jpg".
+            Deixe "" para mostrar o bloco com degradê.
+   alt:     descrição da imagem da capa (usada quando existir "capa").
+   numero:  número forte (exemplo: "+2,4M").
+   rotulo:  o que o número significa (exemplo: "views no reels"). */
+const DESTAQUES = [
+  {
+    link: "https://youtube.com/shorts/GYgeB-XAij8?is=fWOY9J7G4Q6OeR-u",
+    capa: "", alt: "",
+    numero: "+189 mil", rotulo: "views no YouTube Shorts",
+    titulo: "Título do conteúdo 01",
+    contexto: "Escreva aqui uma linha curta sobre a marca e o que o vídeo mostra."
+  },
+  {
+    link: "#",   /* TROCAR: link do segundo vídeo */
+    capa: "", alt: "",
+    numero: "+000 mil", rotulo: "views no reels",   /* TROCAR: número e rótulo */
+    titulo: "Título do conteúdo 02",
+    contexto: "Escreva aqui uma linha curta sobre a marca e o que o vídeo mostra."
+  },
+  {
+    link: "#",   /* TROCAR: link do terceiro vídeo */
+    capa: "", alt: "",
+    numero: "+000 mil", rotulo: "views no reels",   /* TROCAR: número e rótulo */
+    titulo: "Título do conteúdo 03",
+    contexto: "Escreva aqui uma linha curta sobre a marca e o que o vídeo mostra."
+  }
+];
+
+/* ---- NICHOS (viram os botões de filtro da galeria) ---- */
+const NICHOS = ["Beleza", "Skincare", "Moda", "Casa e decoração", "Fitness", "Viagem"];
+
+/* ---- TRABALHOS POR NICHO ----
+   nicho:   precisa ser igual a um dos nomes da lista NICHOS acima.
+   formato: legenda do bloco (exemplo: "Vídeo 9:16" ou "Foto 4:5").
+   imagem:  caminho da imagem real (exemplo "img/trabalho1.jpg"). Deixe "" para mostrar o degradê.
+   alt:     descrição da imagem.
+   link:    endereço do trabalho publicado. Deixe "" se não quiser link. */
+const TRABALHOS = [
+  { titulo: "Trabalho 01", marca: "Marca 01", nicho: "Beleza",            formato: "Vídeo 9:16", imagem: "", alt: "", link: "" },
+  { titulo: "Trabalho 02", marca: "Marca 02", nicho: "Beleza",            formato: "Foto 4:5",   imagem: "", alt: "", link: "" },
+  { titulo: "Trabalho 03", marca: "Marca 03", nicho: "Skincare",          formato: "Vídeo 9:16", imagem: "", alt: "", link: "" },
+  { titulo: "Trabalho 04", marca: "Marca 04", nicho: "Skincare",          formato: "Foto 4:5",   imagem: "", alt: "", link: "" },
+  { titulo: "Trabalho 05", marca: "Marca 05", nicho: "Moda",              formato: "Vídeo 9:16", imagem: "", alt: "", link: "" },
+  { titulo: "Trabalho 06", marca: "Marca 06", nicho: "Moda",              formato: "Foto 4:5",   imagem: "", alt: "", link: "" },
+  { titulo: "Trabalho 07", marca: "Marca 07", nicho: "Casa e decoração",  formato: "Vídeo 9:16", imagem: "", alt: "", link: "" },
+  { titulo: "Trabalho 08", marca: "Marca 08", nicho: "Casa e decoração",  formato: "Foto 4:5",   imagem: "", alt: "", link: "" },
+  { titulo: "Trabalho 09", marca: "Marca 09", nicho: "Fitness",           formato: "Vídeo 9:16", imagem: "", alt: "", link: "" },
+  { titulo: "Trabalho 10", marca: "Marca 10", nicho: "Fitness",           formato: "Foto 4:5",   imagem: "", alt: "", link: "" },
+  { titulo: "Trabalho 11", marca: "Marca 11", nicho: "Viagem",            formato: "Vídeo 9:16", imagem: "", alt: "", link: "" },
+  { titulo: "Trabalho 12", marca: "Marca 12", nicho: "Viagem",            formato: "Foto 4:5",   imagem: "", alt: "", link: "" }
+];
+
+/* ---- SERVIÇOS (seis, na ordem em que aparecem) ---- */
+const SERVICOS = [
+  { numero: "01", titulo: "Vídeo UGC",
+    texto: "Vídeo vertical gravado por mim, com roteiro aprovado por você, mostrando o produto na rotina, com a voz e a opinião de quem usa." },
+  { numero: "02", titulo: "Corte para anúncio",
+    texto: "Versões curtas e dinâmicas do vídeo, com gancho nos primeiros segundos, prontas para rodar em anúncios de reels, TikTok e Shorts." },
+  { numero: "03", titulo: "Fotos do produto",
+    texto: "Fotos com luz natural e cenário real, nos formatos certos para feed, stories e página de produto." },
+  { numero: "04", titulo: "Unboxing",
+    texto: "Abertura do produto em vídeo, mostrando embalagem, primeiras impressões e os detalhes que fazem o cliente querer levar." },
+  { numero: "05", titulo: "Publicação no meu perfil",
+    texto: "Eu divulgo o conteúdo no meu Instagram, com marcação da marca, para ampliar o alcance da campanha." },
+  { numero: "06", titulo: "Pacote mensal",
+    texto: "Conteúdos entregues todo mês, com calendário combinado, para a sua marca manter presença constante e sempre nova." }
+];
+
+/* ---- MÉTRICAS (quatro números com contador animado) ----
+   Mesma regra da capa: valor null mostra "00" para você trocar depois. */
+const METRICAS = [
+  { valor: 250,  prefixo: "", sufixo: "", rotulo: "vídeos entregues" },
+  { valor: 6,    prefixo: "", sufixo: "", rotulo: "nichos atendidos" },
+  { valor: null, prefixo: "", sufixo: "", rotulo: "marcas atendidas" },   /* TROCAR */
+  { valor: null, prefixo: "", sufixo: "", rotulo: "views somadas" }       /* TROCAR */
+];
+
+/* ---- RESULTADOS DE CAMPANHA (três) ---- */
+const RESULTADOS = [
+  { numero: "+00%", titulo: "Resultado da campanha 01", marca: "Marca 01",
+    texto: "Descreva aqui o que a campanha alcançou, por exemplo mais alcance, mais cliques ou mais vendas." },
+  { numero: "+00%", titulo: "Resultado da campanha 02", marca: "Marca 02",
+    texto: "Descreva aqui o que a campanha alcançou, por exemplo mais alcance, mais cliques ou mais vendas." },
+  { numero: "+00%", titulo: "Resultado da campanha 03", marca: "Marca 03",
+    texto: "Descreva aqui o que a campanha alcançou, por exemplo mais alcance, mais cliques ou mais vendas." }
+];
+
+/* ---- DEPOIMENTOS (quatro) ---- */
+const DEPOIMENTOS = [
+  { nome: "Cliente 01", empresa: "Marca 01", texto: "Escreva aqui o depoimento do cliente. Conte em uma ou duas frases como foi trabalhar com a Esther." },
+  { nome: "Cliente 02", empresa: "Marca 02", texto: "Escreva aqui o depoimento do cliente. Conte em uma ou duas frases como foi trabalhar com a Esther." },
+  { nome: "Cliente 03", empresa: "Marca 03", texto: "Escreva aqui o depoimento do cliente. Conte em uma ou duas frases como foi trabalhar com a Esther." },
+  { nome: "Cliente 04", empresa: "Marca 04", texto: "Escreva aqui o depoimento do cliente. Conte em uma ou duas frases como foi trabalhar com a Esther." }
+];
+
+/* =========================================================
+   FUNCIONAMENTO DO SITE (não precisa mexer daqui para baixo)
+   ========================================================= */
+document.documentElement.classList.add('js');
+
+document.addEventListener('DOMContentLoaded', () => {
+  const $ = (seletor, raiz = document) => raiz.querySelector(seletor);
+  const $$ = (seletor, raiz = document) => Array.from(raiz.querySelectorAll(seletor));
+  const reduzir = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  /* Ícones em SVG */
+  const ICONES = {
+    seta:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>',
+    play:   '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>',
+    check:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>'
+  };
+
+  /* Contador: mostra "00" quando o valor é null, senão anima até o valor */
+  const contadorHTML = (m) => {
+    const vazio = m.valor === null || m.valor === undefined;
+    const pre = m.prefixo || '', suf = m.sufixo || '';
+    const final = vazio ? '00' : pre + Number(m.valor).toLocaleString('pt-BR') + suf;
+    const atributos = vazio ? '' : ` data-alvo="${esc(m.valor)}" data-prefixo="${esc(pre)}" data-sufixo="${esc(suf)}"`;
+    const inicial = vazio ? '00' : pre + '0' + suf;
+    return `<span class="contador" aria-hidden="true"${atributos}>${esc(inicial)}</span><span class="sr-only">${esc(final)}</span>`;
+  };
+
+  const animarContador = (el) => {
+    const alvo = Number(el.dataset.alvo);
+    if (Number.isNaN(alvo) || el.dataset.alvo === undefined) return;
+    const pre = el.dataset.prefixo || '', suf = el.dataset.sufixo || '';
+    const formatar = (n) => pre + Math.round(n).toLocaleString('pt-BR') + suf;
+    if (reduzir) { el.textContent = formatar(alvo); return; }
+    const duracao = 1700, inicio = performance.now();
+    const passo = (agora) => {
+      const p = Math.min((agora - inicio) / duracao, 1);
+      el.textContent = formatar(alvo * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) requestAnimationFrame(passo);
+    };
+    requestAnimationFrame(passo);
+  };
+
+  /* ---------- Renderização das listas ---------- */
+  $('#numerosCapa').innerHTML = NUMEROS_CAPA.map((m, i) =>
+    `<li class="reveal" style="--d:${(0.12 * i).toFixed(2)}s">${contadorHTML(m)}<span class="numero-rotulo">${esc(m.rotulo)}</span></li>`
+  ).join('');
+
+  const itensMarca = MARCAS.map((nome) => `<li>${esc(nome)}</li>`).join('');
+  $('#marcasTrack').innerHTML =
+    `<ul class="marcas-lista">${itensMarca}</ul><ul class="marcas-lista" aria-hidden="true">${itensMarca}</ul>`;
+
+  $('#destaquesGrid').innerHTML = DESTAQUES.map((d, i) => {
+    const capa = d.capa
+      ? `<img src="${esc(d.capa)}" alt="${esc(d.alt || d.titulo)}" loading="lazy">`
+      : '';
+    const legenda = d.capa ? '' : '<span class="ph-legenda">capa vertical 9:16</span>';
+    return `
+    <a class="destaque reveal" style="--d:${(0.12 * i).toFixed(2)}s" href="${esc(d.link)}" target="_blank" rel="noopener noreferrer"
+       aria-label="Assistir: ${esc(d.titulo)}, ${esc(d.numero)} ${esc(d.rotulo)} (abre em uma nova aba)">
+      <div class="destaque-capa ph g${[2, 0, 4][i % 3]}" ${d.capa ? '' : `role="img" aria-label="Espaço para a capa vertical 9:16 do conteúdo ${i + 1}"`}>
+        ${capa}
+        <span class="play" aria-hidden="true">${ICONES.play}</span>
+        ${legenda}
+      </div>
+      <div class="destaque-info">
+        <p class="destaque-num">${esc(d.numero)}</p>
+        <p class="destaque-rotulo">${esc(d.rotulo)}</p>
+        <h3>${esc(d.titulo)}</h3>
+        <p class="destaque-ctx">${esc(d.contexto)}</p>
+        <span class="assistir" aria-hidden="true">Assistir ${ICONES.seta}</span>
+      </div>
+    </a>`;
+  }).join('');
+
+  /* Galeria com filtros por nicho */
+  const galeria = $('#galeria');
+  galeria.innerHTML = TRABALHOS.map((t) => {
+    const g = Math.max(0, NICHOS.indexOf(t.nicho)) % 6;
+    const midia = t.imagem
+      ? `<img src="${esc(t.imagem)}" alt="${esc(t.alt || t.titulo)}" loading="lazy">`
+      : '';
+    const legenda = t.imagem ? '' : `<span class="ph-legenda">${esc(t.formato)}</span>`;
+    const marca = t.link
+      ? `<a href="${esc(t.link)}" target="_blank" rel="noopener noreferrer">${esc(t.marca)}</a>`
+      : esc(t.marca);
+    return `
+    <li class="trabalho" data-nicho="${esc(t.nicho)}">
+      <div class="ph foto-45 g${g}" ${t.imagem ? '' : `role="img" aria-label="Espaço para ${esc(t.formato.toLowerCase())} do trabalho ${esc(t.titulo)}"`}>${midia}${legenda}</div>
+      <p class="trabalho-nicho">${esc(t.nicho)}</p>
+      <h3>${esc(t.titulo)}</h3>
+      <p class="trabalho-marca">${marca}</p>
+    </li>`;
+  }).join('');
+
+  const barraFiltros = $('#filtros');
+  const statusFiltro = $('#filtroStatus');
+  barraFiltros.innerHTML = ['Todos', ...NICHOS].map((n, i) =>
+    `<button type="button" class="filtro" data-nicho="${esc(n)}" aria-pressed="${i === 0}">${esc(n)}</button>`
+  ).join('');
+
+  barraFiltros.addEventListener('click', (e) => {
+    const botao = e.target.closest('.filtro');
+    if (!botao) return;
+    const escolhido = botao.dataset.nicho;
+    $$('.filtro', barraFiltros).forEach((b) => b.setAttribute('aria-pressed', String(b === botao)));
+    let visiveis = 0;
+    $$('.trabalho', galeria).forEach((item) => {
+      const mostrar = escolhido === 'Todos' || item.dataset.nicho === escolhido;
+      item.hidden = !mostrar;
+      item.classList.remove('entrar');
+      if (mostrar) {
+        visiveis++;
+        void item.offsetWidth;            /* reinicia a animação */
+        item.classList.add('entrar');
+      }
+    });
+    statusFiltro.textContent = escolhido === 'Todos'
+      ? `Mostrando todos os ${visiveis} trabalhos`
+      : `Mostrando ${visiveis} ${visiveis === 1 ? 'trabalho' : 'trabalhos'} em ${escolhido}`;
+  });
+  statusFiltro.textContent = `Mostrando todos os ${TRABALHOS.length} trabalhos`;
+
+  $('#servicosLista').innerHTML = SERVICOS.map((s, i) => `
+    <li class="servico reveal" style="--d:${(0.08 * (i % 3)).toFixed(2)}s">
+      <p class="servico-num" aria-hidden="true">${esc(s.numero)}</p>
+      <h3>${esc(s.titulo)}</h3>
+      <p>${esc(s.texto)}</p>
+    </li>`).join('');
+
+  $('#metricasLista').innerHTML = METRICAS.map((m, i) =>
+    `<li class="reveal" style="--d:${(0.1 * i).toFixed(2)}s">${contadorHTML(m)}<span class="numero-rotulo">${esc(m.rotulo)}</span></li>`
+  ).join('');
+
+  $('#resultadosLista').innerHTML = RESULTADOS.map((r, i) => `
+    <article class="resultado reveal" style="--d:${(0.1 * i).toFixed(2)}s">
+      <p class="resultado-num">${esc(r.numero)}</p>
+      <h3>${esc(r.titulo)}</h3>
+      <p class="resultado-marca">${esc(r.marca)}</p>
+      <p class="txt">${esc(r.texto)}</p>
+    </article>`).join('');
+
+  $('#depoimentosLista').innerHTML = DEPOIMENTOS.map((d, i) => `
+    <figure class="depoimento reveal" style="--d:${(0.1 * (i % 2)).toFixed(2)}s">
+      <blockquote>${esc(d.texto)}</blockquote>
+      <figcaption><strong>${esc(d.nome)}</strong><span>${esc(d.empresa)}</span></figcaption>
+    </figure>`).join('');
+
+  $$('.promessas .check').forEach((el) => { el.innerHTML = ICONES.check; });
+
+  /* ---------- Menu (sanduíche no celular) ---------- */
+  const cabecalho = $('.site-header');
+  const botaoMenu = $('.nav-toggle');
+  const menu = $('#menu');
+  const alternarMenu = (abrir) => {
+    menu.classList.toggle('aberto', abrir);
+    botaoMenu.setAttribute('aria-expanded', String(abrir));
+    botaoMenu.setAttribute('aria-label', abrir ? 'Fechar menu' : 'Abrir menu');
+  };
+  botaoMenu.addEventListener('click', () => alternarMenu(botaoMenu.getAttribute('aria-expanded') !== 'true'));
+  $$('a', menu).forEach((a) => a.addEventListener('click', () => alternarMenu(false)));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && menu.classList.contains('aberto')) { alternarMenu(false); botaoMenu.focus(); }
+  });
+  document.addEventListener('click', (e) => {
+    if (menu.classList.contains('aberto') && !cabecalho.contains(e.target)) alternarMenu(false);
+  });
+  window.matchMedia('(min-width: 901px)').addEventListener('change', (e) => { if (e.matches) alternarMenu(false); });
+
+  const marcarRolagem = () => cabecalho.classList.toggle('rolou', window.scrollY > 8);
+  marcarRolagem();
+  window.addEventListener('scroll', marcarRolagem, { passive: true });
+
+  /* Link "#" (placeholder de vídeo) não deve pular para o topo */
+  document.addEventListener('click', (e) => {
+    const vazio = e.target.closest('a[href="#"]');
+    if (vazio) e.preventDefault();
+  });
+
+  /* ---------- Animações ao rolar ---------- */
+  const revelaveis = $$('.reveal');
+  const contadores = $$('.contador[data-alvo]');
+  if (!('IntersectionObserver' in window)) {
+    revelaveis.forEach((el) => el.classList.add('in'));
+    contadores.forEach(animarContador);
+  } else {
+    const observador = new IntersectionObserver((entradas, obs) => {
+      entradas.forEach((entrada) => {
+        if (!entrada.isIntersecting) return;
+        const el = entrada.target;
+        if (el.classList.contains('reveal')) el.classList.add('in');
+        $$('.contador[data-alvo]', el).forEach(animarContador);
+        obs.unobserve(el);
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+    revelaveis.forEach((el) => observador.observe(el));
+
+    /* Contadores fora de um bloco .reveal também animam quando aparecem */
+    const observadorContador = new IntersectionObserver((entradas, obs) => {
+      entradas.forEach((entrada) => {
+        if (!entrada.isIntersecting) return;
+        animarContador(entrada.target);
+        obs.unobserve(entrada.target);
+      });
+    }, { threshold: 0.6 });
+    contadores.forEach((el) => { if (!el.closest('.reveal')) observadorContador.observe(el); });
+
+    /* Destaca no menu a seção que está na tela */
+    const links = $$('.nav-links a');
+    const espiao = new IntersectionObserver((entradas) => {
+      entradas.forEach((entrada) => {
+        if (!entrada.isIntersecting) return;
+        links.forEach((a) => {
+          if (a.getAttribute('href') === '#' + entrada.target.id) a.setAttribute('aria-current', 'true');
+          else a.removeAttribute('aria-current');
+        });
+      });
+    }, { rootMargin: '-40% 0px -55% 0px' });
+    $$('main section[id]').forEach((s) => espiao.observe(s));
+  }
+
+  /* ---------- Formulário de contato ---------- */
+  const formulario = $('#formContato');
+  const confirmacao = $('#confirmacaoContato');
+  formulario.addEventListener('submit', (e) => {
+    e.preventDefault();
+    /* PONTO DE INTEGRAÇÃO: para receber as mensagens de verdade, envie os dados
+       do formulário para um serviço de formulários (por exemplo Formspree) neste ponto. */
+    const primeiroNome = formulario.elements.nome.value.trim().split(/\s+/)[0] || '';
+    $('[data-nome]', confirmacao).textContent = primeiroNome ? `, ${primeiroNome}` : '';
+    formulario.hidden = true;
+    confirmacao.hidden = false;
+    confirmacao.focus();
+  });
+  $('#outraMensagem').addEventListener('click', () => {
+    formulario.reset();
+    confirmacao.hidden = true;
+    formulario.hidden = false;
+    formulario.elements.nome.focus();
+  });
+
+  /* ---------- Ano automático no rodapé ---------- */
+  $('#ano').textContent = new Date().getFullYear();
+
+  /* ---------- Card de captura (aparece uma vez por visita, após 7 segundos) ---------- */
+  const dialogo = $('#captura');
+  const CHAVE = 'capturaVista';
+  let jaViu = false;
+  try { jaViu = sessionStorage.getItem(CHAVE) === '1'; } catch (erro) { /* sessionStorage indisponível */ }
+
+  if (dialogo && typeof dialogo.showModal === 'function') {
+    const fechar = () => { if (dialogo.open) dialogo.close(); };
+    dialogo.addEventListener('close', () => document.body.classList.remove('sem-rolagem'));
+    $('.captura-fechar', dialogo).addEventListener('click', fechar);
+    dialogo.addEventListener('click', (e) => { if (e.target === dialogo) fechar(); });   /* clique no fundo escuro */
+    dialogo.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.preventDefault(); fechar(); } });   /* tecla Esc */
+
+    const formCaptura = $('#formCaptura');
+    const okCaptura = $('#confirmacaoCaptura');
+    formCaptura.addEventListener('submit', (e) => {
+      e.preventDefault();
+      /* PONTO DE INTEGRAÇÃO: envie nome e e-mail para a sua ferramenta de e-mail marketing aqui. */
+      const primeiroNome = formCaptura.elements.nomeKit.value.trim().split(/\s+/)[0] || '';
+      $('[data-nome]', okCaptura).textContent = primeiroNome ? `, ${primeiroNome}` : '';
+      formCaptura.hidden = true;
+      $('.sub', dialogo).hidden = true;
+      $('h2', dialogo).hidden = true;
+      okCaptura.hidden = false;
+      okCaptura.focus();
+    });
+
+    if (!jaViu) {
+      setTimeout(() => {
+        if (dialogo.open) return;
+        alternarMenu(false);
+        try { sessionStorage.setItem(CHAVE, '1'); } catch (erro) { /* segue sem guardar */ }
+        dialogo.showModal();
+        document.body.classList.add('sem-rolagem');
+      }, 7000);
+    }
+  }
+});
+</script>
+</head>
+
+<body>
+<a class="pular" href="#conteudo">Pular para o conteúdo</a>
+<noscript><p style="padding:5rem 1.25rem 1rem;text-align:center">Ative o JavaScript do navegador para ver todo o conteúdo deste portfólio.</p></noscript>
+
+<!-- ============================ MENU ============================ -->
+<header class="site-header" id="topo">
+  <div class="container nav">
+    <a class="brand" href="#topo">Esther Silva Custódio</a>
+    <nav aria-label="Principal">
+      <div class="nav-links" id="menu">
+        <a href="#sobre">Sobre</a>
+        <a href="#destaques">Destaques</a>
+        <a href="#trabalhos">Trabalhos</a>
+        <a href="#servicos">Serviços</a>
+        <a href="#numeros">Números</a>
+        <a href="#contato">Contato</a>
+      </div>
+    </nav>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="menu" aria-label="Abrir menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main id="conteudo">
+
+<!-- ============================ 1. CAPA ============================ -->
+<section class="hero" aria-labelledby="titulo-capa">
+  <div class="container hero-grid">
+    <div class="hero-texto">
+      <p class="eyebrow reveal"><i></i>UGC Creator em Hortolândia</p>
+      <h1 class="hero-nome reveal" id="titulo-capa" style="--d:.08s">
+        <span>Esther</span>
+        <span class="it"><em>Silva</em></span>
+        <span>Custódio</span>
+      </h1>
+      <p class="hero-frase reveal" style="--d:.16s"><strong>Conteúdo que inspira.</strong> Eu crio vídeos e fotos autênticos que colocam a sua marca na frente de quem realmente compra.</p>
+      <div class="hero-botoes reveal" style="--d:.24s">
+        <a class="btn btn-primario" href="#contato">Falar comigo</a>
+        <a class="btn btn-secundario" href="#trabalhos">Ver os trabalhos</a>
+      </div>
+    </div>
+
+    <figure class="hero-foto reveal" style="--d:.2s">
+      <!-- FOTO DA CAPA: para usar a sua foto, apague o <span class="ph-legenda"> abaixo, tire role e aria-label
+           da div e coloque dentro dela:
+           <img src="foto-capa.jpg" alt="Esther Silva Custódio segurando um produto" loading="eager" width="880" height="1100">
+           Use uma imagem leve (até 200 KB) no formato vertical 4:5. -->
+      <div class="ph g0 foto-45" role="img" aria-label="Espaço para a foto de Esther Silva Custódio, formato 4:5">
+        <span class="ph-legenda">foto da creator 4:5</span>
+      </div>
+      <span class="selo" aria-hidden="true">
+        <svg viewBox="0 0 120 120">
+          <defs><path id="circulo" d="M60,60 m-45,0 a45,45 0 1,1 90,0 a45,45 0 1,1 -90,0"/></defs>
+          <g class="anel"><text textLength="280" lengthAdjust="spacing"><textPath href="#circulo">CONTEÚDO QUE INSPIRA • UGC CREATOR •</textPath></text></g>
+        </svg>
+        <svg class="estrela" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.5c.7 5.6 4.9 9.8 10.5 10.5-5.6.7-9.8 4.9-10.5 10.5-.7-5.6-4.9-9.8-10.5-10.5C7.1 11.3 11.3 7.1 12 1.5z"/></svg>
+      </span>
+    </figure>
+  </div>
+
+  <div class="container">
+    <ul class="hero-numeros" id="numerosCapa" aria-label="Números principais"></ul>
+  </div>
+
+  <!-- Faixa fina com os nomes das marcas (edite a lista MARCAS no script) -->
+  <div class="marcas" role="region" aria-label="Marcas com quem já trabalhei">
+    <div class="marcas-track" id="marcasTrack"></div>
+  </div>
+</section>
+
+<!-- ============================ 2. SOBRE MIM ============================ -->
+<section class="secao" id="sobre" aria-labelledby="titulo-sobre">
+  <div class="container sobre-grid">
+    <div class="sobre-foto reveal">
+      <!-- FOTO DO SOBRE: mesma troca da capa. Apague o <span class="ph-legenda">, tire role e aria-label
+           e coloque dentro da div:
+           <img src="foto-sobre.jpg" alt="Esther Silva Custódio sorrindo, gravando um vídeo em casa" loading="lazy" width="880" height="1100"> -->
+      <div class="ph g3 foto-45" role="img" aria-label="Espaço para a foto de Esther Silva Custódio, formato 4:5">
+        <span class="ph-legenda">foto da creator 4:5</span>
+      </div>
+    </div>
+
+    <div class="sobre-texto">
+      <p class="eyebrow reveal"><b>01</b>Sobre mim</p>
+      <h2 class="titulo reveal" id="titulo-sobre" style="--d:.06s">Prazer, eu sou a <em>Esther</em></h2>
+      <p class="abre reveal" style="--d:.12s">Eu gosto de mostrar produtos do jeito que as pessoas realmente usam: na rotina, com luz natural e com opinião de verdade.</p>
+      <p class="reveal" style="--d:.16s">Sou criadora de conteúdo UGC em Hortolândia e já entreguei 250 vídeos para marcas de beleza, skincare, moda, casa e decoração, fitness e viagem. Cada projeto começa com uma conversa para entender o que a sua marca quer dizer e termina com um conteúdo que você vai ter orgulho de postar.</p>
+
+      <p class="promessas-titulo reveal" style="--d:.2s">Minhas três promessas</p>
+      <ul class="promessas">
+        <li class="reveal" style="--d:.22s"><span class="check"></span>Roteiro aprovado antes de gravar</li>
+        <li class="reveal" style="--d:.28s"><span class="check"></span>Uma rodada de ajuste inclusa</li>
+        <li class="reveal" style="--d:.34s"><span class="check"></span>Entrega em até 72 horas úteis</li>
+      </ul>
+
+      <p class="assinatura reveal" style="--d:.38s"><small>Com carinho,</small><strong>Esther Silva Custódio</strong></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 3. CONTEÚDOS DE DESTAQUE ============================ -->
+<section class="secao escuro" id="destaques" aria-labelledby="titulo-destaques">
+  <div class="container">
+    <header class="secao-topo">
+      <p class="eyebrow reveal"><b>02</b>Em evidência</p>
+      <h2 class="titulo reveal" id="titulo-destaques" style="--d:.06s">Conteúdos de <em>destaque</em></h2>
+      <p class="lead reveal" style="--d:.12s">Três vídeos que mostram como uma boa ideia, contada com verdade, vira resultado. Toque em um card para assistir.</p>
+    </header>
+
+    <!-- Os três cards são criados pela lista DESTAQUES no começo do script.
+         Nela você troca: o LINK DO VÍDEO (campo "link") e a CAPA vertical 9:16 (campo "capa"). -->
+    <div class="destaques-grid" id="destaquesGrid"></div>
+  </div>
+</section>
+
+<!-- ============================ 4. TRABALHOS POR NICHO ============================ -->
+<section class="secao" id="trabalhos" aria-labelledby="titulo-trabalhos">
+  <div class="container">
+    <header class="secao-topo">
+      <p class="eyebrow reveal"><b>03</b>Portfólio</p>
+      <h2 class="titulo reveal" id="titulo-trabalhos" style="--d:.06s">Trabalhos por <em>nicho</em></h2>
+      <p class="lead reveal" style="--d:.12s">Escolha um nicho para ver só os trabalhos daquele universo.</p>
+    </header>
+
+    <div class="filtros reveal" id="filtros" role="group" aria-label="Filtrar trabalhos por nicho"></div>
+    <p class="filtro-status" id="filtroStatus" role="status" aria-live="polite"></p>
+    <ul class="galeria reveal" id="galeria"></ul>
+  </div>
+</section>
+
+<!-- ============================ 5. COMO EU TE AJUDO ============================ -->
+<section class="secao bg-2" id="servicos" aria-labelledby="titulo-servicos">
+  <div class="container">
+    <header class="secao-topo">
+      <p class="eyebrow reveal"><b>04</b>Serviços</p>
+      <h2 class="titulo reveal" id="titulo-servicos" style="--d:.06s">Como eu te <em>ajudo</em></h2>
+      <p class="lead reveal" style="--d:.12s">Do roteiro à publicação, cada etapa pensada para a sua marca aparecer melhor.</p>
+    </header>
+    <ol class="servicos" id="servicosLista"></ol>
+  </div>
+</section>
+
+<!-- ============================ 6. NÚMEROS E DEPOIMENTOS ============================ -->
+<section class="secao" id="numeros" aria-labelledby="titulo-numeros">
+  <div class="container">
+    <header class="secao-topo">
+      <p class="eyebrow reveal"><b>05</b>Resultados</p>
+      <h2 class="titulo reveal" id="titulo-numeros" style="--d:.06s">Números e <em>depoimentos</em></h2>
+    </header>
+
+    <ul class="metricas" id="metricasLista" aria-label="Métricas"></ul>
+    <div class="resultados" id="resultadosLista" role="group" aria-label="Resultados de campanha"></div>
+    <div class="depoimentos" id="depoimentosLista" role="group" aria-label="Depoimentos de clientes"></div>
+  </div>
+</section>
+
+<!-- ============================ 7. BORA CRIAR JUNTOS ============================ -->
+<section class="secao bg-2" id="contato" aria-labelledby="titulo-contato">
+  <div class="container contato-grid">
+    <div>
+      <p class="eyebrow reveal"><b>06</b>Contato</p>
+      <h2 class="titulo reveal" id="titulo-contato" style="--d:.06s">Bora criar <em>juntos</em></h2>
+      <p class="lead reveal" style="--d:.12s">Conte um pouco sobre a sua marca e o que você quer comunicar. Eu respondo com carinho e com uma proposta pensada para você.</p>
+
+      <div class="canais">
+        <a class="canal principal reveal" href="https://wa.me/5519983169592?text=Oi%20Esther%2C%20vim%20pelo%20seu%20portf%C3%B3lio%20e%20quero%20conversar%20sobre%20um%20projeto." target="_blank" rel="noopener noreferrer" style="--d:.16s">
+          <span class="canal-icone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.55L3 20.5l1.5-5.4A8.5 8.5 0 1 1 21 11.5z"/></svg></span>
+          <span class="canal-texto"><strong>WhatsApp</strong><span>(19) 98316-9592</span></span>
+          <svg class="canal-seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
+        </a>
+        <a class="canal reveal" href="mailto:contatoesthercustodio@gmail.com" style="--d:.2s">
+          <span class="canal-icone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/></svg></span>
+          <span class="canal-texto"><strong>E-mail</strong><span>contatoesthercustodio@gmail.com</span></span>
+          <svg class="canal-seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
+        </a>
+        <a class="canal reveal" href="https://instagram.com/Esthercustodio_" target="_blank" rel="noopener noreferrer" style="--d:.24s">
+          <span class="canal-icone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".9" fill="currentColor" stroke="none"/></svg></span>
+          <span class="canal-texto"><strong>Instagram</strong><span>@Esthercustodio_</span></span>
+          <svg class="canal-seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
+        </a>
+      </div>
+      <p class="cidade reveal" style="--d:.28s">Baseada em Hortolândia, São Paulo.</p>
+    </div>
+
+    <div class="form-card reveal" style="--d:.14s">
+      <form id="formContato" aria-label="Formulário de contato">
+        <div class="campo">
+          <label for="nome">Nome</label>
+          <input id="nome" name="nome" type="text" autocomplete="name" placeholder="Como posso te chamar?" required>
+        </div>
+        <div class="campo">
+          <label for="email">E-mail</label>
+          <input id="email" name="email" type="email" autocomplete="email" placeholder="seuemail@email.com" required>
+        </div>
+        <div class="campo">
+          <label for="mensagem">Mensagem</label>
+          <textarea id="mensagem" name="mensagem" placeholder="Conte sobre a sua marca, o produto e o que você imagina para o conteúdo." required></textarea>
+        </div>
+        <button class="btn btn-primario" type="submit">Enviar mensagem</button>
+        <p class="form-nota">Eu respondo o mais rápido que conseguir.</p>
+      </form>
+
+      <div class="confirmacao" id="confirmacaoContato" role="status" tabindex="-1" hidden>
+        <div class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></div>
+        <h3>Mensagem <em>recebida</em></h3>
+        <p>Obrigada<span data-nome></span>! Vou ler com atenção e te respondo em breve.</p>
+        <button class="btn btn-secundario" type="button" id="outraMensagem">Enviar outra mensagem</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============================ 8. RODAPÉ ============================ -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="rodape-topo">
+      <div>
+        <p class="rodape-nome">Esther <em>Silva</em> Custódio</p>
+        <p class="rodape-sub">UGC Creator em Hortolândia. Conteúdo que inspira.</p>
+      </div>
+      <div class="redes" aria-label="Minhas redes">
+        <a href="https://instagram.com/Esthercustodio_" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".9" fill="currentColor" stroke="none"/></svg>
+          Instagram
+        </a>
+        <a href="https://wa.me/5519983169592" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.55L3 20.5l1.5-5.4A8.5 8.5 0 1 1 21 11.5z"/></svg>
+          WhatsApp
+        </a>
+        <a href="mailto:contatoesthercustodio@gmail.com">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/></svg>
+          E-mail
+        </a>
+      </div>
+    </div>
+    <div class="rodape-base">
+      <p>© <span id="ano">2026</span> Esther Silva Custódio. Todos os direitos reservados.</p>
+      <p>@Esthercustodio_ · Hortolândia</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ============================ CARD DE CAPTURA ============================ -->
+<dialog class="captura-dialog" id="captura" aria-labelledby="titulo-captura">
+  <div class="captura">
+    <button class="captura-fechar" type="button" aria-label="Fechar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+    <h2 id="titulo-captura">Quer meu mídia kit <em>completo?</em></h2>
+    <p class="sub">Deixe o seu nome e o seu e-mail que eu envio para você.</p>
+    <form id="formCaptura" aria-label="Receber o mídia kit">
+      <div class="campo">
+        <label for="nomeKit">Nome</label>
+        <input id="nomeKit" name="nomeKit" type="text" autocomplete="name" required>
+      </div>
+      <div class="campo">
+        <label for="emailKit">E-mail</label>
+        <input id="emailKit" name="emailKit" type="email" autocomplete="email" placeholder="seuemail@email.com" required>
+      </div>
+      <button class="btn btn-primario" type="submit">Quero receber</button>
+    </form>
+    <div class="confirmacao" id="confirmacaoCaptura" role="status" tabindex="-1" hidden>
+      <div class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></div>
+      <h3>Pedido <em>recebido</em></h3>
+      <p>Obrigada<span data-nome></span>! Você vai receber o mídia kit no e-mail informado.</p>
+    </div>
+  </div>
+</dialog>
+
+</body>
+</html>
