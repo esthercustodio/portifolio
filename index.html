@@ -612,9 +612,11 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   /* ---------- Renderização das listas ---------- */
-  const itensMarca = MARCAS.map((nome) => `<li>${esc(nome)}</li>`).join('');
-  $('#marcasTrack').innerHTML =
-    `<ul class="marcas-lista">${itensMarca}</ul><ul class="marcas-lista" aria-hidden="true">${itensMarca}</ul>`;
+  const desenharMarcas = (lista) => {
+    const itens = lista.map((nome) => `<li>${esc(nome)}</li>`).join('');
+    $('#marcasTrack').innerHTML =
+      `<ul class="marcas-lista">${itens}</ul><ul class="marcas-lista" aria-hidden="true">${itens}</ul>`;
+  };
 
   /* ---------- Vídeos: vêm do painel (tabela "videos") ----------
      Se o banco ainda não estiver pronto, usa a lista de reserva lá de cima. */
@@ -738,30 +740,102 @@ document.addEventListener('DOMContentLoaded', () => {
     })));
   })();
 
-  $('#servicosLista').innerHTML = SERVICOS.map((s, i) => `
+  /* ---------- Conteúdo editável pelo painel (aba "Conteúdo do site") ----------
+     As listas lá de cima (MARCAS, SERVICOS, METRICAS...) são o texto original e servem de reserva. */
+  const animarNovos = (raiz, animar) => {
+    if (!animar) return;
+    $$('.reveal', raiz).forEach((el) => observarNovos(el));
+    if (!('IntersectionObserver' in window)) $$('.contador[data-alvo]', raiz).forEach(animarContador);
+  };
+
+  const desenharServicos = (lista, animar) => {
+    const alvo = $('#servicosLista');
+    alvo.innerHTML = lista.map((s, i) => `
     <li class="servico reveal" style="--d:${(0.08 * (i % 3)).toFixed(2)}s">
       <p class="servico-num" aria-hidden="true">${esc(s.numero)}</p>
       <h3>${esc(s.titulo)}</h3>
       <p>${esc(s.texto)}</p>
     </li>`).join('');
+    animarNovos(alvo, animar);
+  };
 
-  $('#metricasLista').innerHTML = METRICAS.map((m, i) =>
-    `<li class="reveal" style="--d:${(0.1 * i).toFixed(2)}s">${contadorHTML(m)}<span class="numero-rotulo">${esc(m.rotulo)}</span></li>`
-  ).join('');
+  const desenharMetricas = (lista, animar) => {
+    const alvo = $('#metricasLista');
+    alvo.innerHTML = lista.map((m, i) => {
+      const numero = m.valor === null || m.valor === undefined || m.valor === '' || Number.isNaN(Number(m.valor)) ? null : Number(m.valor);
+      return `<li class="reveal" style="--d:${(0.1 * i).toFixed(2)}s">${contadorHTML({ valor: numero, prefixo: m.prefixo, sufixo: m.sufixo })}<span class="numero-rotulo">${esc(m.rotulo)}</span></li>`;
+    }).join('');
+    animarNovos(alvo, animar);
+  };
 
-  $('#resultadosLista').innerHTML = RESULTADOS.map((r, i) => `
+  const desenharResultados = (lista, animar) => {
+    const alvo = $('#resultadosLista');
+    alvo.innerHTML = lista.map((r, i) => `
     <article class="resultado reveal" style="--d:${(0.1 * i).toFixed(2)}s">
       <p class="resultado-num">${esc(r.numero)}</p>
       <h3>${esc(r.titulo)}</h3>
       <p class="resultado-marca">${esc(r.marca)}</p>
       <p class="txt">${esc(r.texto)}</p>
     </article>`).join('');
+    animarNovos(alvo, animar);
+  };
 
-  $('#depoimentosLista').innerHTML = DEPOIMENTOS.map((d, i) => `
+  const desenharDepoimentos = (lista, animar) => {
+    const alvo = $('#depoimentosLista');
+    alvo.innerHTML = lista.map((d, i) => `
     <figure class="depoimento reveal" style="--d:${(0.1 * (i % 2)).toFixed(2)}s">
       <blockquote>${esc(d.texto)}</blockquote>
       <figcaption><strong>${esc(d.nome)}</strong><span>${esc(d.empresa)}</span></figcaption>
     </figure>`).join('');
+    animarNovos(alvo, animar);
+  };
+
+  const desenharCapa = (c) => {
+    if (c.chip) $('#capaChip').textContent = String(c.chip);
+    if (c.frase) $('#capaFrase').textContent = String(c.frase);
+    if (Array.isArray(c.numeros) && c.numeros.length) {
+      $('#capaNumeros').innerHTML = c.numeros.map((n) => `<strong>${esc(n)}</strong>`).join('<span aria-hidden="true">|</span>');
+    }
+  };
+
+  const desenharSobre = (c) => {
+    if (c.abre) $('#sobreAbre').textContent = String(c.abre);
+    if (c.texto) $('#sobreTexto').textContent = String(c.texto);
+  };
+
+  /* Só redesenha a seção se o conteúdo mudou (evita piscar o que já está na tela) */
+  const desenhado = {};
+  const aplicarSecao = (chave, valor, desenhar, animar) => {
+    const assinatura = JSON.stringify(valor);
+    if (desenhado[chave] === assinatura) return;
+    desenhado[chave] = assinatura;
+    desenhar(valor, animar);
+  };
+  const aplicarConteudo = (c, animar) => {
+    const lista = (v, padrao) => (Array.isArray(v) && v.length ? v : padrao);
+    aplicarSecao('marcas', lista(c.marcas, MARCAS).map(String), desenharMarcas, animar);
+    aplicarSecao('servicos', lista(c.servicos, SERVICOS), desenharServicos, animar);
+    aplicarSecao('metricas', lista(c.metricas, METRICAS), desenharMetricas, animar);
+    aplicarSecao('resultados', lista(c.resultados, RESULTADOS), desenharResultados, animar);
+    aplicarSecao('depoimentos', lista(c.depoimentos, DEPOIMENTOS), desenharDepoimentos, animar);
+    if (c.capa && typeof c.capa === 'object') aplicarSecao('capa', c.capa, desenharCapa, animar);
+    if (c.sobre && typeof c.sobre === 'object') aplicarSecao('sobre', c.sobre, desenharSobre, animar);
+  };
+
+  /* Primeiro desenha com o que ficou guardado da última visita (ou com o texto original) e depois confere no banco */
+  let guardado = {};
+  try { guardado = JSON.parse(localStorage.getItem('conteudoSite') || '{}') || {}; } catch (erro) { guardado = {}; }
+  aplicarConteudo(guardado, false);
+
+  (async () => {
+    if (!window.banco) return;
+    try {
+      const r = await window.banco.rpc('conteudo_do_site');
+      if (r.error || !r.data || typeof r.data !== 'object') return;                 /* banco fora do ar ou ainda sem o banco-2.sql: fica como está */
+      try { localStorage.setItem('conteudoSite', JSON.stringify(r.data)); } catch (erro) { /* segue sem guardar */ }
+      aplicarConteudo(r.data, true);
+    } catch (erro) { /* o site segue com o que já está na tela */ }
+  })();
 
   $$('.promessas .check').forEach((el) => { el.innerHTML = ICONES.check; });
 
@@ -987,13 +1061,13 @@ document.addEventListener('DOMContentLoaded', () => {
 <section class="hero" aria-labelledby="titulo-capa">
   <div class="container hero-grid">
     <div class="hero-texto">
-      <p class="hero-chip reveal"><span class="chip-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>Creator &amp; Modelo</p>
+      <p class="hero-chip reveal"><span class="chip-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><span id="capaChip">Creator &amp; Modelo</span></p>
       <h1 class="hero-titulo reveal" id="titulo-capa" style="--d:.08s">
         <span>Inspiração</span>
         <span>que <em>conecta.</em></span>
       </h1>
-      <p class="hero-frase reveal" style="--d:.16s">Conteúdo que transforma a rotina em desejo, conexão e identificação com a sua marca.</p>
-      <p class="hero-stats reveal" style="--d:.2s"><strong>+500 vídeos</strong><span aria-hidden="true">|</span><strong>+200 marcas</strong></p>
+      <p class="hero-frase reveal" id="capaFrase" style="--d:.16s">Conteúdo que transforma a rotina em desejo, conexão e identificação com a sua marca.</p>
+      <p class="hero-stats reveal" id="capaNumeros" style="--d:.2s"><strong>+500 vídeos</strong><span aria-hidden="true">|</span><strong>+200 marcas</strong></p>
       <div class="hero-botoes reveal" style="--d:.24s">
         <a class="btn btn-primario" href="#contato">Falar comigo</a>
         <a class="btn-link" href="#trabalhos">Ver os trabalhos <span aria-hidden="true">→</span></a>
@@ -1036,8 +1110,8 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="sobre-texto">
       <p class="eyebrow reveal"><b>01</b>Sobre mim</p>
       <h2 class="titulo reveal" id="titulo-sobre" style="--d:.06s">Prazer, eu sou a <em>Esther</em></h2>
-      <p class="abre reveal" style="--d:.12s">Eu gosto de mostrar produtos do jeito que as pessoas realmente usam: na rotina, com luz natural e com opinião de verdade.</p>
-      <p class="reveal" style="--d:.16s">Sou criadora de conteúdo UGC em Hortolândia e já entreguei 250 vídeos para marcas de beleza, skincare, moda, casa e decoração, fitness e viagem. Cada projeto começa com uma conversa para entender o que a sua marca quer dizer e termina com um conteúdo que você vai ter orgulho de postar.</p>
+      <p class="abre reveal" id="sobreAbre" style="--d:.12s">Eu gosto de mostrar produtos do jeito que as pessoas realmente usam: na rotina, com luz natural e com opinião de verdade.</p>
+      <p class="reveal" id="sobreTexto" style="--d:.16s">Sou criadora de conteúdo UGC em Hortolândia e já entreguei 250 vídeos para marcas de beleza, skincare, moda, casa e decoração, fitness e viagem. Cada projeto começa com uma conversa para entender o que a sua marca quer dizer e termina com um conteúdo que você vai ter orgulho de postar.</p>
 
       <p class="promessas-titulo reveal" style="--d:.2s">Minhas três promessas</p>
       <ul class="promessas">
