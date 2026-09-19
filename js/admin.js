@@ -101,7 +101,8 @@
     dir: '<path d="m9 18 6-6-6-6"/>',
     check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
     externo: '<path d="M7 17 17 7M8 7h9v9"/>',
-    fechar: '<path d="M6 6l12 12M18 6 6 18"/>'
+    fechar: '<path d="M6 6l12 12M18 6 6 18"/>',
+    alerta: '<path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>'
   };
   function ic(nome, extra) {
     return '<svg class="ic' + (extra ? ' ' + extra : '') + '" viewBox="0 0 24 24" aria-hidden="true">' + (ICONES[nome] || '') + '</svg>';
@@ -118,12 +119,13 @@
   function descreverErro(tabela, erro) {
     var cod = String((erro && erro.code) || '');
     var msg = String((erro && erro.message) || '');
+    var arquivoSql = tabela === 'site_conteudo' ? 'banco-2.sql' : 'banco.sql';
     var col = /find the '([^']+)' column/i.exec(msg) || /column "?([\w]+)"? (?:of relation "?\w+"? )?does not exist/i.exec(msg);
     if (cod === 'PGRST205' || cod === '42P01' || /could not find the table|relation "[^"]*" does not exist/i.test(msg)) {
-      return 'A tabela "' + tabela + '" ainda não existe no seu banco. Cole o arquivo banco.sql no SQL Editor do Supabase e clique em Run.';
+      return 'A tabela "' + tabela + '" ainda não existe no seu banco. Cole o arquivo ' + arquivoSql + ' no SQL Editor do Supabase e clique em Run.';
     }
     if (cod === 'PGRST204' || cod === '42703' || col) {
-      return 'Falta o campo "' + (col ? col[1] : 'desconhecido') + '" na tabela "' + tabela + '". Rode o arquivo banco.sql de novo no Supabase.';
+      return 'Falta o campo "' + (col ? col[1] : 'desconhecido') + '" na tabela "' + tabela + '". Rode o arquivo ' + arquivoSql + ' de novo no Supabase.';
     }
     if (cod === '42501' || /permission denied|row-level security/i.test(msg)) {
       return 'O banco não liberou o acesso à tabela "' + tabela + '". Confira se você entrou com o e-mail certo e se o banco.sql foi rodado inteiro.';
@@ -411,13 +413,13 @@
   }
 
   async function mostrarAba(nome) {
-    if (!Abas[nome]) nome = 'portfolio';
+    if (!Abas[nome]) nome = 'resumo';
     var aba = Abas[nome];
     abaAberta = nome;
     $$('.nav-item').forEach(function (a) {
       if (a.getAttribute('data-aba') === nome) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
     });
-    ['portfolio', 'marcas', 'calendario', 'campanhas', 'checklist'].forEach(function (n) { $('#aba-' + n).hidden = n !== nome; });
+    Object.keys(Abas).forEach(function (n) { var s = $('#aba-' + n); if (s) s.hidden = n !== nome; });
     $('#tituloAba').textContent = aba.titulo;
     document.title = aba.titulo + ' | Painel Esther Custódio';
     $('#avisos').innerHTML = '';
@@ -454,7 +456,7 @@
     window.matchMedia('(min-width: 901px)').addEventListener('change', function (e) { if (e.matches) fecharGaveta(); });
 
     window.addEventListener('hashchange', function () { mostrarAba(location.hash.replace('#', '')); });
-    mostrarAba(location.hash.replace('#', '') || 'portfolio');
+    mostrarAba(location.hash.replace('#', '') || 'resumo');
   }
 
   /* A partir daqui vêm as abas. Todas usam as ferramentas acima. */
@@ -1610,6 +1612,650 @@
           c.closest('.item-check').classList.toggle('feito', c.checked);
         });
         atualizarProgresso();
+      }
+    };
+  })();
+
+  /* =========================================================
+     VISITAS: busca e contas (usadas pelo Resumo e pela aba Visitas)
+     ========================================================= */
+  async function buscarVisitas(dias) {
+    var inicio = new Date();
+    inicio.setDate(inicio.getDate() - (dias - 1));
+    inicio.setHours(0, 0, 0, 0);
+    var todas = [];
+    try {
+      for (var pagina = 0; pagina < 40; pagina++) {
+        var r = await banco.from('visitas').select('data,origem,pagina')
+          .gte('data', inicio.toISOString()).range(pagina * 1000, pagina * 1000 + 999);
+        if (r.error) { problemas.visitas = descreverErro('visitas', r.error); return []; }
+        todas = todas.concat(r.data || []);
+        if (!r.data || r.data.length < 1000) break;
+      }
+      delete problemas.visitas;
+    } catch (e) {
+      problemas.visitas = descreverErro('visitas', e);
+      return [];
+    }
+    return todas;
+  }
+
+  function resumirVisitas(visitas, dias) {
+    var hoje = hojeISO();
+    var lista = [], porDia = {};
+    for (var i = dias - 1; i >= 0; i--) { var iso = somarDias(hoje, -i); lista.push(iso); porDia[iso] = 0; }
+    var origens = {}, paginas = {}, total = 0;
+    visitas.forEach(function (v) {
+      var d = new Date(v.data);
+      if (isNaN(d.getTime())) return;
+      var k = isoLocal(d);
+      if (porDia[k] === undefined) return;
+      porDia[k]++; total++;
+      var o = String(v.origem || '').trim() || 'Direto'; origens[o] = (origens[o] || 0) + 1;
+      var p = String(v.pagina || '').trim() || '/'; paginas[p] = (paginas[p] || 0) + 1;
+    });
+    function ordenar(mapa) {
+      return Object.keys(mapa).map(function (n) { return { nome: n, qtd: mapa[n] }; })
+        .sort(function (a, b) { return b.qtd - a.qtd || comparaTexto(a.nome, b.nome); });
+    }
+    var melhor = '';
+    lista.forEach(function (d) { if (porDia[d] > (melhor ? porDia[melhor] : 0)) melhor = d; });
+    return { dias: lista, porDia: porDia, total: total, hoje: porDia[hoje] || 0, media: total / dias, melhorDia: melhor, origens: ordenar(origens), paginas: ordenar(paginas) };
+  }
+
+  function fmtDataHora(valor) {
+    var d = new Date(valor);
+    if (isNaN(d.getTime())) return '';
+    return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+
+  /* Gráfico de barras dos últimos N dias (ou uma frase explicando, se ainda não há visitas) */
+  function htmlGraficoDias(r, textoVazio) {
+    if (r.total === 0) return '<p class="vazio">' + esc(textoVazio) + '</p>';
+    var n = r.dias.length;
+    var maximo = Math.max.apply(null, r.dias.map(function (d) { return r.porDia[d]; }));
+    var hoje = hojeISO();
+    var comNumeros = n <= 31;
+    var passo = n <= 14 ? 1 : (n <= 31 ? 3 : (n <= 60 ? 7 : 10));
+    var colunas = 'style="grid-template-columns:repeat(' + n + ',minmax(0,1fr))"';
+    return '<div class="grafico" ' + colunas + ' role="img" aria-label="Visitas por dia">' + r.dias.map(function (d) {
+      var c = r.porDia[d];
+      var fracao = maximo > 0 ? Math.max(c / maximo, c > 0 ? 0.03 : 0) : 0;
+      return '<div class="barra-coluna" title="' + esc(fmtData(d)) + ': ' + c + (c === 1 ? ' visita' : ' visitas') + '">' +
+        '<span class="barra-num">' + (comNumeros && c > 0 ? c : '') + '</span>' +
+        '<div class="barra' + (d === hoje ? ' hoje' : '') + '" style="height:calc((100% - 1.2rem) * ' + fracao.toFixed(3) + ')"></div></div>';
+    }).join('') + '</div>' +
+      '<div class="rotulos" ' + colunas + ' aria-hidden="true">' + r.dias.map(function (d, i) {
+        return '<span' + ((n - 1 - i) % passo === 0 ? '' : ' style="visibility:hidden"') + '>' + esc(fmtData(d).slice(0, 5)) + '</span>';
+      }).join('') + '</div>';
+  }
+
+  function htmlListaComBarra(itens, total, vazio, limite) {
+    if (!itens.length) return '<p class="vazio">' + esc(vazio) + '</p>';
+    return '<ul class="origens">' + itens.slice(0, limite || 8).map(function (o) {
+      var pct = total > 0 ? Math.round((o.qtd / total) * 100) : 0;
+      return '<li><span>' + esc(o.nome) + '</span><strong>' + fmtInt(o.qtd) + ' <small>(' + pct + '%)</small></strong>' +
+        '<span class="trilho"><i style="width:' + pct + '%"></i></span></li>';
+    }).join('') + '</ul>';
+  }
+
+  /* =========================================================
+     ABA: RESUMO (primeira tela) e a VERIFICAÇÃO "está tudo certo?"
+     ========================================================= */
+  (function () {
+    var TABELAS = ['videos', 'marcas', 'campanhas', 'calendario', 'visitas'];
+    var TABELAS_DO_SISTEMA = ['videos', 'marcas', 'calendario', 'campanhas', 'marcados', 'visitas', 'site_conteudo'];
+    var secaoAtual = null;
+    var rodando = false;
+
+    /* Um "visitante": conversa com o banco SEM login, do mesmo jeito que o seu site faz */
+    function clienteVisitante() {
+      return window.supabase.createClient(window.BANCO_CONFIG.url, window.BANCO_CONFIG.chave, {
+        auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false, storageKey: 'sb-visitante-de-teste' }
+      });
+    }
+
+    async function verificar(completo) {
+      var itens = [];
+      function add(estado, titulo, detalhe) { itens.push({ estado: estado, titulo: titulo, detalhe: detalhe || '' }); }
+
+      /* 1. login */
+      var sess = await banco.auth.getSession();
+      var email = sess && sess.data && sess.data.session && sess.data.session.user && sess.data.session.user.email;
+      add(email ? 'ok' : 'erro', 'Login', email ? 'Você está logada como ' + email + '.' : 'Não achei a sua sessão. Entre de novo.');
+
+      /* 2. as tabelas existem e você consegue ler */
+      var existentes = [];
+      for (var i = 0; i < TABELAS_DO_SISTEMA.length; i++) {
+        var t = TABELAS_DO_SISTEMA[i];
+        try {
+          var r = await banco.from(t).select('*', { count: 'exact', head: true });
+          if (r.error) add(t === 'site_conteudo' ? 'aviso' : 'erro', 'Tabela "' + t + '"', descreverErro(t, r.error));
+          else existentes.push(t);
+        } catch (e) { add('erro', 'Tabela "' + t + '"', descreverErro(t, e)); }
+      }
+      if (existentes.length === TABELAS_DO_SISTEMA.length) add('ok', 'Tabelas', 'As ' + existentes.length + ' tabelas existem e você consegue ler todas.');
+
+      /* 3. as vitrines que o site usa */
+      try {
+        var v1 = await banco.rpc('videos_do_site');
+        if (v1.error) add('erro', 'Vídeos no site', 'A vitrine de vídeos não respondeu. Rode o banco.sql de novo no Supabase.');
+        else add('ok', 'Vídeos no site', fmtInt((v1.data || []).length) + (((v1.data || []).length === 1) ? ' vídeo aparecendo' : ' vídeos aparecendo') + ' no portfólio.');
+      } catch (e) { add('erro', 'Vídeos no site', 'A vitrine de vídeos não respondeu.'); }
+      try {
+        var v2 = await banco.rpc('conteudo_do_site');
+        if (v2.error) add('aviso', 'Textos e números do site', 'Ainda não estão ligados. Cole o arquivo banco-2.sql no SQL Editor do Supabase e clique em Run.');
+        else add('ok', 'Textos e números do site', 'Prontos para editar na aba "Conteúdo do site".');
+      } catch (e) { add('aviso', 'Textos e números do site', 'Ainda não estão ligados. Cole o banco-2.sql no Supabase.'); }
+
+      /* 4. a tranca: um visitante sem login não pode LER nada */
+      try {
+        var visitante = clienteVisitante();
+        var vazaram = [];
+        for (var j = 0; j < existentes.length; j++) {
+          try {
+            var rv = await visitante.from(existentes[j]).select('*').limit(1);
+            if (!rv.error && rv.data && rv.data.length) vazaram.push(existentes[j]);
+          } catch (e) { /* recusou: é o certo */ }
+        }
+        add(vazaram.length ? 'erro' : 'ok', 'Tranca do banco',
+          vazaram.length ? 'ATENÇÃO: um visitante sem login conseguiu ler: ' + vazaram.join(', ') + '. Rode o banco.sql de novo e me chame.'
+            : 'Um visitante sem login não consegue ler nada (testei ' + existentes.length + ' tabelas).');
+
+        /* 4b. teste completo: grava e apaga um contato e uma visita de teste, como o site faz */
+        if (completo) {
+          var marca = '__teste_painel__';
+          var lead = await visitante.from('marcas').insert({ nome: marca, situacao: 'lead', obs: 'Teste automático do painel. Pode apagar.' });
+          add(lead.error ? 'erro' : 'ok', 'Formulário do site', lead.error ? 'O formulário NÃO conseguiu gravar um contato: ' + descreverErro('marcas', lead.error) : 'O formulário do site consegue gravar um contato na aba Marcas.');
+          var golpe = await visitante.from('marcas').insert({ nome: marca + '_cliente', situacao: 'cliente' });
+          add(golpe.error ? 'ok' : 'erro', 'Visitante não vira "cliente"', golpe.error ? 'O banco recusou, como deve ser.' : 'ATENÇÃO: o banco aceitou um visitante como cliente. Rode o banco.sql de novo.');
+          var vis = await visitante.from('visitas').insert({ pagina: '/__teste_painel__', origem: '__teste_painel__' });
+          add(vis.error ? 'erro' : 'ok', 'Registro de visitas', vis.error ? 'O site NÃO conseguiu registrar uma visita: ' + descreverErro('visitas', vis.error) : 'O site consegue registrar visitas.');
+          /* limpeza: só você (logada) consegue apagar */
+          await banco.from('marcas').delete().eq('nome', marca);
+          await banco.from('marcas').delete().eq('nome', marca + '_cliente');
+          await banco.from('visitas').delete().eq('origem', '__teste_painel__');
+          var sobrou = await banco.from('marcas').select('*', { count: 'exact', head: true }).eq('nome', marca);
+          var sobrou2 = await banco.from('visitas').select('*', { count: 'exact', head: true }).eq('origem', '__teste_painel__');
+          var restos = (sobrou.count || 0) + (sobrou2.count || 0);
+          add(restos ? 'aviso' : 'ok', 'Limpeza do teste', restos ? 'Sobrou ' + restos + ' registro de teste. Apague na aba Marcas (nome __teste_painel__).' : 'Os registros de teste foram apagados. Nada ficou na sua base.');
+        }
+      } catch (e) {
+        add('aviso', 'Tranca do banco', 'Não consegui rodar o teste de visitante agora.');
+      }
+
+      /* 5. o site publicado está usando o painel? */
+      try {
+        var resp = await fetch('../index.html?conferir=' + Date.now(), { cache: 'no-store' });
+        var html = await resp.text();
+        var ligado = /videos_do_site/.test(html);
+        add(ligado ? 'ok' : 'erro', 'Site publicado', ligado ? 'O portfólio publicado está ligado ao painel.' : 'O portfólio publicado NÃO está lendo o painel. Falta publicar a versão nova.');
+      } catch (e) {
+        add('aviso', 'Site publicado', 'Não consegui abrir o site daqui para conferir.');
+      }
+
+      /* 6. as visitas estão chegando? */
+      try {
+        var ult = await banco.from('visitas').select('data').order('data', { ascending: false }).limit(1);
+        if (ult.error) add('erro', 'Visitas', descreverErro('visitas', ult.error));
+        else if (!ult.data || !ult.data.length) add('aviso', 'Visitas', 'Ainda nenhuma visita registrada. É normal se ninguém abriu o site depois que ele foi ligado ao painel. Abra o site numa janela anônima e confira de novo.');
+        else add('ok', 'Visitas', 'Chegando normalmente. A última foi em ' + fmtDataHora(ult.data[0].data) + '.');
+      } catch (e) { add('aviso', 'Visitas', 'Não consegui conferir as visitas agora.'); }
+
+      return itens;
+    }
+
+    function htmlVerificacao(itens) {
+      var erros = itens.filter(function (i) { return i.estado === 'erro'; }).length;
+      var avisos = itens.filter(function (i) { return i.estado === 'aviso'; }).length;
+      var titulo = erros ? erros + (erros === 1 ? ' coisa precisa de atenção' : ' coisas precisam de atenção')
+        : (avisos ? 'Tudo certo, com ' + avisos + (avisos === 1 ? ' aviso' : ' avisos') : 'Tudo certo');
+      return '<p class="v-resumo ' + (erros ? 'v-erro' : (avisos ? 'v-aviso' : 'v-ok')) + '">' + esc(titulo) + '</p>' +
+        '<ul class="verificacao">' + itens.map(function (i) {
+          var icone = i.estado === 'ok' ? ic('check') : (i.estado === 'erro' ? ic('fechar') : ic('alerta'));
+          return '<li class="v-' + i.estado + '"><span class="v-ico">' + icone + '</span><div><strong>' + esc(i.titulo) + '</strong><small>' + esc(i.detalhe) + '</small></div></li>';
+        }).join('') + '</ul>';
+    }
+
+    async function rodarVerificacao(completo) {
+      if (rodando) return;
+      rodando = true;
+      var alvo = $('#verificacaoCorpo', secaoAtual);
+      var b1 = $('#verificarAgora', secaoAtual), b2 = $('#verificarCompleto', secaoAtual);
+      if (b1) b1.disabled = true; if (b2) b2.disabled = true;
+      alvo.innerHTML = '<p class="carregando">Conferindo tudo, um instante...</p>';
+      var itens;
+      try { itens = await verificar(completo); }
+      catch (e) { itens = [{ estado: 'erro', titulo: 'Verificação', detalhe: 'Não consegui rodar a verificação agora. Recarregue a página.' }]; }
+      alvo.innerHTML = htmlVerificacao(itens);
+      if (b1) b1.disabled = false; if (b2) b2.disabled = false;
+      rodando = false;
+    }
+
+    function htmlAtencao() {
+      var hoje = hojeISO();
+      var camp = (cache.campanhas || []).filter(function (c) { return !c.exemplo && c.prazo && c.status !== 'Entregue'; });
+      var atrasadas = camp.filter(function (c) { return diasEntre(hoje, String(c.prazo).slice(0, 10)) < 0; }).length;
+      var perto = camp.filter(function (c) { var d = diasEntre(hoje, String(c.prazo).slice(0, 10)); return d >= 0 && d <= 3; }).length;
+      var cal = (cache.calendario || []).filter(function (c) { return !c.exemplo && c.status !== 'feito' && c.data; });
+      var calHoje = cal.filter(function (c) { return String(c.data).slice(0, 10) === hoje; }).length;
+      var calAtras = cal.filter(function (c) { return String(c.data).slice(0, 10) < hoje; }).length;
+      var limite = somarDias(hoje, -7);
+      var leadsNovos = (cache.marcas || []).filter(function (m) { return !m.exemplo && m.situacao === 'lead' && String(m.criado_em || '').slice(0, 10) >= limite; }).length;
+      function plural(n, um, varios) { return n + ' ' + (n === 1 ? um : varios); }
+      var linhas = [];
+      if (atrasadas) linhas.push({ n: atrasadas, classe: 'e-atraso', texto: plural(atrasadas, 'campanha com o prazo atrasado', 'campanhas com o prazo atrasado'), rota: 'campanhas' });
+      if (perto) linhas.push({ n: perto, classe: 'e-aviso', texto: plural(perto, 'campanha vence', 'campanhas vencem') + ' em até 3 dias', rota: 'campanhas' });
+      if (calAtras) linhas.push({ n: calAtras, classe: 'e-atraso', texto: plural(calAtras, 'item do calendário ficou pra trás', 'itens do calendário ficaram pra trás'), rota: 'calendario' });
+      if (calHoje) linhas.push({ n: calHoje, classe: 'e-aviso', texto: plural(calHoje, 'coisa para fazer hoje', 'coisas para fazer hoje'), rota: 'calendario' });
+      if (leadsNovos) linhas.push({ n: leadsNovos, classe: 'e-aviso', texto: plural(leadsNovos, 'contato novo', 'contatos novos') + ' nos últimos 7 dias', rota: 'marcas' });
+      if (!linhas.length) return '<p class="vazio">Nada pendente. Tudo em dia.</p>';
+      return '<ul class="atencao">' + linhas.map(function (l) {
+        return '<li><span class="etiqueta ' + l.classe + '">' + l.n + '</span><span class="txt">' + esc(l.texto) + '</span><a class="btn pequeno" href="#' + l.rota + '">Abrir</a></li>';
+      }).join('') + '</ul>';
+    }
+
+    Abas.resumo = {
+      titulo: 'Resumo',
+      tabelas: TABELAS,
+      abrir: async function (secao) {
+        secaoAtual = secao;
+        if (!secao.innerHTML.trim()) secao.innerHTML = '<p class="carregando">Carregando...</p>';
+        var resultado = await Promise.all([listar('videos', true), listar('marcas', true), listar('campanhas', true), listar('calendario', true), buscarVisitas(14)]);
+        var videos = resultado[0], marcas = resultado[1], campanhas = resultado[2], visitas = resultado[4];
+        var v = resumirVisitas(visitas, 14);
+        var noAr = videos.filter(function (x) { return x.visivel && !x.exemplo; }).length;
+        var leads = marcas.filter(function (m) { return !m.exemplo && m.situacao === 'lead'; }).length;
+        var receber = campanhas.filter(function (c) { return !c.exemplo && c.pagamento !== 'pago'; }).reduce(function (s, c) { return s + (Number(c.valor) || 0); }, 0);
+        secao.innerHTML =
+          '<div class="cartao faixa-numeros" role="group" aria-label="Resumo geral">' +
+            '<div class="numero"><div class="numero-rotulo">Visitas hoje</div><div class="numero-valor">' + fmtInt(v.hoje) + '</div><div class="numero-sub">' + fmtInt(v.total) + ' em 14 dias</div></div>' +
+            '<div class="numero"><div class="numero-rotulo">Vídeos no ar</div><div class="numero-valor">' + fmtInt(noAr) + '</div></div>' +
+            '<div class="numero"><div class="numero-rotulo">Leads (contatos)</div><div class="numero-valor">' + fmtInt(leads) + '</div><div class="numero-sub">na aba Marcas</div></div>' +
+            '<div class="numero"><div class="numero-rotulo">Campanhas ativas</div><div class="numero-valor">' + fmtInt(campanhas.filter(function (c) { return !c.exemplo && c.ativa; }).length) + '</div></div>' +
+            '<div class="numero"><div class="numero-rotulo">A receber</div><div class="numero-valor">' + fmtMoeda(receber) + '</div></div>' +
+          '</div>' +
+          '<div class="duas-colunas">' +
+            '<div class="cartao"><div class="cartao-cab"><h2>Visitas nos últimos 14 dias</h2><a class="btn pequeno" href="#visitas">Ver detalhes</a></div><div class="cartao-corpo">' +
+              htmlGraficoDias(v, 'Quando as pessoas começarem a visitar o seu portfólio, aqui vai aparecer o gráfico das visitas de cada dia.') + '</div></div>' +
+            '<div class="cartao"><div class="cartao-cab"><h2>Precisa de atenção</h2></div><div class="cartao-corpo">' + htmlAtencao() + '</div></div>' +
+          '</div>' +
+          '<div class="cartao"><div class="cartao-cab"><h2>Está tudo certo?</h2>' +
+            '<button type="button" class="btn" id="verificarCompleto" title="Grava e apaga um contato e uma visita de teste, como o site faria">Teste completo</button>' +
+            '<button type="button" class="btn principal-btn" id="verificarAgora">Testar agora</button></div>' +
+            '<div class="cartao-corpo" id="verificacaoCorpo"></div></div>';
+        $('#verificarAgora', secao).addEventListener('click', function () { rodarVerificacao(false); });
+        $('#verificarCompleto', secao).addEventListener('click', function () { rodarVerificacao(true); });
+        rodarVerificacao(false);
+      }
+    };
+  })();
+
+  /* =========================================================
+     ABA: VISITAS (detalhes)
+     ========================================================= */
+  (function () {
+    var TABELAS = ['visitas'];
+    var estado = { dias: 30 };
+    var secaoAtual = null;
+
+    async function desenhar() {
+      var alvo = $('#visitasCorpo', secaoAtual);
+      alvo.innerHTML = '<p class="carregando">Carregando...</p>';
+      var visitas = await buscarVisitas(estado.dias);
+      var r = resumirVisitas(visitas, estado.dias);
+      var media = r.media.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
+      var recentes = visitas.slice().sort(function (a, b) { return String(b.data).localeCompare(String(a.data)); }).slice(0, 50);
+      alvo.innerHTML =
+        '<div class="cartao faixa-numeros quatro" role="group" aria-label="Resumo das visitas">' +
+          '<div class="numero"><div class="numero-rotulo">Visitas no período</div><div class="numero-valor">' + fmtInt(r.total) + '</div><div class="numero-sub">últimos ' + estado.dias + ' dias</div></div>' +
+          '<div class="numero"><div class="numero-rotulo">Média por dia</div><div class="numero-valor">' + media + '</div></div>' +
+          '<div class="numero"><div class="numero-rotulo">Hoje</div><div class="numero-valor">' + fmtInt(r.hoje) + '</div></div>' +
+          '<div class="numero"><div class="numero-rotulo">Melhor dia</div><div class="numero-valor texto">' + (r.melhorDia ? esc(fmtData(r.melhorDia)) : 'Ainda nenhum') + '</div>' +
+            (r.melhorDia ? '<div class="numero-sub">' + fmtInt(r.porDia[r.melhorDia]) + (r.porDia[r.melhorDia] === 1 ? ' visita' : ' visitas') + '</div>' : '') + '</div>' +
+        '</div>' +
+        '<div class="cartao" style="margin-bottom:1rem"><div class="cartao-cab"><h2>Visitas por dia</h2></div><div class="cartao-corpo">' +
+          htmlGraficoDias(r, 'Quando as pessoas começarem a visitar o seu portfólio, aqui vai aparecer o gráfico com as visitas de cada dia.') + '</div></div>' +
+        '<div class="duas-colunas" style="grid-template-columns:repeat(2,minmax(0,1fr))">' +
+          '<div class="cartao"><div class="cartao-cab"><h2>Por onde chegaram</h2></div><div class="cartao-corpo">' +
+            htmlListaComBarra(r.origens, r.total, 'Aqui vai aparecer se as pessoas vieram do Instagram, do Google, de um link direto ou de outro lugar.', 8) + '</div></div>' +
+          '<div class="cartao"><div class="cartao-cab"><h2>Páginas mais vistas</h2></div><div class="cartao-corpo">' +
+            htmlListaComBarra(r.paginas, r.total, 'Aqui vai aparecer quais páginas do seu site as pessoas abrem.', 8) + '</div></div>' +
+        '</div>' +
+        '<div class="cartao"><div class="cartao-cab"><h2>Últimos acessos</h2><span style="color:var(--muted);font-size:.8rem">Os 50 mais recentes. Não guarda nome nem nenhum dado pessoal.</span></div>' +
+          (recentes.length
+            ? '<div class="rolagem"><table class="tabela"><thead><tr><th>Data e hora</th><th>Origem</th><th>Página</th></tr></thead><tbody>' +
+              recentes.map(function (v) { return '<tr><td>' + esc(fmtDataHora(v.data)) + '</td><td>' + esc(v.origem || 'Direto') + '</td><td>' + esc(v.pagina || '/') + '</td></tr>'; }).join('') + '</tbody></table></div>'
+            : '<p class="vazio">Ainda nenhum acesso registrado. Assim que alguém abrir o seu portfólio, ele aparece aqui.</p>') +
+        '</div>';
+      mostrarProblemas(TABELAS);
+    }
+
+    Abas.visitas = {
+      titulo: 'Visitas',
+      tabelas: TABELAS,
+      abrir: async function (secao) {
+        secaoAtual = secao;
+        secao.innerHTML = '<div class="cal-cab"><div class="segmentos" id="visitasPeriodo" role="group" aria-label="Período">' +
+          [7, 14, 30, 90].map(function (d) { return '<button type="button" data-dias="' + d + '" aria-pressed="' + (d === estado.dias) + '">' + d + ' dias</button>'; }).join('') +
+          '</div></div><div id="visitasCorpo"></div>';
+        $('#visitasPeriodo', secao).addEventListener('click', function (e) {
+          var b = e.target.closest('button[data-dias]');
+          if (!b) return;
+          estado.dias = Number(b.getAttribute('data-dias'));
+          $$('#visitasPeriodo button', secao).forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+          desenhar();
+        });
+        await desenhar();
+      }
+    };
+  })();
+
+  /* =========================================================
+     ABA: CONTEÚDO DO SITE
+     Edita os textos e números do portfólio sem mexer em código.
+     Fica guardado na tabela "site_conteudo" (rode o banco-2.sql).
+     ========================================================= */
+  (function () {
+    var TABELAS = ['site_conteudo'];
+    var secaoAtual = null;
+    var conteudo = {};           /* chave -> valor guardado no banco */
+
+    function texto(v) { return v == null ? '' : String(v); }
+    function cortar(t, n) { t = texto(t); return t.length > n ? t.slice(0, n).trim() + '...' : t; }
+
+    /* As partes editáveis do site */
+    var SECOES = [
+      {
+        chave: 'capa', titulo: 'Capa', tipo: 'objeto',
+        descricao: 'O texto do selo, a frase e os dois números que aparecem logo abaixo do título da capa.',
+        campos: [
+          { nome: 'chip', rotulo: 'Texto do selo (ao lado do ícone)', obrigatorio: true, largo: true },
+          { nome: 'frase', rotulo: 'Frase abaixo do título', tipo: 'textarea', largo: true },
+          { nome: 'numero1', rotulo: 'Primeiro número', placeholder: '+500 vídeos' },
+          { nome: 'numero2', rotulo: 'Segundo número', placeholder: '+200 marcas' }
+        ],
+        paraForm: function (v) { var n = (v && v.numeros) || []; return { chip: v && v.chip, frase: v && v.frase, numero1: n[0], numero2: n[1] }; },
+        deForm: function (f) { return { chip: f.chip, frase: f.frase || '', numeros: [f.numero1, f.numero2].filter(Boolean) }; },
+        resumo: function (v) { var n = (v && v.numeros) || []; return [texto(v && v.chip), cortar(v && v.frase, 90), n.join('  |  ')].filter(Boolean); }
+      },
+      {
+        chave: 'sobre', titulo: 'Sobre mim', tipo: 'objeto',
+        descricao: 'Os dois textos da seção "Sobre mim": a frase de abertura em destaque e o parágrafo seguinte.',
+        campos: [
+          { nome: 'abre', rotulo: 'Frase de abertura (em destaque)', tipo: 'textarea', largo: true, obrigatorio: true },
+          { nome: 'texto', rotulo: 'Parágrafo', tipo: 'textarea', largo: true }
+        ],
+        paraForm: function (v) { return { abre: v && v.abre, texto: v && v.texto }; },
+        deForm: function (f) { return { abre: f.abre, texto: f.texto || '' }; },
+        resumo: function (v) { return [cortar(v && v.abre, 110), cortar(v && v.texto, 110)].filter(Boolean); }
+      },
+      {
+        chave: 'marcas', titulo: 'Letreiro de marcas', tipo: 'linhas',
+        descricao: 'Os nomes que passam na faixa escura no fim da capa. Escreva um nome por linha.',
+        resumo: function (v) { return [(Array.isArray(v) ? v : []).join('  ·  ')]; }
+      },
+      {
+        chave: 'metricas', titulo: 'Números do portfólio', tipo: 'lista', item: 'Número',
+        descricao: 'Os quatro números com contador animado. Deixe o valor em branco para mostrar "00".',
+        colunas: [
+          { nome: 'rotulo', rotulo: 'O que o número mostra', obrigatorio: true, largo: true, placeholder: 'vídeos entregues' },
+          { nome: 'valor', rotulo: 'Valor', tipo: 'number', placeholder: '500' },
+          { nome: 'prefixo', rotulo: 'Antes do número', placeholder: '+' },
+          { nome: 'sufixo', rotulo: 'Depois do número', placeholder: ' mil' }
+        ],
+        resumo: function (v) { return (Array.isArray(v) ? v : []).map(function (m) { return texto(m.prefixo) + (m.valor == null ? '00' : fmtInt(m.valor)) + texto(m.sufixo) + ' ' + texto(m.rotulo); }); }
+      },
+      {
+        chave: 'servicos', titulo: 'Serviços', tipo: 'lista', item: 'Serviço',
+        descricao: 'Os serviços da seção "Como eu te ajudo".',
+        colunas: [
+          { nome: 'numero', rotulo: 'Número', placeholder: '01' },
+          { nome: 'titulo', rotulo: 'Título', obrigatorio: true },
+          { nome: 'texto', rotulo: 'Descrição', tipo: 'textarea', largo: true }
+        ],
+        resumo: function (v) { return (Array.isArray(v) ? v : []).map(function (s) { return texto(s.numero) + ' ' + texto(s.titulo); }); }
+      },
+      {
+        chave: 'resultados', titulo: 'Resultados de campanha', tipo: 'lista', item: 'Resultado',
+        descricao: 'Os cartões escuros com o resultado que você entregou.',
+        colunas: [
+          { nome: 'numero', rotulo: 'Número em destaque', placeholder: '+40%' },
+          { nome: 'titulo', rotulo: 'Título', obrigatorio: true },
+          { nome: 'marca', rotulo: 'Marca' },
+          { nome: 'texto', rotulo: 'Descrição', tipo: 'textarea', largo: true }
+        ],
+        resumo: function (v) { return (Array.isArray(v) ? v : []).map(function (r) { return texto(r.numero) + ' ' + texto(r.titulo); }); }
+      },
+      {
+        chave: 'depoimentos', titulo: 'Depoimentos', tipo: 'lista', item: 'Depoimento',
+        descricao: 'O que os clientes falam de você.',
+        colunas: [
+          { nome: 'nome', rotulo: 'Nome de quem falou', obrigatorio: true },
+          { nome: 'empresa', rotulo: 'Empresa ou marca' },
+          { nome: 'texto', rotulo: 'Depoimento', tipo: 'textarea', largo: true, obrigatorio: true }
+        ],
+        resumo: function (v) { return (Array.isArray(v) ? v : []).map(function (d) { return texto(d.nome) + ' (' + texto(d.empresa) + ')'; }); }
+      }
+    ];
+
+    async function guardar(chave, valor) {
+      try {
+        var r = await banco.from('site_conteudo').upsert({ chave: chave, valor: valor, atualizado_em: new Date().toISOString() });
+        if (r.error) return { ok: false, erro: descreverErro('site_conteudo', r.error) };
+        conteudo[chave] = valor;
+        return { ok: true };
+      } catch (e) { return { ok: false, erro: descreverErro('site_conteudo', e) }; }
+    }
+
+    function depoisDeSalvar() {
+      aviso('Salvo. O portfólio já mostra a mudança (recarregue a página do site para ver).');
+      desenhar();
+    }
+
+    function editarObjeto(sec) {
+      formulario({
+        titulo: 'Editar: ' + sec.titulo,
+        campos: sec.campos,
+        valores: sec.paraForm(conteudo[sec.chave] || {}),
+        aoSalvar: async function (f) {
+          var r = await guardar(sec.chave, sec.deForm(f));
+          if (r.ok) depoisDeSalvar();
+          return r;
+        }
+      });
+    }
+
+    function editarLinhas(sec) {
+      formulario({
+        titulo: 'Editar: ' + sec.titulo,
+        campos: [{ nome: 'linhas', rotulo: 'Um nome por linha', tipo: 'textarea', largo: true, obrigatorio: true, ajuda: 'Dica: o letreiro fica melhor com 6 nomes ou mais.' }],
+        valores: { linhas: (Array.isArray(conteudo[sec.chave]) ? conteudo[sec.chave] : []).join('\n') },
+        aoSalvar: async function (f) {
+          var lista = String(f.linhas || '').split(/\r?\n/).map(function (l) { return l.trim(); }).filter(Boolean).slice(0, 60);
+          if (!lista.length) return { ok: false, erro: 'Escreva pelo menos um nome.' };
+          var r = await guardar(sec.chave, lista);
+          if (r.ok) depoisDeSalvar();
+          return r;
+        }
+      });
+    }
+
+    /* Editor de listas: várias linhas, cada uma com seus campos, com subir, descer e remover */
+    function editarLista(sec) {
+      var itens = (Array.isArray(conteudo[sec.chave]) ? conteudo[sec.chave] : []).map(function (x) { return Object.assign({}, x); });
+
+      function ler() {
+        $$('.linha-editor', corpo).forEach(function (fs) {
+          var i = Number(fs.getAttribute('data-i'));
+          sec.colunas.forEach(function (c) {
+            var el = fs.querySelector('[data-nome="' + c.nome + '"]');
+            if (!el || !itens[i]) return;
+            var v = String(el.value).trim();
+            if (c.tipo === 'number') itens[i][c.nome] = v === '' ? null : Number(v.replace(',', '.'));
+            else itens[i][c.nome] = v;
+          });
+        });
+      }
+      function desenharLinhas() {
+        corpo.innerHTML = itens.length ? itens.map(function (it, i) {
+          var campos = sec.colunas.map(function (c) {
+            var id = 'ed_' + i + '_' + c.nome;
+            var val = it[c.nome] == null ? '' : it[c.nome];
+            var entrada = c.tipo === 'textarea'
+              ? '<textarea id="' + id + '" data-nome="' + c.nome + '">' + esc(val) + '</textarea>'
+              : '<input id="' + id + '" data-nome="' + c.nome + '" type="' + (c.tipo === 'number' ? 'number' : 'text') + '"' + (c.tipo === 'number' ? ' step="any"' : '') + ' value="' + esc(val) + '" placeholder="' + esc(c.placeholder || '') + '" autocomplete="off">';
+            return '<div class="campo' + (c.largo ? ' largo' : '') + '"><label for="' + id + '">' + esc(c.rotulo) + (c.obrigatorio ? ' *' : '') + '</label>' + entrada + '</div>';
+          }).join('');
+          return '<fieldset class="linha-editor" data-i="' + i + '"><legend>' + esc(sec.item) + ' ' + (i + 1) + '</legend><div class="grade-campos">' + campos + '</div>' +
+            '<div class="acoes">' +
+              '<button type="button" class="btn-icone" data-mover="-1" aria-label="Subir" title="Subir"' + (i === 0 ? ' disabled' : '') + '>' + ic('setaCima') + '</button>' +
+              '<button type="button" class="btn-icone" data-mover="1" aria-label="Descer" title="Descer"' + (i === itens.length - 1 ? ' disabled' : '') + '>' + ic('setaBaixo') + '</button>' +
+              '<button type="button" class="btn-icone perigo" data-remover="1" aria-label="Remover" title="Remover">' + ic('lixo') + '</button>' +
+            '</div></fieldset>';
+        }).join('') : '<p class="vazio">Nenhum item. Clique em "Adicionar" para criar o primeiro.</p>';
+      }
+
+      var corpo = document.createElement('div');
+      desenharLinhas();
+      corpo.addEventListener('click', function (e) {
+        var fs = e.target.closest('.linha-editor');
+        if (!fs) return;
+        var i = Number(fs.getAttribute('data-i'));
+        var mover = e.target.closest('[data-mover]');
+        var remover = e.target.closest('[data-remover]');
+        if (!mover && !remover) return;
+        ler();
+        if (remover) itens.splice(i, 1);
+        else {
+          var j = i + Number(mover.getAttribute('data-mover'));
+          if (j < 0 || j >= itens.length) return;
+          var tmp = itens[i]; itens[i] = itens[j]; itens[j] = tmp;
+        }
+        desenharLinhas();
+      });
+
+      abrirModal({
+        titulo: 'Editar: ' + sec.titulo, largo: true, corpo: corpo,
+        botoes: [
+          { rotulo: 'Adicionar ' + sec.item.toLowerCase(), esquerda: true, aoClicar: function () { ler(); itens.push({}); desenharLinhas(); var ultimos = $$('.linha-editor', corpo); if (ultimos.length) ultimos[ultimos.length - 1].scrollIntoView({ block: 'nearest' }); } },
+          { rotulo: 'Cancelar', aoClicar: fecharModal },
+          {
+            rotulo: 'Salvar', classe: 'principal-btn',
+            aoClicar: async function (bt) {
+              ler();
+              var limpos = itens.filter(function (it) {
+                return sec.colunas.some(function (c) { return it[c.nome] != null && String(it[c.nome]).trim() !== ''; });
+              });
+              if (!limpos.length) { aviso('Deixe pelo menos um item na lista.', 'erro'); return; }
+              for (var k = 0; k < limpos.length; k++) {
+                for (var m = 0; m < sec.colunas.length; m++) {
+                  var c = sec.colunas[m];
+                  if (c.obrigatorio && (limpos[k][c.nome] == null || String(limpos[k][c.nome]).trim() === '')) {
+                    aviso('Preencha "' + c.rotulo + '" no ' + sec.item.toLowerCase() + ' ' + (k + 1) + '.', 'erro');
+                    return;
+                  }
+                  if (c.tipo === 'number' && limpos[k][c.nome] != null && Number.isNaN(limpos[k][c.nome])) {
+                    aviso('O valor do ' + sec.item.toLowerCase() + ' ' + (k + 1) + ' precisa ser um número.', 'erro');
+                    return;
+                  }
+                }
+              }
+              bt.disabled = true;
+              var r = await guardar(sec.chave, limpos);
+              bt.disabled = false;
+              if (!r.ok) { aviso(r.erro, 'erro'); return; }
+              fecharModal();
+              depoisDeSalvar();
+            }
+          }
+        ]
+      });
+    }
+
+    function abrirEditor(chave) {
+      var sec = SECOES.filter(function (s) { return s.chave === chave; })[0];
+      if (!sec) return;
+      if (sec.tipo === 'objeto') editarObjeto(sec);
+      else if (sec.tipo === 'linhas') editarLinhas(sec);
+      else editarLista(sec);
+    }
+
+    function desenhar() {
+      if (problemas.site_conteudo) {
+        secaoAtual.innerHTML = '<div class="cartao"><div class="cartao-cab"><h2>Falta um passo para liberar esta aba</h2></div><div class="cartao-corpo">' +
+          '<p>Para editar os textos e números do site pelo painel, o banco precisa de mais uma tabela. É rápido:</p>' +
+          '<ol class="passos"><li>Abra o Supabase e clique em <strong>SQL Editor</strong>, depois em <strong>New query</strong>.</li>' +
+          '<li>Cole o conteúdo do arquivo <strong>banco-2.sql</strong> (está na pasta do seu portfólio) e clique em <strong>Run</strong>.</li>' +
+          '<li>Volte aqui e recarregue a página.</li></ol></div></div>';
+        return;
+      }
+      secaoAtual.innerHTML = '<p style="color:var(--muted);margin:0 0 1rem;max-width:44rem">Aqui você troca os textos e números do portfólio. Depois de salvar, é só recarregar o site para ver. Os vídeos ficam na aba Portfólio.</p>' +
+        '<div class="cards-conteudo">' + SECOES.map(function (sec) {
+          var v = conteudo[sec.chave];
+          var linhas = v == null ? [] : sec.resumo(v);
+          var previa = linhas.length
+            ? '<ul class="previa">' + linhas.slice(0, 4).map(function (l) { return '<li>' + esc(cortar(l, 120)) + '</li>'; }).join('') + (linhas.length > 4 ? '<li class="mais">e mais ' + (linhas.length - 4) + '</li>' : '') + '</ul>'
+            : '<p class="vazio" style="padding:.5rem 0;text-align:left">Ainda sem conteúdo salvo. O site mostra o texto original.</p>';
+          return '<div class="cartao"><div class="cartao-cab"><h2>' + esc(sec.titulo) + '</h2>' +
+            '<button type="button" class="btn pequeno" data-editar="' + sec.chave + '">' + ic('lapis') + 'Editar</button></div>' +
+            '<div class="cartao-corpo"><p style="color:var(--muted);font-size:.84rem;margin-bottom:.6rem">' + esc(sec.descricao) + '</p>' + previa + '</div></div>';
+        }).join('') + '</div>';
+    }
+
+    Abas.conteudo = {
+      titulo: 'Conteúdo do site',
+      tabelas: TABELAS,
+      abrir: async function (secao) {
+        secaoAtual = secao;
+        if (!secao.innerHTML.trim()) secao.innerHTML = '<p class="carregando">Carregando...</p>';
+        var linhas = await listar('site_conteudo', true);
+        conteudo = {};
+        linhas.forEach(function (l) { conteudo[l.chave] = l.valor; });
+        if (!secao.getAttribute('data-ligada')) {
+          secao.setAttribute('data-ligada', '1');
+          secao.addEventListener('click', function (e) {
+            var b = e.target.closest('button[data-editar]');
+            if (b) abrirEditor(b.getAttribute('data-editar'));
+          });
+        }
+        desenhar();
+      }
+    };
+  })();
+
+  /* =========================================================
+     ABA: VER O SITE (prévia do portfólio dentro do painel)
+     ========================================================= */
+  (function () {
+    Abas.site = {
+      titulo: 'Ver o site',
+      tabelas: [],
+      abrir: async function (secao) {
+        if (secao.getAttribute('data-pronta')) return;        /* já está carregado: só volta a mostrar */
+        secao.setAttribute('data-pronta', '1');
+        secao.innerHTML =
+          '<div class="cal-cab">' +
+            '<div class="segmentos" id="siteTamanho" role="group" aria-label="Tamanho da tela">' +
+              '<button type="button" data-largura="100%" aria-pressed="true">Computador</button>' +
+              '<button type="button" data-largura="820px" aria-pressed="false">Tablet</button>' +
+              '<button type="button" data-largura="390px" aria-pressed="false">Celular</button></div>' +
+            '<span style="flex:1"></span>' +
+            '<button type="button" class="btn" id="siteRecarregar">Recarregar</button>' +
+            '<a class="btn" href="../" target="_blank" rel="noopener">Abrir em outra aba ' + ic('externo') + '</a>' +
+          '</div>' +
+          '<div class="moldura-site" id="siteMoldura"><iframe id="siteFrame" title="Prévia do portfólio publicado" src="../"></iframe></div>' +
+          '<p style="color:var(--muted);font-size:.8rem;margin-top:.6rem">Esta é a versão publicada do seu portfólio, do jeito que os visitantes veem. As suas visitas aqui dentro não entram na contagem.</p>';
+        $('#siteTamanho', secao).addEventListener('click', function (e) {
+          var b = e.target.closest('button[data-largura]');
+          if (!b) return;
+          $$('#siteTamanho button', secao).forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+          $('#siteMoldura', secao).style.maxWidth = b.getAttribute('data-largura');
+        });
+        $('#siteRecarregar', secao).addEventListener('click', function () {
+          var f = $('#siteFrame', secao);
+          f.src = '../?atualizar=' + Date.now();
+        });
       }
     };
   })();
