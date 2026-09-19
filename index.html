@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Esther Silva Custódio | Portfólio UGC</title>
-<meta name="description" content="Portfólio de Esther Silva Custódio, UGC Creator em Hortolândia: vídeos e fotos autênticos para marcas de beleza, skincare, moda, casa, fitness e viagem.">
+<title>Esther Custódio | Portfólio UGC</title>
+<meta name="description" content="Portfólio de Esther Custódio, UGC Creator em Hortolândia: vídeos e fotos autênticos para marcas de beleza, skincare, moda, casa, fitness e viagem.">
 <meta name="theme-color" content="#f3eee9">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23808080'/%3E%3Ctext x='32' y='46' font-size='40' text-anchor='middle' fill='%2314110d' font-family='Georgia,serif' font-style='italic'%3EE%3C/text%3E%3C/svg%3E">
 
@@ -16,7 +16,7 @@
 <style>
 /* =========================================================
    TOKENS DE COR E TIPOGRAFIA
-   Paleta editorial: creme, tinta, cinza (#808080) e laranja queimado
+   Paleta editorial: creme, tinta, cinza (#808080) e marrom (#4D301B)
    ========================================================= */
 :root{
   --cream:#f3eee9;
@@ -26,7 +26,8 @@
   --accent:#808080;
   --accent-text:#595959;
   --on-accent:#14110d;
-  --orange:#df7900;
+  --marrom:#4d301b;
+  --marrom-claro:#c9a67f;
   --muted:#5c554d;
   --line:rgba(20,17,13,.16);
   --radius:8px;
@@ -72,8 +73,9 @@ button,input,textarea{font:inherit;color:inherit}
 }
 .eyebrow::before{content:"";width:34px;height:1px;background:currentColor;flex:none}
 .eyebrow b{font-weight:700;color:var(--ink)}
-.eyebrow i{width:7px;height:7px;border-radius:50%;background:var(--orange);flex:none}
-.escuro .eyebrow{color:var(--orange)}
+.eyebrow i{width:7px;height:7px;border-radius:50%;background:var(--marrom);flex:none}
+.escuro .eyebrow{color:var(--marrom-claro)}
+.escuro .eyebrow i{background:var(--marrom-claro)}
 .escuro .eyebrow b{color:var(--cream)}
 
 .titulo{
@@ -81,7 +83,7 @@ button,input,textarea{font:inherit;color:inherit}
   font-size:clamp(2.3rem,5.4vw,4.2rem);line-height:1.02;letter-spacing:-.02em;
 }
 .titulo em{font-style:italic;font-weight:300;color:var(--accent)}
-.escuro .titulo em{color:var(--orange)}
+.escuro .titulo em{color:var(--marrom-claro)}
 .lead{color:var(--muted);font-size:1.1rem;margin-top:1.1rem;max-width:36rem}
 .escuro .lead{color:rgba(243,238,233,.78)}
 
@@ -114,11 +116,11 @@ button,input,textarea{font:inherit;color:inherit}
   font-size:.72rem;font-weight:700;letter-spacing:.04em;
   padding:.35rem .65rem;border-radius:6px;
 }
-.g0{--grad:radial-gradient(120% 70% at 15% 0%,rgba(223,121,0,.55),transparent 55%),linear-gradient(160deg,#808080 0%,#9c9c9c 55%,#d2d2d2 100%)}
-.g1{--grad:linear-gradient(155deg,#df7900 0%,#eea24a 50%,#f3eee9 110%)}
+.g0{--grad:radial-gradient(120% 70% at 15% 0%,rgba(77,48,27,.55),transparent 55%),linear-gradient(160deg,#808080 0%,#9c9c9c 55%,#d2d2d2 100%)}
+.g1{--grad:linear-gradient(155deg,#4d301b 0%,#a17c5c 50%,#ecdfd2 110%)}
 .g2{--grad:linear-gradient(160deg,#14110d 0%,#474747 55%,#808080 110%)}
 .g3{--grad:linear-gradient(160deg,#808080 0%,#a9a9a9 55%,#dedede 100%)}
-.g4{--grad:linear-gradient(160deg,#14110d 0%,#6a3a0c 55%,#df7900 115%)}
+.g4{--grad:linear-gradient(160deg,#14110d 0%,#4d301b 55%,#96714f 115%)}
 .g5{--grad:linear-gradient(160deg,#dedede 0%,#a9a9a9 50%,#808080 110%)}
 
 /* Animação de entrada ao rolar */
@@ -140,7 +142,7 @@ button,input,textarea{font:inherit;color:inherit}
 .brand em{font-weight:400}
 .nav-links{display:flex;align-items:center;gap:clamp(1.25rem,2.6vw,2.25rem)}
 .nav-links a{position:relative;text-decoration:none;font-size:.92rem;font-weight:500;padding-block:.4rem}
-.nav-links a::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--orange);transform:scaleX(0);transform-origin:left;transition:transform .3s}
+.nav-links a::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--marrom);transform:scaleX(0);transform-origin:left;transition:transform .3s}
 .nav-links a:hover::after,.nav-links a[aria-current="true"]::after{transform:scaleX(1)}
 .nav-toggle{
   display:none;width:44px;height:44px;border:1px solid var(--line);border-radius:var(--radius);
@@ -186,12 +188,12 @@ button,input,textarea{font:inherit;color:inherit}
 .foto-45{aspect-ratio:4/5}
 .selo{
   position:absolute;left:-2.4rem;top:2.6rem;width:112px;height:112px;border-radius:50%;
-  background:var(--orange);color:var(--ink);display:grid;place-items:center;
+  background:var(--marrom);color:var(--cream);display:grid;place-items:center;
   box-shadow:0 12px 28px -10px rgba(20,17,13,.45);
 }
 .selo svg{width:100%;height:100%;overflow:visible}
 .selo .anel{transform-origin:60px 60px;animation:girar 28s linear infinite}
-.selo text{font-family:var(--sans);font-size:8.6px;font-weight:700;letter-spacing:.06em;fill:var(--ink)}
+.selo text{font-family:var(--sans);font-size:8.6px;font-weight:700;letter-spacing:.06em;fill:var(--cream)}
 .selo .estrela{position:absolute;top:50%;left:50%;width:26px;height:26px;margin:-13px 0 0 -13px}
 @keyframes girar{to{transform:rotate(360deg)}}
 
@@ -210,7 +212,7 @@ button,input,textarea{font:inherit;color:inherit}
 .marcas:hover .marcas-track{animation-play-state:paused}
 .marcas-lista{display:flex;flex:none}
 .marcas-lista li{display:flex;align-items:center;white-space:nowrap;font-family:var(--serif);font-style:italic;font-size:1.15rem;padding-inline:1.5rem}
-.marcas-lista li::after{content:"";width:6px;height:6px;border-radius:50%;background:var(--orange);margin-left:3rem}
+.marcas-lista li::after{content:"";width:6px;height:6px;border-radius:50%;background:var(--marrom);margin-left:3rem}
 @keyframes rolar{to{transform:translateX(-50%)}}
 
 /* =========================================================
@@ -218,7 +220,7 @@ button,input,textarea{font:inherit;color:inherit}
    ========================================================= */
 .sobre-grid{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1fr);gap:clamp(2.5rem,6vw,5.5rem);align-items:center}
 .sobre-foto{position:relative;isolation:isolate;max-width:460px}
-.sobre-foto::before{content:"";position:absolute;inset:14px -14px -14px 14px;border:1px solid var(--orange);border-radius:var(--radius-lg);z-index:-1}
+.sobre-foto::before{content:"";position:absolute;inset:14px -14px -14px 14px;border:1px solid var(--marrom);border-radius:var(--radius-lg);z-index:-1}
 .sobre-texto p{margin-top:1.1rem;color:var(--muted)}
 .sobre-texto p.abre{font-family:var(--serif);font-size:clamp(1.3rem,2.3vw,1.7rem);line-height:1.35;color:var(--ink);margin-top:1.4rem}
 .promessas-titulo{margin-top:2rem;font-size:.78rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-text)}
@@ -249,11 +251,11 @@ button,input,textarea{font:inherit;color:inherit}
 .play svg{width:26px;height:26px;margin-left:4px}
 .destaque:hover .play{transform:scale(1.1)}
 .destaque-info{padding-top:1.4rem}
-.destaque-num{font-family:var(--serif);font-size:clamp(2.6rem,5vw,3.6rem);line-height:1;letter-spacing:-.03em;color:var(--orange)}
+.destaque-num{font-family:var(--serif);font-size:clamp(2.6rem,5vw,3.6rem);line-height:1;letter-spacing:-.03em;color:var(--marrom-claro)}
 .destaque-rotulo{margin-top:.5rem;font-size:.76rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(243,238,233,.78)}
 .destaque h3{font-family:var(--serif);font-weight:400;font-size:1.5rem;line-height:1.2;margin-top:1.1rem}
 .destaque-ctx{margin-top:.45rem;font-size:.95rem;color:rgba(243,238,233,.74)}
-.assistir{display:inline-flex;align-items:center;gap:.5rem;margin-top:1rem;font-size:.9rem;font-weight:600;border-bottom:1px solid var(--orange);padding-bottom:.15rem}
+.assistir{display:inline-flex;align-items:center;gap:.5rem;margin-top:1rem;font-size:.9rem;font-weight:600;border-bottom:1px solid var(--marrom-claro);padding-bottom:.15rem}
 .assistir svg{width:14px;height:14px;transition:transform .3s}
 .destaque:hover .assistir svg{transform:translate(3px,-3px)}
 
@@ -285,7 +287,7 @@ button,input,textarea{font:inherit;color:inherit}
 .bg-2{background:var(--cream-2)}
 .servicos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:clamp(1.5rem,4vw,3.5rem);row-gap:1rem}
 .servico{border-top:1px solid var(--ink);padding:1.4rem 0 2rem;transition:border-color .3s}
-.servico:hover{border-top-color:var(--orange)}
+.servico:hover{border-top-color:var(--marrom)}
 .servico-num{font-family:var(--serif);font-style:italic;font-weight:300;font-size:2.8rem;line-height:1;color:var(--accent)}
 .servico h3{font-family:var(--serif);font-weight:500;font-size:1.55rem;line-height:1.15;margin-top:1rem}
 .servico p{margin-top:.6rem;color:var(--muted)}
@@ -299,13 +301,13 @@ button,input,textarea{font:inherit;color:inherit}
 .metricas .contador{display:block;font-family:var(--serif);font-size:clamp(2.6rem,6vw,4.6rem);line-height:1;letter-spacing:-.03em;color:var(--accent)}
 .resultados{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(1rem,2.4vw,1.75rem);margin-top:clamp(2.5rem,6vw,4rem)}
 .resultado{background:var(--ink);color:var(--cream);border-radius:var(--radius-lg);padding:clamp(1.5rem,3vw,2.2rem);box-shadow:var(--shadow)}
-.resultado-num{font-family:var(--serif);font-size:clamp(2.8rem,5vw,3.8rem);line-height:1;letter-spacing:-.03em;color:var(--orange)}
+.resultado-num{font-family:var(--serif);font-size:clamp(2.8rem,5vw,3.8rem);line-height:1;letter-spacing:-.03em;color:var(--marrom-claro)}
 .resultado h3{font-family:var(--serif);font-weight:400;font-size:1.35rem;margin-top:1.1rem}
 .resultado-marca{font-size:.74rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(243,238,233,.78);margin-top:.2rem}
 .resultado p.txt{margin-top:.8rem;font-size:.97rem;color:rgba(243,238,233,.82)}
 .depoimentos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(1rem,2.4vw,1.75rem);margin-top:clamp(1rem,2.4vw,1.75rem)}
 .depoimento{position:relative;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-lg);padding:clamp(1.6rem,3vw,2.3rem);box-shadow:var(--shadow);display:flex;flex-direction:column;gap:1.4rem}
-.depoimento::before{content:"\201C";font-family:var(--serif);font-size:4.5rem;line-height:.6;color:var(--orange);height:1.6rem}
+.depoimento::before{content:"\201C";font-family:var(--serif);font-size:4.5rem;line-height:.6;color:var(--marrom);height:1.6rem}
 .depoimento blockquote{font-family:var(--serif);font-size:clamp(1.15rem,1.9vw,1.4rem);line-height:1.4;font-weight:300}
 .depoimento figcaption{margin-top:auto;display:flex;flex-direction:column;padding-top:1rem;border-top:1px solid var(--line)}
 .depoimento figcaption strong{font-weight:700}
@@ -361,7 +363,7 @@ button,input,textarea{font:inherit;color:inherit}
 .site-footer{background:var(--ink);color:var(--cream);padding-block:clamp(3rem,7vw,5rem) 2rem}
 .rodape-topo{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:2rem}
 .rodape-nome{font-family:var(--serif);font-weight:400;font-size:clamp(2rem,5vw,3.6rem);line-height:1;letter-spacing:-.025em}
-.rodape-nome em{font-weight:300;color:var(--orange)}
+.rodape-nome em{font-weight:300;color:var(--marrom-claro)}
 .rodape-sub{margin-top:.8rem;color:rgba(243,238,233,.75);font-size:.95rem}
 .redes{display:flex;flex-wrap:wrap;gap:.7rem}
 .redes a{display:inline-flex;align-items:center;gap:.55rem;text-decoration:none;padding:.65rem 1.05rem;border:1px solid rgba(243,238,233,.4);border-radius:var(--radius);font-size:.92rem;font-weight:500;transition:background .25s,color .25s,border-color .25s}
@@ -376,7 +378,7 @@ button,input,textarea{font:inherit;color:inherit}
 .captura-dialog::backdrop{background:rgba(20,17,13,.66);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
 .captura{
   position:relative;background:var(--cream);border-radius:var(--radius-lg);
-  padding:2.4rem clamp(1.4rem,5vw,2.2rem) 2rem;border-top:6px solid var(--orange);
+  padding:2.4rem clamp(1.4rem,5vw,2.2rem) 2rem;border-top:6px solid var(--marrom);
   box-shadow:0 34px 80px -24px rgba(0,0,0,.55);max-height:calc(100vh - 2rem);overflow:auto;
 }
 .captura-dialog[open] .captura{animation:subir .55s cubic-bezier(.2,.7,.2,1)}
@@ -851,7 +853,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- ============================ MENU ============================ -->
 <header class="site-header" id="topo">
   <div class="container nav">
-    <a class="brand" href="#topo">Esther Silva Custódio</a>
+    <a class="brand" href="#topo">Esther Custódio</a>
     <nav aria-label="Principal">
       <div class="nav-links" id="menu">
         <a href="#sobre">Sobre</a>
@@ -877,8 +879,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <p class="eyebrow reveal"><i></i>UGC Creator em Hortolândia</p>
       <h1 class="hero-nome reveal" id="titulo-capa" style="--d:.08s">
         <span>Esther</span>
-        <span class="it"><em>Silva</em></span>
-        <span>Custódio</span>
+        <span class="it"><em>Custódio</em></span>
       </h1>
       <p class="hero-frase reveal" style="--d:.16s"><strong>Conteúdo que inspira.</strong> Eu crio vídeos e fotos autênticos que colocam a sua marca na frente de quem realmente compra.</p>
       <div class="hero-botoes reveal" style="--d:.24s">
@@ -890,9 +891,9 @@ document.addEventListener('DOMContentLoaded', () => {
     <figure class="hero-foto reveal" style="--d:.2s">
       <!-- FOTO DA CAPA: para usar a sua foto, apague o <span class="ph-legenda"> abaixo, tire role e aria-label
            da div e coloque dentro dela:
-           <img src="foto-capa.jpg" alt="Esther Silva Custódio segurando um produto" loading="eager" width="880" height="1100">
+           <img src="foto-capa.jpg" alt="Esther Custódio segurando um produto" loading="eager" width="880" height="1100">
            Use uma imagem leve (até 200 KB) no formato vertical 4:5. -->
-      <div class="ph g0 foto-45" role="img" aria-label="Espaço para a foto de Esther Silva Custódio, formato 4:5">
+      <div class="ph g0 foto-45" role="img" aria-label="Espaço para a foto de Esther Custódio, formato 4:5">
         <span class="ph-legenda">foto da creator 4:5</span>
       </div>
       <span class="selo" aria-hidden="true">
@@ -921,8 +922,8 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="sobre-foto reveal">
       <!-- FOTO DO SOBRE: mesma troca da capa. Apague o <span class="ph-legenda">, tire role e aria-label
            e coloque dentro da div:
-           <img src="foto-sobre.jpg" alt="Esther Silva Custódio sorrindo, gravando um vídeo em casa" loading="lazy" width="880" height="1100"> -->
-      <div class="ph g3 foto-45" role="img" aria-label="Espaço para a foto de Esther Silva Custódio, formato 4:5">
+           <img src="foto-sobre.jpg" alt="Esther Custódio sorrindo, gravando um vídeo em casa" loading="lazy" width="880" height="1100"> -->
+      <div class="ph g3 foto-45" role="img" aria-label="Espaço para a foto de Esther Custódio, formato 4:5">
         <span class="ph-legenda">foto da creator 4:5</span>
       </div>
     </div>
@@ -940,7 +941,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <li class="reveal" style="--d:.34s"><span class="check"></span>Entrega em até 72 horas úteis</li>
       </ul>
 
-      <p class="assinatura reveal" style="--d:.38s"><small>Com carinho,</small><strong>Esther Silva Custódio</strong></p>
+      <p class="assinatura reveal" style="--d:.38s"><small>Com carinho,</small><strong>Esther Custódio</strong></p>
     </div>
   </div>
 </section>
@@ -1064,7 +1065,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <div class="container">
     <div class="rodape-topo">
       <div>
-        <p class="rodape-nome">Esther <em>Silva</em> Custódio</p>
+        <p class="rodape-nome">Esther <em>Custódio</em></p>
         <p class="rodape-sub">UGC Creator em Hortolândia. Conteúdo que inspira.</p>
       </div>
       <div class="redes" aria-label="Minhas redes">
@@ -1083,7 +1084,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     </div>
     <div class="rodape-base">
-      <p>© <span id="ano">2026</span> Esther Silva Custódio. Todos os direitos reservados.</p>
+      <p>© <span id="ano">2026</span> Esther Custódio. Todos os direitos reservados.</p>
       <p>@Esthercustodio_ · Hortolândia</p>
     </div>
   </div>
