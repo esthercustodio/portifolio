@@ -171,20 +171,29 @@ button,input,textarea{font:inherit;color:inherit}
 /* =========================================================
    1. CAPA
    ========================================================= */
-.hero{padding-top:calc(var(--nav-h) + clamp(2.5rem,6vw,5rem))}
-.hero-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr);gap:clamp(2rem,5vw,4.5rem);align-items:end}
-.hero-nome{
-  font-family:var(--serif);font-weight:400;
-  font-size:clamp(3.3rem,9.6vw,8.6rem);line-height:.92;letter-spacing:-.035em;
-  margin:.2rem 0 1.6rem;
+.hero{
+  padding-top:calc(var(--nav-h) + clamp(2.5rem,6vw,4.5rem));
+  background-image:linear-gradient(rgba(20,17,13,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(20,17,13,.055) 1px,transparent 1px);
+  background-size:44px 44px;
 }
-.hero-nome span{display:block}
-.hero-nome .it{padding-left:.7em}
-.hero-nome em{font-style:italic;font-weight:300;color:var(--accent)}
-.hero-frase{font-size:clamp(1.1rem,1.6vw,1.3rem);max-width:30rem;color:var(--ink)}
-.hero-frase strong{font-family:var(--serif);font-style:italic;font-weight:400;font-size:1.25em;color:var(--accent-text)}
-.hero-botoes{display:flex;flex-wrap:wrap;gap:.9rem;margin-top:2rem}
-.hero-foto{position:relative;width:100%;max-width:440px;margin-left:auto}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:clamp(2rem,5vw,4.5rem);align-items:center}
+.hero-chip{display:inline-flex;align-items:center;gap:.7rem;font-size:.92rem;font-weight:500;color:var(--muted);margin-bottom:1.5rem}
+.chip-ico{flex:none;width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--cream);display:grid;place-items:center}
+.chip-ico svg{width:14px;height:14px}
+.hero-titulo{
+  font-family:var(--serif);font-weight:700;color:var(--ink);
+  font-size:clamp(2.9rem,7.4vw,6.2rem);line-height:.98;letter-spacing:-.03em;
+  margin:0 0 1.6rem;
+}
+.hero-titulo span{display:block}
+.hero-titulo em{font-style:normal;color:var(--marrom)}
+.hero-frase{font-size:clamp(1.05rem,1.5vw,1.2rem);max-width:30rem;color:var(--muted)}
+.hero-stats{display:flex;flex-wrap:wrap;align-items:center;gap:.9rem;margin-top:1.1rem;font-weight:700;font-size:1.05rem}
+.hero-stats span{font-weight:400;color:var(--muted)}
+.hero-botoes{display:flex;flex-wrap:wrap;align-items:center;gap:1.4rem;margin-top:2.2rem}
+.btn-link{font-weight:500;font-size:.98rem;color:var(--muted);text-decoration:none;padding:.5rem .1rem;transition:color .25s}
+.btn-link:hover{color:var(--ink);text-decoration:underline;text-underline-offset:4px}
+.hero-foto{position:relative;width:100%;max-width:500px;margin-left:auto}
 .foto-45{aspect-ratio:4/5}
 .selo{
   position:absolute;left:-2.4rem;top:2.6rem;width:112px;height:112px;border-radius:50%;
@@ -197,22 +206,15 @@ button,input,textarea{font:inherit;color:inherit}
 .selo .estrela{position:absolute;top:50%;left:50%;width:26px;height:26px;margin:-13px 0 0 -13px}
 @keyframes girar{to{transform:rotate(360deg)}}
 
-.hero-numeros{
-  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
-  border-top:1px solid var(--ink);margin-top:clamp(2.5rem,6vw,4.5rem);
-}
-.hero-numeros li{padding:1.3rem 1rem 1.6rem 0}
-.hero-numeros li + li{padding-left:clamp(.75rem,3vw,2rem);border-left:1px solid var(--line)}
-.hero-numeros .contador{display:block;font-family:var(--serif);font-size:clamp(2rem,5.2vw,3.8rem);line-height:1;letter-spacing:-.03em;color:var(--accent)}
 .numero-rotulo{display:block;margin-top:.5rem;font-size:clamp(.68rem,1.6vw,.85rem);font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 
 /* Faixa de marcas */
-.marcas{margin-top:clamp(1rem,3vw,2rem);background:var(--accent);color:var(--on-accent);overflow:hidden;padding-block:.95rem}
+.marcas{margin-top:clamp(2.5rem,5vw,4rem);background:var(--ink);color:var(--cream);overflow:hidden;padding-block:1rem}
 .marcas-track{display:flex;width:max-content;animation:rolar 45s linear infinite}
 .marcas:hover .marcas-track{animation-play-state:paused}
 .marcas-lista{display:flex;flex:none}
-.marcas-lista li{display:flex;align-items:center;white-space:nowrap;font-family:var(--serif);font-style:italic;font-size:1.15rem;padding-inline:1.5rem}
-.marcas-lista li::after{content:"";width:6px;height:6px;border-radius:50%;background:var(--marrom);margin-left:3rem}
+.marcas-lista li{display:flex;align-items:center;white-space:nowrap;font-family:var(--serif);font-weight:700;text-transform:uppercase;letter-spacing:.02em;font-size:.95rem;padding-inline:1.5rem}
+.marcas-lista li::after{content:"";width:7px;height:7px;background:var(--marrom-claro);transform:rotate(45deg);margin-left:3rem}
 @keyframes rolar{to{transform:translateX(-50%)}}
 
 /* =========================================================
@@ -420,7 +422,6 @@ button,input,textarea{font:inherit;color:inherit}
   .ph-legenda{font-size:.66rem}
   .servicos{grid-template-columns:1fr}
   .hero-botoes .btn{flex:1 1 100%}
-  .hero-numeros li{padding-right:.5rem}
   .rodape-topo{align-items:flex-start}
 }
 
@@ -443,16 +444,6 @@ button,input,textarea{font:inherit;color:inherit}
    Edite as listas abaixo para trocar textos, números e links.
    Você não precisa mexer no HTML.
    ========================================================= */
-
-/* ---- NÚMEROS DA CAPA (três números logo abaixo do botão) ----
-   valor: número que o contador vai mostrar.
-   Use null enquanto você não tiver o número: aparece "00" para você achar e trocar.
-   prefixo e sufixo são opcionais (exemplo: prefixo "+" ou sufixo " mil"). */
-const NUMEROS_CAPA = [
-  { valor: 250,  prefixo: "", sufixo: "", rotulo: "vídeos entregues" },
-  { valor: null, prefixo: "", sufixo: "", rotulo: "marcas atendidas" },   /* TROCAR: quantas marcas você já atendeu */
-  { valor: null, prefixo: "", sufixo: "", rotulo: "views somadas" }       /* TROCAR: soma de views dos seus vídeos */
-];
 
 /* ---- FAIXA DE MARCAS (fecha a capa) ----
    Troque "Marca 04" a "Marca 12" pelos nomes das marcas com quem você trabalhou. */
@@ -535,7 +526,8 @@ const SERVICOS = [
 ];
 
 /* ---- MÉTRICAS (quatro números com contador animado) ----
-   Mesma regra da capa: valor null mostra "00" para você trocar depois. */
+   valor null mostra "00" para você trocar depois.
+   prefixo e sufixo são opcionais (exemplo: prefixo "+" ou sufixo " mil"). */
 const METRICAS = [
   { valor: 250,  prefixo: "", sufixo: "", rotulo: "vídeos entregues" },
   { valor: 6,    prefixo: "", sufixo: "", rotulo: "nichos atendidos" },
@@ -605,10 +597,6 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   /* ---------- Renderização das listas ---------- */
-  $('#numerosCapa').innerHTML = NUMEROS_CAPA.map((m, i) =>
-    `<li class="reveal" style="--d:${(0.12 * i).toFixed(2)}s">${contadorHTML(m)}<span class="numero-rotulo">${esc(m.rotulo)}</span></li>`
-  ).join('');
-
   const itensMarca = MARCAS.map((nome) => `<li>${esc(nome)}</li>`).join('');
   $('#marcasTrack').innerHTML =
     `<ul class="marcas-lista">${itensMarca}</ul><ul class="marcas-lista" aria-hidden="true">${itensMarca}</ul>`;
@@ -876,15 +864,16 @@ document.addEventListener('DOMContentLoaded', () => {
 <section class="hero" aria-labelledby="titulo-capa">
   <div class="container hero-grid">
     <div class="hero-texto">
-      <p class="eyebrow reveal"><i></i>UGC Creator em Hortolândia</p>
-      <h1 class="hero-nome reveal" id="titulo-capa" style="--d:.08s">
-        <span>Esther</span>
-        <span class="it"><em>Custódio</em></span>
+      <p class="hero-chip reveal"><span class="chip-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>Creator &amp; Modelo</p>
+      <h1 class="hero-titulo reveal" id="titulo-capa" style="--d:.08s">
+        <span>Inspiração</span>
+        <span>que <em>conecta.</em></span>
       </h1>
-      <p class="hero-frase reveal" style="--d:.16s"><strong>Conteúdo que inspira.</strong> Eu crio vídeos e fotos autênticos que colocam a sua marca na frente de quem realmente compra.</p>
+      <p class="hero-frase reveal" style="--d:.16s">Conteúdo que transforma a rotina em desejo, conexão e identificação com a sua marca.</p>
+      <p class="hero-stats reveal" style="--d:.2s"><strong>+500 vídeos</strong><span aria-hidden="true">|</span><strong>+200 marcas</strong></p>
       <div class="hero-botoes reveal" style="--d:.24s">
         <a class="btn btn-primario" href="#contato">Falar comigo</a>
-        <a class="btn btn-secundario" href="#trabalhos">Ver os trabalhos</a>
+        <a class="btn-link" href="#trabalhos">Ver os trabalhos <span aria-hidden="true">→</span></a>
       </div>
     </div>
 
@@ -899,15 +888,11 @@ document.addEventListener('DOMContentLoaded', () => {
       <span class="selo" aria-hidden="true">
         <svg viewBox="0 0 120 120">
           <defs><path id="circulo" d="M60,60 m-45,0 a45,45 0 1,1 90,0 a45,45 0 1,1 -90,0"/></defs>
-          <g class="anel"><text textLength="280" lengthAdjust="spacing"><textPath href="#circulo">CONTEÚDO QUE INSPIRA • UGC CREATOR •</textPath></text></g>
+          <g class="anel"><text textLength="280" lengthAdjust="spacing"><textPath href="#circulo">CONTEÚDO QUE INSPIRA • CONTEÚDO QUE INSPIRA •</textPath></text></g>
         </svg>
         <svg class="estrela" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.5c.7 5.6 4.9 9.8 10.5 10.5-5.6.7-9.8 4.9-10.5 10.5-.7-5.6-4.9-9.8-10.5-10.5C7.1 11.3 11.3 7.1 12 1.5z"/></svg>
       </span>
     </figure>
-  </div>
-
-  <div class="container">
-    <ul class="hero-numeros" id="numerosCapa" aria-label="Números principais"></ul>
   </div>
 
   <!-- Faixa fina com os nomes das marcas (edite a lista MARCAS no script) -->
