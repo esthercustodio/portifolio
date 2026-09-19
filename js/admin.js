@@ -1991,11 +1991,6 @@
         resumo: function (v) { return [cortar(v && v.abre, 110), cortar(v && v.texto, 110)].filter(Boolean); }
       },
       {
-        chave: 'marcas', titulo: 'Letreiro de marcas', tipo: 'linhas',
-        descricao: 'Os nomes que passam na faixa escura no fim da capa. Escreva um nome por linha.',
-        resumo: function (v) { return [(Array.isArray(v) ? v : []).join('  ·  ')]; }
-      },
-      {
         chave: 'metricas', titulo: 'Números do portfólio', tipo: 'lista', item: 'Número',
         descricao: 'Os quatro números com contador animado. Deixe o valor em branco para mostrar "00".',
         colunas: [
