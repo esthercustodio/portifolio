@@ -278,6 +278,11 @@ button,input,textarea{font:inherit;color:inherit}
 .trabalho.entrar{animation:aparecer .55s cubic-bezier(.2,.7,.2,1) both}
 .trabalho .ph{aspect-ratio:4/5;transition:transform .45s cubic-bezier(.2,.7,.2,1),box-shadow .45s}
 .trabalho:hover .ph{transform:translateY(-6px);box-shadow:var(--shadow)}
+.trabalho-link{display:block;color:inherit;text-decoration:none;border-radius:var(--radius-lg)}
+.vazio-site{grid-column:1/-1;padding:2rem 0;text-align:center;color:var(--muted)}
+.escuro .vazio-site{color:rgba(243,238,233,.78)}
+.armadilha{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.form-erro{margin:0 0 1rem;padding:.7rem .9rem;border-radius:var(--radius);background:#f6d5d0;color:#7a1a0d;font-size:.9rem}
 .trabalho-nicho{margin-top:.9rem;font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-text)}
 .trabalho h3{font-family:var(--serif);font-weight:400;font-size:1.25rem;line-height:1.2;margin-top:.15rem}
 .trabalho-marca{font-size:.9rem;color:var(--muted)}
@@ -439,10 +444,15 @@ button,input,textarea{font:inherit;color:inherit}
 }
 </style>
 
+<!-- Painel: o Supabase vem por CDN e js/banco.js guarda o endereço e a chave pública -->
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="js/banco.js"></script>
+
 <script>
 /* =========================================================
    DADOS DO SITE
-   Edite as listas abaixo para trocar textos, números e links.
+   Os VÍDEOS agora vêm do seu painel (admin, aba Portfólio).
+   As listas abaixo servem para textos, marcas, serviços e métricas.
    Você não precisa mexer no HTML.
    ========================================================= */
 
@@ -455,6 +465,8 @@ const MARCAS = [
 ];
 
 /* ---- CONTEÚDOS DE DESTAQUE (três cards grandes) ----
+   ATENÇÃO: os destaques agora vêm do painel (aba Portfólio, campo "Destaque").
+   Esta lista é só a RESERVA: aparece se o banco não responder.
    link:    ONDE ENTRA O LINK DO VÍDEO. Cole aqui o endereço (YouTube, Instagram, TikTok...).
             O card inteiro vira um link que abre esse vídeo em uma nova aba.
    capa:    ONDE ENTRA A CAPA. Coloque o caminho da imagem vertical 9:16, por exemplo "img/capa1.jpg".
@@ -490,6 +502,8 @@ const DESTAQUES = [
 const NICHOS = ["Beleza", "Skincare", "Moda", "Casa e decoração", "Fitness", "Viagem"];
 
 /* ---- TRABALHOS POR NICHO ----
+   ATENÇÃO: os trabalhos agora vêm do painel (aba Portfólio).
+   Esta lista é só a RESERVA: aparece se o banco não responder.
    nicho:   precisa ser igual a um dos nomes da lista NICHOS acima.
    formato: legenda do bloco (exemplo: "Vídeo 9:16" ou "Foto 4:5").
    imagem:  caminho da imagem real (exemplo "img/trabalho1.jpg"). Deixe "" para mostrar o degradê.
@@ -602,12 +616,28 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#marcasTrack').innerHTML =
     `<ul class="marcas-lista">${itensMarca}</ul><ul class="marcas-lista" aria-hidden="true">${itensMarca}</ul>`;
 
-  $('#destaquesGrid').innerHTML = DESTAQUES.map((d, i) => {
-    const capa = d.capa
-      ? `<img src="${esc(d.capa)}" alt="${esc(d.alt || d.titulo)}" loading="lazy">`
-      : '';
-    const legenda = d.capa ? '' : '<span class="ph-legenda">capa vertical 9:16</span>';
-    return `
+  /* ---------- Vídeos: vêm do painel (tabela "videos") ----------
+     Se o banco ainda não estiver pronto, usa a lista de reserva lá de cima. */
+  const seguro = (u) => (/^https?:\/\//i.test(String(u || '').trim()) ? String(u).trim() : '');
+  const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
+
+  /* "2,4M views" vira número "2,4M" e rótulo "views" */
+  const partirDestaque = (texto) => {
+    const t = String(texto || '').trim();
+    const m = t.match(/^(\+?\s*[\d.,]+\s*(?:mil|mi|milhões|milhão|k|m|b)?)\s+(.+)$/i);
+    if (m) return { numero: m[1].replace(/\s+/g, ' ').trim(), rotulo: m[2].trim() };
+    return { numero: t, rotulo: 'views' };
+  };
+
+  const desenharDestaques = (lista) => {
+    const grade = $('#destaquesGrid');
+    if (!lista.length) { grade.innerHTML = '<p class="vazio-site">Em breve, novos conteúdos por aqui.</p>'; return; }
+    grade.innerHTML = lista.map((d, i) => {
+      const capa = d.capa
+        ? `<img src="${esc(d.capa)}" alt="${esc(d.alt || d.titulo)}" loading="lazy">`
+        : '';
+      const legenda = d.capa ? '' : '<span class="ph-legenda">capa vertical 9:16</span>';
+      return `
     <a class="destaque reveal" style="--d:${(0.12 * i).toFixed(2)}s" href="${esc(d.link)}" target="_blank" rel="noopener noreferrer"
        aria-label="Assistir: ${esc(d.titulo)}, ${esc(d.numero)} ${esc(d.rotulo)} (abre em uma nova aba)">
       <div class="destaque-capa ph g${[2, 0, 4][i % 3]}" ${d.capa ? '' : `role="img" aria-label="Espaço para a capa vertical 9:16 do conteúdo ${i + 1}"`}>
@@ -619,37 +649,50 @@ document.addEventListener('DOMContentLoaded', () => {
         <p class="destaque-num">${esc(d.numero)}</p>
         <p class="destaque-rotulo">${esc(d.rotulo)}</p>
         <h3>${esc(d.titulo)}</h3>
-        <p class="destaque-ctx">${esc(d.contexto)}</p>
+        ${d.contexto ? `<p class="destaque-ctx">${esc(d.contexto)}</p>` : ''}
         <span class="assistir" aria-hidden="true">Assistir ${ICONES.seta}</span>
       </div>
     </a>`;
-  }).join('');
+    }).join('');
+    $$('.reveal', grade).forEach((el) => observarNovos(el));
+  };
 
   /* Galeria com filtros por nicho */
   const galeria = $('#galeria');
-  galeria.innerHTML = TRABALHOS.map((t) => {
-    const g = Math.max(0, NICHOS.indexOf(t.nicho)) % 6;
-    const midia = t.imagem
-      ? `<img src="${esc(t.imagem)}" alt="${esc(t.alt || t.titulo)}" loading="lazy">`
-      : '';
-    const legenda = t.imagem ? '' : `<span class="ph-legenda">${esc(t.formato)}</span>`;
-    const marca = t.link
-      ? `<a href="${esc(t.link)}" target="_blank" rel="noopener noreferrer">${esc(t.marca)}</a>`
-      : esc(t.marca);
-    return `
-    <li class="trabalho" data-nicho="${esc(t.nicho)}">
-      <div class="ph foto-45 g${g}" ${t.imagem ? '' : `role="img" aria-label="Espaço para ${esc(t.formato.toLowerCase())} do trabalho ${esc(t.titulo)}"`}>${midia}${legenda}</div>
-      <p class="trabalho-nicho">${esc(t.nicho)}</p>
-      <h3>${esc(t.titulo)}</h3>
-      <p class="trabalho-marca">${marca}</p>
-    </li>`;
-  }).join('');
-
   const barraFiltros = $('#filtros');
   const statusFiltro = $('#filtroStatus');
-  barraFiltros.innerHTML = ['Todos', ...NICHOS].map((n, i) =>
-    `<button type="button" class="filtro" data-nicho="${esc(n)}" aria-pressed="${i === 0}">${esc(n)}</button>`
-  ).join('');
+
+  const desenharTrabalhos = (lista) => {
+    if (!lista.length) {
+      galeria.innerHTML = '<li class="vazio-site">Em breve, novos trabalhos por aqui.</li>';
+      barraFiltros.innerHTML = '';
+      statusFiltro.textContent = '';
+      return;
+    }
+    const conhecidos = NICHOS.filter((n) => lista.some((t) => t.nicho === n));
+    const outros = Array.from(new Set(lista.map((t) => t.nicho).filter((n) => n && !NICHOS.includes(n))));
+    const nichos = [...conhecidos, ...outros];
+    galeria.innerHTML = lista.map((t) => {
+      const g = Math.max(0, nichos.indexOf(t.nicho)) % 6;
+      const midia = t.imagem
+        ? `<img src="${esc(t.imagem)}" alt="${esc(t.alt || t.titulo)}" loading="lazy">`
+        : '';
+      const legenda = t.imagem ? '' : `<span class="ph-legenda">${esc(t.formato)}</span>`;
+      const abre = t.link ? `<a class="trabalho-link" href="${esc(t.link)}" target="_blank" rel="noopener noreferrer">` : '';
+      const fecha = t.link ? '</a>' : '';
+      return `
+    <li class="trabalho" data-nicho="${esc(t.nicho)}">${abre}
+      <div class="ph foto-45 g${g}" ${t.imagem ? '' : `role="img" aria-label="Espaço para ${esc(t.formato.toLowerCase())} do trabalho ${esc(t.titulo)}"`}>${midia}${legenda}</div>
+      ${t.nicho ? `<p class="trabalho-nicho">${esc(t.nicho)}</p>` : ''}
+      <h3>${esc(t.titulo)}</h3>
+      ${t.marca ? `<p class="trabalho-marca">${esc(t.marca)}</p>` : ''}${fecha}
+    </li>`;
+    }).join('');
+    barraFiltros.innerHTML = nichos.length
+      ? ['Todos', ...nichos].map((n, i) => `<button type="button" class="filtro" data-nicho="${esc(n)}" aria-pressed="${i === 0}">${esc(n)}</button>`).join('')
+      : '';
+    statusFiltro.textContent = lista.length === 1 ? 'Mostrando 1 trabalho' : `Mostrando todos os ${lista.length} trabalhos`;
+  };
 
   barraFiltros.addEventListener('click', (e) => {
     const botao = e.target.closest('.filtro');
@@ -669,9 +712,31 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     statusFiltro.textContent = escolhido === 'Todos'
       ? `Mostrando todos os ${visiveis} trabalhos`
-      : `Mostrando ${visiveis} ${visiveis === 1 ? 'trabalho' : 'trabalhos'} em ${escolhido}`;
+      : `Mostrando ${plural(visiveis, 'trabalho', 'trabalhos')} em ${escolhido}`;
   });
-  statusFiltro.textContent = `Mostrando todos os ${TRABALHOS.length} trabalhos`;
+
+  /* Busca os vídeos visíveis na vitrine do banco. Devolve null se o banco não estiver pronto. */
+  const carregarVideos = async () => {
+    if (!window.banco) return null;
+    try {
+      const r = await window.banco.rpc('videos_do_site');
+      if (r.error) return null;
+      return Array.isArray(r.data) ? r.data : [];
+    } catch (erro) { return null; }
+  };
+  (async () => {
+    const linhas = await carregarVideos();
+    if (linhas === null) { desenharDestaques(DESTAQUES); desenharTrabalhos(TRABALHOS); return; }   /* banco fora do ar: reserva */
+    const destaques = linhas.filter((v) => String(v.destaque || '').trim()).slice(0, 3).map((v) => {
+      const p = partirDestaque(v.destaque);
+      return { link: seguro(v.link) || '#', capa: '', alt: '', numero: p.numero, rotulo: p.rotulo, titulo: v.titulo, contexto: v.marca || v.nicho || '' };
+    });
+    desenharDestaques(destaques);
+    desenharTrabalhos(linhas.map((v) => ({
+      titulo: v.titulo, marca: v.marca || '', nicho: v.nicho || '', formato: v.formato || 'Vídeo',
+      imagem: '', alt: '', link: seguro(v.link)
+    })));
+  })();
 
   $('#servicosLista').innerHTML = SERVICOS.map((s, i) => `
     <li class="servico reveal" style="--d:${(0.08 * (i % 3)).toFixed(2)}s">
@@ -732,6 +797,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ---------- Animações ao rolar ---------- */
   const revelaveis = $$('.reveal');
   const contadores = $$('.contador[data-alvo]');
+  let observarNovos = (el) => el.classList.add('in');       /* usado pelos cards que chegam do banco depois */
   if (!('IntersectionObserver' in window)) {
     revelaveis.forEach((el) => el.classList.add('in'));
     contadores.forEach(animarContador);
@@ -746,6 +812,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
     revelaveis.forEach((el) => observador.observe(el));
+    observarNovos = (el) => observador.observe(el);
 
     /* Contadores fora de um bloco .reveal também animam quando aparecem */
     const observadorContador = new IntersectionObserver((entradas, obs) => {
@@ -774,11 +841,35 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ---------- Formulário de contato ---------- */
   const formulario = $('#formContato');
   const confirmacao = $('#confirmacaoContato');
-  formulario.addEventListener('submit', (e) => {
+  const hojeLocal = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+
+  /* Grava um contato na tabela "marcas", entrando como Lead. Devolve true se deu certo. */
+  const enviarContato = async ({ nome, email, obs }) => {
+    if (!window.banco) return false;
+    try {
+      const r = await window.banco.from('marcas').insert({
+        nome: String(nome).slice(0, 200), email: String(email || '').slice(0, 200), obs: String(obs || '').slice(0, 3000),
+        situacao: 'lead', ultimo_contato: hojeLocal()
+      });
+      return !r.error;
+    } catch (erro) { return false; }
+  };
+
+  formulario.addEventListener('submit', async (e) => {
     e.preventDefault();
-    /* PONTO DE INTEGRAÇÃO: para receber as mensagens de verdade, envie os dados
-       do formulário para um serviço de formulários (por exemplo Formspree) neste ponto. */
-    const primeiroNome = formulario.elements.nome.value.trim().split(/\s+/)[0] || '';
+    const campos = formulario.elements;
+    if (campos.website && campos.website.value) return;             /* campo escondido: só robô preenche */
+    const erroContato = $('#erroContato');
+    const botao = $('button[type="submit"]', formulario);
+    erroContato.hidden = true;
+    botao.disabled = true;
+    const enviou = await enviarContato({
+      nome: campos.nome.value.trim(), email: campos.email.value.trim(),
+      obs: 'Mensagem pelo site: ' + campos.mensagem.value.trim()
+    });
+    botao.disabled = false;
+    if (!enviou) { erroContato.hidden = false; return; }
+    const primeiroNome = campos.nome.value.trim().split(/\s+/)[0] || '';
     $('[data-nome]', confirmacao).textContent = primeiroNome ? `, ${primeiroNome}` : '';
     formulario.hidden = true;
     confirmacao.hidden = false;
@@ -790,6 +881,34 @@ document.addEventListener('DOMContentLoaded', () => {
     formulario.hidden = false;
     formulario.elements.nome.focus();
   });
+
+  /* ---------- Registro simples de visita (tabela "visitas") ----------
+     Não usa serviço de fora, não guarda nada pessoal e não pede nada para quem visita.
+     Conta uma vez por visita e ignora você logada no painel. */
+  const descobrirOrigem = () => {
+    const nomes = [['instagram', 'Instagram'], ['facebook', 'Facebook'], ['fb.', 'Facebook'], ['whatsapp', 'WhatsApp'], ['wa.me', 'WhatsApp'],
+      ['google', 'Google'], ['bing', 'Bing'], ['tiktok', 'TikTok'], ['youtube', 'YouTube'], ['youtu.be', 'YouTube'],
+      ['linkedin', 'LinkedIn'], ['t.co', 'X (Twitter)'], ['twitter', 'X (Twitter)'], ['pinterest', 'Pinterest']];
+    const nomeConhecido = (texto) => { const t = texto.toLowerCase(); const achou = nomes.find(([trecho]) => t.includes(trecho)); return achou ? achou[1] : ''; };
+    /* Dica: no link da bio use  ?origem=instagram  para contar certinho */
+    const marcada = new URLSearchParams(location.search).get('origem');
+    if (marcada) return (nomeConhecido(marcada) || marcada.replace(/[^\w .-]/g, '')).slice(0, 100) || 'Direto';
+    if (!document.referrer) return 'Direto';
+    let host = '';
+    try { host = new URL(document.referrer).hostname.replace(/^www\./, ''); } catch (erro) { return 'Direto'; }
+    if (!host || host === location.hostname) return 'Direto';
+    return (nomeConhecido(host) || host).slice(0, 100);
+  };
+  const registrarVisita = () => {
+    try {
+      if (!window.banco || location.protocol === 'file:' || ['localhost', '127.0.0.1'].includes(location.hostname)) return;
+      if (sessionStorage.getItem('visitaContada') === '1') return;
+      if (localStorage.getItem('sb-dhqnfqpasuterxedplyb-auth-token')) return;       /* é você logada no painel */
+      sessionStorage.setItem('visitaContada', '1');
+      window.banco.from('visitas').insert({ pagina: location.pathname.slice(0, 200), origem: descobrirOrigem() }).then(() => {}, () => {});
+    } catch (erro) { /* se algo falhar, o site segue normal */ }
+  };
+  registrarVisita();
 
   /* ---------- Ano automático no rodapé ---------- */
   $('#ano').textContent = new Date().getFullYear();
@@ -811,7 +930,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const okCaptura = $('#confirmacaoCaptura');
     formCaptura.addEventListener('submit', (e) => {
       e.preventDefault();
-      /* PONTO DE INTEGRAÇÃO: envie nome e e-mail para a sua ferramenta de e-mail marketing aqui. */
+      enviarContato({                                                /* vira Lead na aba Marcas, sem mostrar erro para a pessoa */
+        nome: formCaptura.elements.nomeKit.value.trim(), email: formCaptura.elements.emailKit.value.trim(),
+        obs: 'Pediu o mídia kit pelo site.'
+      });
       const primeiroNome = formCaptura.elements.nomeKit.value.trim().split(/\s+/)[0] || '';
       $('[data-nome]', okCaptura).textContent = primeiroNome ? `, ${primeiroNome}` : '';
       formCaptura.hidden = true;
@@ -1027,6 +1149,8 @@ document.addEventListener('DOMContentLoaded', () => {
           <label for="mensagem">Mensagem</label>
           <textarea id="mensagem" name="mensagem" placeholder="Conte sobre a sua marca, o produto e o que você imagina para o conteúdo." required></textarea>
         </div>
+        <div class="armadilha" aria-hidden="true"><label>Não preencha este campo<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+        <p class="form-erro" id="erroContato" role="alert" hidden>Não consegui enviar agora. Tente de novo em instantes ou chame pelo WhatsApp ou pelo e-mail.</p>
         <button class="btn btn-primario" type="submit">Enviar mensagem</button>
         <p class="form-nota">Eu respondo o mais rápido que conseguir.</p>
       </form>
