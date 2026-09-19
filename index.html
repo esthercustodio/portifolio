@@ -194,6 +194,7 @@ button,input,textarea{font:inherit;color:inherit}
 .btn-link{font-weight:500;font-size:.98rem;color:var(--muted);text-decoration:none;padding:.5rem .1rem;transition:color .25s}
 .btn-link:hover{color:var(--ink);text-decoration:underline;text-underline-offset:4px}
 .hero-foto{position:relative;width:100%;max-width:500px;margin-left:auto}
+.hero-recorte{display:block;width:100%;height:auto}
 .foto-45{aspect-ratio:4/5}
 .selo{
   position:absolute;left:-2.4rem;top:2.6rem;width:112px;height:112px;border-radius:50%;
@@ -878,13 +879,10 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
 
     <figure class="hero-foto reveal" style="--d:.2s">
-      <!-- FOTO DA CAPA: para usar a sua foto, apague o <span class="ph-legenda"> abaixo, tire role e aria-label
-           da div e coloque dentro dela:
-           <img src="foto-capa.jpg" alt="Esther Custódio segurando um produto" loading="eager" width="880" height="1100">
-           Use uma imagem leve (até 200 KB) no formato vertical 4:5. -->
-      <div class="ph g0 foto-45" role="img" aria-label="Espaço para a foto de Esther Custódio, formato 4:5">
-        <span class="ph-legenda">foto da creator 4:5</span>
-      </div>
+      <!-- FOTO DA CAPA: recorte sem fundo em foto-capa.webp. Para trocar a foto, substitua esse arquivo
+           (mesmo nome, imagem leve, PNG ou WebP com fundo transparente). -->
+      <img class="hero-recorte" src="foto-capa.webp" width="640" height="730" fetchpriority="high"
+           alt="Esther Custódio olhando por cima do ombro e sorrindo, com cabelo cacheado e brinco dourado">
       <span class="selo" aria-hidden="true">
         <svg viewBox="0 0 120 120">
           <defs><path id="circulo" d="M60,60 m-45,0 a45,45 0 1,1 90,0 a45,45 0 1,1 -90,0"/></defs>
