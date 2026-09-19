@@ -97,10 +97,7 @@ button,input,textarea{font:inherit;color:inherit}
 .btn:hover{transform:translateY(-2px)}
 .btn svg{width:18px;height:18px;flex:none}
 .btn-primario{background:var(--accent);color:var(--on-accent)}
-.btn-primario:hover{background:var(--ink);color:var(--cream)}
-.btn-marrom{background:var(--marrom);border-color:var(--marrom);color:var(--cream)}
-.btn-marrom:hover{border-color:var(--ink)}
-.btn-secundario{border-color:var(--ink);color:var(--ink);background:transparent}
+.btn-primario:hover{background:var(--ink);color:var(--cream)}.btn-secundario{border-color:var(--ink);color:var(--ink);background:transparent}
 .btn-secundario:hover{background:var(--ink);color:var(--cream)}
 
 /* Placeholders de foto e vídeo (blocos com degradê e legenda do formato) */
@@ -144,7 +141,7 @@ button,input,textarea{font:inherit;color:inherit}
 .brand em{font-weight:400}
 .nav-links{display:flex;align-items:center;gap:clamp(1.25rem,2.6vw,2.25rem)}
 .nav-links a{position:relative;text-decoration:none;font-size:.92rem;font-weight:500;padding-block:.4rem}
-.nav-links a::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--marrom);transform:scaleX(0);transform-origin:left;transition:transform .3s}
+.nav-links a::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .3s}
 .nav-links a:hover::after,.nav-links a[aria-current="true"]::after{transform:scaleX(1)}
 .nav-toggle{
   display:none;width:44px;height:44px;border:1px solid var(--line);border-radius:var(--radius);
@@ -188,7 +185,7 @@ button,input,textarea{font:inherit;color:inherit}
   margin:0 0 1.6rem;
 }
 .hero-titulo span{display:block}
-.hero-titulo em{font-style:normal;color:var(--marrom)}
+.hero-titulo em{font-style:normal;color:var(--accent)}
 .hero-frase{font-size:clamp(1.05rem,1.5vw,1.2rem);max-width:30rem;color:var(--muted)}
 .hero-stats{display:flex;flex-wrap:wrap;align-items:center;gap:.9rem;margin-top:1.1rem;font-weight:700;font-size:1.05rem}
 .hero-stats span{font-weight:400;color:var(--muted)}
@@ -1115,7 +1112,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <p class="hero-frase reveal" id="capaFrase" style="--d:.16s">Conteúdo que transforma a rotina em desejo, conexão e identificação com a sua marca.</p>
       <p class="hero-stats reveal" id="capaNumeros" style="--d:.2s"><strong>+500 vídeos</strong><span aria-hidden="true">|</span><strong>+200 marcas</strong></p>
       <div class="hero-botoes reveal" style="--d:.24s">
-        <a class="btn btn-primario btn-marrom" href="#contato">Quero criar com a Esther</a>
+        <a class="btn btn-primario" href="#contato">Quero criar com a Esther</a>
         <a class="btn-link" href="#trabalhos">Ver os trabalhos <span aria-hidden="true">→</span></a>
       </div>
     </div>
