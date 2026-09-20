@@ -1389,7 +1389,7 @@
       if (!h) return '';
       if (/\be ?mails?\b|\bcorreio\b/.test(h)) return 'email';
       if (/\b(telefone|tel|fone|celular|whats|whatsapp|zap|wpp)\b/.test(h)) return 'telefone';
-      if (/\b(instagram|insta|ig|arroba)\b/.test(h) || h === '@') return 'instagram';
+      if ((/\b(instagram|insta|ig|arroba)\b/.test(h) && !/\b(seguidores|seguidor|followers|curtidas|likes|posts|publicacoes)\b/.test(h)) || h === '@') return 'instagram';
       if (/\bultim[oa] (contato|interacao|resposta|mensagem|retorno)\b|\bdata\b|\benviad[oa] em\b/.test(h)) return 'ultimo_contato';
       if (/\b(situacao|status|etapa|fase|estagio|andamento)\b/.test(h)) return 'situacao';
       if (/\b(obs|observacao|observacoes|nota|notas|comentario|comentarios|anotacao|anotacoes|detalhe|detalhes|descricao|historico)\b/.test(h)) return 'obs';
@@ -1438,6 +1438,9 @@
         if (c.campo) return;
         var amostra = impAmostra(corpo, c.indice, 40);
         if (!amostra.length) { c.vazia = true; return; }
+        /* coluna de numeração ("#", "Nº", "Item" com 1, 2, 3...) não é dado da marca */
+        var tn = impNormalizar(c.semTitulo ? '' : c.titulo);
+        if ((tn === '' || /^(n|no|num|numero|item|id|ordem|seq|indice)$/.test(tn)) && impProporcao(amostra, function (v) { return /^\d{1,4}$/.test(v); }) >= 0.9) { c.numeracao = true; return; }
         Object.keys(testes).some(function (f) {
           if (usados[f] || impProporcao(amostra, testes[f]) < 0.6) return false;
           c.campo = f; c.comRotulo = false; usados[f] = true;
@@ -1445,10 +1448,10 @@
         });
       });
       if (!usados.nome) {
-        var primeira = cols.filter(function (c) { return !c.campo && !c.vazia; })[0];
+        var primeira = cols.filter(function (c) { return !c.campo && !c.vazia && !c.numeracao; })[0];
         if (primeira) { primeira.campo = 'nome'; primeira.comRotulo = false; usados.nome = true; }
       }
-      cols.forEach(function (c) { if (!c.campo) c.campo = c.vazia ? '' : 'obs'; });
+      cols.forEach(function (c) { if (!c.campo) c.campo = (c.vazia || c.numeracao) ? '' : 'obs'; });
       /* coluna sem título e sem nenhum valor (sobra de formatação da planilha) nem aparece na lista */
       return cols.filter(function (c) { return !(c.semTitulo && c.vazia); });
     }
@@ -1482,6 +1485,32 @@
       return 0;
     }
 
+    /* Um texto comprido de explicação, e não o nome de uma marca */
+    function impPareceFrase(t) {
+      t = String(t == null ? '' : t).trim();
+      return t.length >= 45 || t.split(/\s+/).length >= 7;
+    }
+    /* Tira do FIM da tabela as linhas de observação da planilha ("COMO USAR ESTA LISTA", "Fontes: ...").
+       Elas têm uma célula só, enquanto as linhas de marca têm várias. Só corta se algum desses textos parecer
+       mesmo uma frase, para não perder uma marca que veio só com o nome. */
+    function impCortarNotas(corpo) {
+      var vazio = { corpo: corpo, cortadas: 0, primeira: '' };
+      function cheias(l) { return l.filter(function (x) { return String(x == null ? '' : x).trim() !== ''; }); }
+      var qtde = corpo.map(function (l) { return cheias(l).length; });
+      var fim = corpo.length, k, texto, frase = false, primeira = '';
+      while (fim > 0 && qtde[fim - 1] === 1) fim--;                    /* o bloco final de linhas com uma célula só */
+      if (fim === corpo.length || fim === 0) return vazio;              /* sem bloco, ou planilha inteira de uma coluna só: não dá para distinguir */
+      var acima = qtde.slice(0, fim).sort(function (a, b) { return a - b; });
+      if (acima[Math.floor(acima.length / 2)] < 2) return vazio;        /* as linhas de cima também são de uma célula só */
+      for (k = corpo.length - 1; k >= fim; k--) {
+        texto = String(cheias(corpo[k])[0]).trim();
+        if (impPareceFrase(texto)) frase = true;
+        primeira = texto;                                               /* vai ficando o texto mais de cima do bloco */
+      }
+      if (!frase) return vazio;
+      return { corpo: corpo.slice(0, fim), cortadas: corpo.length - fim, primeira: primeira };
+    }
+
     /* Separa o cabeçalho do resto. Se a primeira linha já é um contato (tem e-mail, telefone ou @), não há cabeçalho. */
     function impPreparar(linhas) {
       var topo = impAcharCabecalho(linhas);
@@ -1490,17 +1519,31 @@
       var semCab = !cab.some(function (c) { return impCampoDoCabecalho(c); }) &&
         cab.some(function (c) { return impPareceEmail(c) || impPareceTelefone(c) || impPareceInsta(c); });
       var corpo = semCab ? linhas : linhas.slice(1);
+      var corte = impCortarNotas(corpo);
+      corpo = corte.corpo;
       var cols = impDetectarColunas(semCab ? [] : cab, corpo);
       return {
         cols: cols,
         corpo: corpo.slice(0, IMP_LIMITE_LINHAS),
         cortou: corpo.length > IMP_LIMITE_LINHAS,
         semCabecalho: semCab,
+        notasIgnoradas: corte.cortadas,
+        primeiraNota: corte.primeira,
         puladas: topo,
         situacaoPadrao: 'lead',
         respostaIndice: impAcharColunaResposta(cols, corpo),
         usarResposta: false
       };
+    }
+
+    /* "-", "n/a", "não encontrado", "sem e-mail", "(e-mail não capturado)" querem dizer "não tem": não viram dado nenhum */
+    function impPlaceholder(v) {
+      var h = impNormalizar(v);
+      return /^-+$/.test(String(v).trim()) ||
+        /^(n a|n d|nd|nulo|null|nenhum|nenhuma|sem|indisponivel|nao se aplica)$/.test(h) ||
+        /^nao (tem|possui|encontrad[oa]s?|consta|informad[oa]s?|localizad[oa]s?|capturad[oa]s?|disponivel|publica)$/.test(h) ||
+        /^sem (e ?mail|telefone|contato|instagram|whatsapp|site|link|informacao|dados)$/.test(h) ||
+        /^(e ?mail|telefone|contato|instagram|whatsapp|site|link) (nao|sem) (tem|encontrad[oa]s?|capturad[oa]s?|informad[oa]s?|localizad[oa]s?|disponivel|publicad[oa]s?)$/.test(h);
     }
 
     /* Uma linha da planilha vira uma marca. O que não cabe em nenhum campo vai para a lista "obs". */
@@ -1509,7 +1552,7 @@
       cols.forEach(function (c) {
         if (!c.campo) return;
         var v = String(linha[c.indice] == null ? '' : linha[c.indice]).replace(/\r\n?/g, '\n').trim().replace(/^'(?=[=+\-@])/, '');
-        if (!v || /^-+$/.test(v) || /^(n a|nao tem|sem|nenhum|nulo|null)$/.test(impNormalizar(v))) return;
+        if (!v || (c.campo === 'nome' ? /^-+$/.test(v) : impPlaceholder(v))) return;
         if (c.campo === 'nome') r.nome = v;
         else if (c.campo === 'nicho') r.nicho = impLimparNicho(v);
         else if (c.campo === 'favorita') r.favorita = impEhSim(v);
@@ -1523,7 +1566,11 @@
             if (achados.length > 1) r.obs.push('Outros e-mails: ' + achados.slice(1).join(', '));
           } else r.obs.push('E-mail: ' + v);
         } else if (c.campo === 'telefone') {
-          if (/^\d+(?:[.,]\d+)?e\+?\d+$/i.test(v.replace(/\s/g, ''))) r.cientifico = true; else r.telefone = v;
+          if (/^\d+(?:[.,]\d+)?e\+?\d+$/i.test(v.replace(/\s/g, ''))) r.cientifico = true;
+          else {
+            var tel = v.replace(/^(whats(app)?|zap|wpp|tel(efone)?|cel(ular)?|fone|contato)\.?\s*:?\s*/i, '').trim();   /* "WhatsApp (51) 99283-1964" vira "(51) 99283-1964" */
+            if (tel) r.telefone = tel;
+          }
         } else if (c.campo === 'situacao') {
           r.situacao = impLerSituacao(v);
           if (!r.situacao) r.obs.push('Situação: ' + v);
@@ -1553,7 +1600,7 @@
     /* Faz a conta toda: quantas entram, quantas já existem, quantas ficam de fora. */
     function impCalcular(imp, existentes) {
       var painel = impNovoIndice(), arquivo = impNovoIndice();
-      var res = { lidas: imp.corpo.length, prontas: [], jaExistem: [], repetidas: 0, semNome: 0, cientificos: 0 };
+      var res = { lidas: imp.corpo.length, prontas: [], jaExistem: [], repetidas: 0, semNome: 0, notas: 0, cientificos: 0 };
       (existentes || []).forEach(function (m) { if (!m.exemplo) impRegistrar(painel, m.nome, m.email); });
       imp.corpo.forEach(function (linha) {
         var r = impMontarLinha(imp.cols, linha);
@@ -1561,6 +1608,8 @@
         if (imp.usarResposta && imp.respostaIndice != null && !r.situacao && impRespondeu(linha[imp.respostaIndice])) r.situacao = 'conversando';
         if (r.cientifico) res.cientificos++;
         if (!r.nome) { res.semNome++; return; }
+        /* texto solto: uma explicação que ficou na coluna da marca, sem e-mail, telefone, Instagram nem outro dado */
+        if (impPareceFrase(r.nome) && !r.email && !r.telefone && !r.instagram && !r.nicho && !r.ultimo_contato && !r.situacao && !r.obs.length) { res.notas++; return; }
         if (impJaExiste(painel, r.nome, r.email)) { res.jaExistem.push(r.nome); return; }
         if (impJaExiste(arquivo, r.nome, r.email)) { res.repetidas++; return; }
         impRegistrar(arquivo, r.nome, r.email);
@@ -1711,6 +1760,11 @@
         if (!colunasNovas) notas.push('<strong>Falta rodar o arquivo disparo.sql no Supabase.</strong> Enquanto isso, o botão Importar fica desligado (sem os campos Nicho e Favorita, o nicho da planilha se perderia).');
         if (imp.semCabecalho) notas.push('A planilha não tem linha de títulos. Reconheci as colunas pelo conteúdo.');
         if (imp.puladas) notas.push('Pulei ' + imp.puladas + (imp.puladas === 1 ? ' linha' : ' linhas') + ' de título no começo da planilha e usei a linha seguinte como títulos das colunas.');
+        if (imp.notasIgnoradas) {
+          notas.push('Ignorei ' + imp.notasIgnoradas + (imp.notasIgnoradas === 1 ? ' linha' : ' linhas') + ' de observação no fim da planilha, que não ' + (imp.notasIgnoradas === 1 ? 'é marca' : 'são marcas') +
+            ' (começando por "' + esc(imp.primeiraNota.length > 50 ? imp.primeiraNota.slice(0, 50) + '...' : imp.primeiraNota) + '").');
+        }
+        if (r.notas) notas.push(r.notas + (r.notas === 1 ? ' linha de texto solto foi ignorada' : ' linhas de texto solto foram ignoradas') + ' (frases sem e-mail, telefone ou outro dado da marca).');
         var extras = imp.cols.filter(function (c) { return c.campo === 'obs' && c.comRotulo; });
         if (extras.length) {
           notas.push((extras.length === 1 ? 'A coluna ' : 'As colunas ') + extras.map(function (c) { return '"' + esc(c.titulo) + '"'; }).join(', ') +
