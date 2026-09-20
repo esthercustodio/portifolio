@@ -149,6 +149,23 @@ svg.ic{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-wid
 .numero-sub{font-size:.75rem;color:var(--muted);margin-top:.1rem}
 .duas-colunas{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:1rem;margin-bottom:1rem}
 
+/* mensagens que chegam pelo formulário do site (aba Portfólio) */
+.msg-lista{max-height:27rem;overflow:auto}
+.msg{border-bottom:1px solid var(--line)}
+.msg:last-child{border-bottom:0}
+.msg summary{display:flex;flex-wrap:wrap;align-items:center;gap:.25rem .7rem;padding:.7rem 1rem;cursor:pointer;list-style:none}
+.msg summary::-webkit-details-marker{display:none}
+.msg summary:hover{background:rgba(128,128,128,.08)}
+.msg-nome{font-weight:600;font-size:.88rem}
+.msg-data{font-size:.75rem;color:var(--muted)}
+.msg-previa{flex-basis:100%;font-size:.82rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.msg[open] .msg-previa{display:none}
+.msg-corpo{padding:0 1rem .9rem}
+.msg-texto{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.88rem;line-height:1.5;margin-bottom:.4rem}
+.msg-contato{font-size:.78rem;color:var(--muted);margin-bottom:.6rem;overflow-wrap:anywhere}
+.acoes-msg{display:flex;flex-wrap:wrap;gap:.5rem}
+.acoes-msg .btn{text-decoration:none}
+
 /* gráfico de barras */
 .grafico{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:.35rem;align-items:end;height:170px}
 .barra-coluna{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;min-width:0}

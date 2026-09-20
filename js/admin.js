@@ -515,6 +515,55 @@
       return todas;
     }
 
+    /* Mensagens do formulário do site. Elas chegam na tabela "marcas" como Lead, com o texto no campo obs
+       ("Mensagem pelo site: ..." ou "Pediu o mídia kit pelo site."). Aqui só são lidas e mostradas. */
+    async function carregarMensagens() {
+      try {
+        var r = await banco.from('marcas').select('id,nome,email,obs,criado_em')
+          .ilike('obs', '%pelo site%').order('criado_em', { ascending: false }).limit(30);
+        if (r.error) return { erro: descreverErro('marcas', r.error), lista: [] };
+        var lista = [];
+        (r.data || []).forEach(function (m) {
+          var obs = String(m.obs || '');
+          if (obs.indexOf('Mensagem pelo site:') === 0) {
+            lista.push({ tipo: 'mensagem', nome: m.nome, email: m.email, quando: m.criado_em, texto: obs.slice('Mensagem pelo site:'.length).trim() });
+          } else if (obs.indexOf('Pediu o mídia kit') === 0) {
+            lista.push({ tipo: 'kit', nome: m.nome, email: m.email, quando: m.criado_em, texto: 'Pediu o mídia kit pelo site.' });
+          }
+        });
+        return { erro: '', lista: lista };
+      } catch (e) {
+        return { erro: descreverErro('marcas', e), lista: [] };
+      }
+    }
+
+    function htmlMensagem(m) {
+      var email = String(m.email || '').trim();
+      var emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      var previa = m.texto.length > 90 ? m.texto.slice(0, 90).trim() + '...' : m.texto;
+      return '<details class="msg"><summary>' +
+        '<span class="msg-nome">' + esc(m.nome || 'Sem nome') + '</span>' +
+        '<span class="pilula ' + (m.tipo === 'kit' ? 'p-briefing' : 'p-lead') + '">' + (m.tipo === 'kit' ? 'Mídia kit' : 'Mensagem') + '</span>' +
+        '<span class="msg-data">' + esc(fmtDataHora(m.quando)) + '</span>' +
+        '<span class="msg-previa">' + esc(previa || '(sem texto)') + '</span></summary>' +
+        '<div class="msg-corpo"><p class="msg-texto">' + esc(m.texto || '(sem texto)') + '</p>' +
+        '<p class="msg-contato">' + (emailOk ? esc(email) : 'Sem e-mail informado') + '</p>' +
+        '<div class="acoes-msg">' +
+          (emailOk ? '<a class="btn pequeno principal-btn" href="mailto:' + esc(email) + '?subject=' + encodeURIComponent('Sobre a sua mensagem no meu portfólio') + '">' + ic('envelope') + 'Responder por e-mail</a>' : '') +
+          '<a class="btn pequeno" href="#marcas">Abrir na aba Marcas</a></div></div></details>';
+    }
+
+    function htmlMensagens(res) {
+      var corpo;
+      if (res.erro) corpo = '<p class="vazio">' + esc(res.erro) + '</p>';
+      else if (!res.lista.length) corpo = '<p class="vazio">Quando alguém enviar uma mensagem pelo formulário de contato do seu site, ela aparece aqui.</p>';
+      else corpo = '<div class="msg-lista">' + res.lista.map(htmlMensagem).join('') + '</div>';
+      var total = res.lista.filter(function (m) { return m.tipo === 'mensagem'; }).length;
+      return '<div class="cartao" style="margin-bottom:1rem"><div class="cartao-cab"><h2>Mensagens do site' +
+        (total ? ' <small style="font-weight:500;color:var(--muted)">(' + fmtInt(total) + ')</small>' : '') + '</h2>' +
+        '<a class="btn pequeno" href="#marcas">Ver todas na aba Marcas</a></div>' + corpo + '</div>';
+    }
+
     function calcular(videos, visitas) {
       var hoje = hojeISO();
       var dias = [];
@@ -718,10 +767,10 @@
       abrir: async function (secao) {
         secaoAtual = secao;
         if (!secao.innerHTML.trim()) secao.innerHTML = '<p class="carregando">Carregando...</p>';
-        var resultado = await Promise.all([listar('videos', true), carregarVisitas()]);
+        var resultado = await Promise.all([listar('videos', true), carregarVisitas(), carregarMensagens()]);
         var videos = resultado[0], visitas = resultado[1];
         var c = calcular(videos, visitas);
-        secao.innerHTML = htmlNumeros(c) +
+        secao.innerHTML = htmlNumeros(c) + htmlMensagens(resultado[2]) +
           '<div class="duas-colunas">' + htmlGrafico(c) + htmlOrigens(c) + '</div>' +
           '<div id="tabelaVideos"></div>';
         desenharTabela(videos);
