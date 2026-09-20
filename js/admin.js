@@ -1022,10 +1022,12 @@
         s.indexOf(String.fromCodePoint(0x2605)) >= 0 || s.indexOf(String.fromCodePoint(0x2B50)) >= 0;   /* estrela preta ou estrela de emoji */
     }
 
-    /* Tenta UTF-8 e, se não der, Windows-1252 (o CSV antigo do Excel). Avisa se for .xlsx. */
+    /* Descobre que tipo de arquivo é. Excel novo (.xlsx) é um ZIP; Excel antigo (.xls) ou com senha começa com D0 CF 11 E0.
+       Se for texto, tenta UTF-8 e, se não der, Windows-1252 (o CSV antigo do Excel). */
     function impDecodificar(buf) {
       var b = new Uint8Array(buf), texto;
       if (b.length > 3 && b[0] === 0x50 && b[1] === 0x4B && b[2] === 0x03 && b[3] === 0x04) return { xlsx: true };
+      if (b.length > 7 && b[0] === 0xD0 && b[1] === 0xCF && b[2] === 0x11 && b[3] === 0xE0) return { antigo: true };
       if (b.length > 1 && b[0] === 0xFF && b[1] === 0xFE) texto = new TextDecoder('utf-16le').decode(b);
       else if (b.length > 1 && b[0] === 0xFE && b[1] === 0xFF) texto = new TextDecoder('utf-16be').decode(b);
       else {
@@ -1033,6 +1035,266 @@
         catch (e) { texto = new TextDecoder('windows-1252').decode(b); }
       }
       return { texto: texto.charCodeAt(0) === 0xFEFF ? texto.slice(1) : texto };
+    }
+
+    /* ---- Excel (.xlsx) ----
+       O .xlsx é um ZIP com arquivos XML dentro. O painel lê aqui mesmo, sem biblioteca nenhuma:
+       abre o ZIP, acha as abas, os textos guardados (sharedStrings) e as células de cada aba. */
+    var IMP_MAX_XML = 40 * 1024 * 1024;         /* protege contra arquivo "bomba": pequeno zipado, gigante aberto */
+    var IMP_MAX_COLUNAS = 200;
+    var IMP_MAX_LINHAS_LIDAS = 5000;
+    var IMP_FORMATOS_DATA = [14, 15, 16, 17, 18, 19, 20, 21, 22, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 45, 46, 47, 50, 51, 52, 53, 54, 55, 56, 57, 58];
+
+    function impErro(codigo) { var e = new Error(codigo); e.codigo = codigo; return e; }
+
+    /* A frase certa para cada problema ao abrir o Excel */
+    function impMensagemXlsx(e) {
+      var c = e && e.codigo;
+      if (c === 'navegador') return 'Este navegador é antigo demais para abrir o Excel direto. Atualize o navegador ou salve a planilha como CSV UTF-8 e suba de novo.';
+      if (c === 'naoexcel') return 'Esse arquivo não parece uma planilha do Excel (.xlsx). Confira se é o arquivo certo.';
+      if (c === 'grande') return 'Essa planilha é grande demais para abrir aqui. Tente uma com menos linhas.';
+      if (c === 'vazio') return 'A planilha está vazia.';
+      return 'Não consegui ler esse arquivo do Excel. Ele pode estar danificado. Tente salvar de novo como .xlsx, ou como CSV UTF-8.';
+    }
+
+    /* Abre o ZIP: lê o índice (diretório central) e devolve a lista de arquivos de dentro */
+    function impLerZip(buf) {
+      var b = new Uint8Array(buf), v = new DataView(buf), fim = -1, i;
+      for (i = b.length - 22; i >= 0 && i >= b.length - 22 - 65535; i--) {
+        if (v.getUint32(i, true) === 0x06054b50) { fim = i; break; }
+      }
+      if (fim < 0) throw impErro('naoexcel');
+      var total = v.getUint16(fim + 10, true), p = v.getUint32(fim + 16, true), entradas = [], n;
+      for (n = 0; n < total; n++) {
+        if (v.getUint32(p, true) !== 0x02014b50) throw impErro('corrompido');
+        var tamC = v.getUint32(p + 20, true), tamU = v.getUint32(p + 24, true);
+        var nomeLen = v.getUint16(p + 28, true), extraLen = v.getUint16(p + 30, true), comLen = v.getUint16(p + 32, true);
+        if (tamC === 0xFFFFFFFF || tamU === 0xFFFFFFFF) throw impErro('grande');
+        entradas.push({
+          nome: new TextDecoder('utf-8').decode(b.subarray(p + 46, p + 46 + nomeLen)),
+          metodo: v.getUint16(p + 10, true), tamC: tamC, tamU: tamU, local: v.getUint32(p + 42, true)
+        });
+        p += 46 + nomeLen + extraLen + comLen;
+      }
+      return { bytes: b, view: v, entradas: entradas };
+    }
+    /* Tira um arquivo de dentro do ZIP (guardado puro ou compactado com deflate) */
+    async function impLerEntradaZip(zip, en) {
+      var v = zip.view, l = en.local;
+      if (v.getUint32(l, true) !== 0x04034b50) throw impErro('corrompido');
+      var ini = l + 30 + v.getUint16(l + 26, true) + v.getUint16(l + 28, true);
+      var dados = zip.bytes.subarray(ini, ini + en.tamC);
+      if (en.metodo === 0) return dados;
+      if (en.metodo !== 8) throw impErro('corrompido');
+      if (typeof DecompressionStream === 'undefined') throw impErro('navegador');
+      var fluxo = new Blob([dados]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+      return new Uint8Array(await new Response(fluxo).arrayBuffer());
+    }
+
+    /* Um leitor de XML pequeno, só para o que o Excel escreve. Devolve uma árvore de {tag, attrs, filhos}. */
+    function impDecodificarEntidades(t) {
+      return String(t).replace(/&(#x[0-9A-Fa-f]+|#[0-9]+|amp|lt|gt|quot|apos);/g, function (_m, e) {
+        if (e === 'amp') return '&';
+        if (e === 'lt') return '<';
+        if (e === 'gt') return '>';
+        if (e === 'quot') return '"';
+        if (e === 'apos') return "'";
+        var cod = (e.charAt(1) === 'x' || e.charAt(1) === 'X') ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10);
+        try { return String.fromCodePoint(cod); } catch (x) { return ''; }
+      }).replace(/_x([0-9A-Fa-f]{4})_/g, function (_m, h) { return String.fromCharCode(parseInt(h, 16)); });
+    }
+    function impFimDaTag(texto, i) {            /* acha o ">" que fecha a tag, sem se enganar com ">" dentro de aspas */
+      var aspas = '', c;
+      for (; i < texto.length; i++) {
+        c = texto.charAt(i);
+        if (aspas) { if (c === aspas) aspas = ''; }
+        else if (c === '"' || c === "'") aspas = c;
+        else if (c === '>') return i;
+      }
+      return texto.length;
+    }
+    function impXml(texto) {
+      var raiz = { tag: '#raiz', attrs: {}, filhos: [] }, atual = raiz, i = 0, n = texto.length, j, f, corpo, auto, nome, attrs, re, ma, valor, local, no;
+      while (i < n) {
+        if (texto.charCodeAt(i) !== 60) {
+          j = texto.indexOf('<', i);
+          if (j < 0) j = n;
+          if (atual !== raiz) atual.filhos.push({ tag: '#texto', texto: impDecodificarEntidades(texto.slice(i, j)) });
+          i = j;
+          continue;
+        }
+        if (texto.substr(i, 4) === '<!--') { j = texto.indexOf('-->', i + 4); i = j < 0 ? n : j + 3; continue; }
+        if (texto.substr(i, 9) === '<![CDATA[') {
+          j = texto.indexOf(']]>', i + 9);
+          if (j < 0) j = n;
+          if (atual !== raiz) atual.filhos.push({ tag: '#texto', texto: texto.slice(i + 9, j) });
+          i = j + 3;
+          continue;
+        }
+        if (texto.substr(i, 2) === '<?') { j = texto.indexOf('?>', i + 2); i = j < 0 ? n : j + 2; continue; }
+        if (texto.substr(i, 2) === '<!') { j = texto.indexOf('>', i + 2); i = j < 0 ? n : j + 1; continue; }
+        if (texto.charAt(i + 1) === '/') { j = texto.indexOf('>', i + 2); atual = atual.pai || raiz; i = j < 0 ? n : j + 1; continue; }
+        f = impFimDaTag(texto, i + 1);
+        corpo = texto.slice(i + 1, f);
+        auto = false;
+        if (corpo.charAt(corpo.length - 1) === '/') { auto = true; corpo = corpo.slice(0, -1); }
+        nome = (/^[^\s]+/.exec(corpo) || [''])[0];
+        attrs = {};
+        re = /([^\s=]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/g;
+        var resto = corpo.slice(nome.length);
+        while ((ma = re.exec(resto))) {
+          valor = impDecodificarEntidades(ma[2] !== undefined ? ma[2] : ma[3]);
+          attrs[ma[1]] = valor;
+          local = ma[1].replace(/^.*:/, '');
+          if (!Object.prototype.hasOwnProperty.call(attrs, local)) attrs[local] = valor;
+        }
+        no = { tag: nome.replace(/^.*:/, ''), attrs: attrs, filhos: [], pai: atual };
+        atual.filhos.push(no);
+        if (!auto) atual = no;
+        i = f + 1;
+      }
+      return raiz;
+    }
+    function impFilhos(no, tag) { return ((no && no.filhos) || []).filter(function (f) { return f.tag === tag; }); }
+    function impFilho(no, tag) { return impFilhos(no, tag)[0] || null; }
+    function impTextoSimples(no) { return ((no && no.filhos) || []).map(function (f) { return f.tag === '#texto' ? f.texto : ''; }).join(''); }
+    /* O texto de uma frase guardada: junta os pedaços (negrito, cor...) e ignora a pronúncia (rPh) */
+    function impTextoDoSi(no) {
+      if (no.tag === 't') return impTextoSimples(no);
+      if (no.tag === 'rPh') return '';
+      return (no.filhos || []).filter(function (f) { return f.tag !== '#texto'; }).map(impTextoDoSi).join('');
+    }
+    /* "A" vira 0, "B" vira 1, "AA" vira 26 */
+    function impColuna(ref) {
+      var m = /^([A-Za-z]+)/.exec(String(ref || '')), n = 0, i, s;
+      if (!m) return -1;
+      s = m[1].toUpperCase();
+      for (i = 0; i < s.length; i++) n = n * 26 + (s.charCodeAt(i) - 64);
+      return n - 1;
+    }
+    /* O Excel guarda data como número de dias. Vira "2024-03-15". */
+    function impSerialParaISO(serial, sistema1904) {
+      var dias = Math.floor(serial);
+      if (!isFinite(dias) || dias < 1) return '';
+      var d = new Date((dias - (sistema1904 ? 24107 : 25569)) * 86400000);
+      return isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10);
+    }
+
+    /* Lê o .xlsx e devolve as abas: [{ nome, linhas }], cada linha uma lista de textos (igual ao CSV) */
+    async function impLerXlsx(buf) {
+      var zip;
+      try { zip = impLerZip(buf); } catch (e) { throw (e && e.codigo) ? e : impErro('corrompido'); }
+      var porNome = Object.create(null);
+      zip.entradas.forEach(function (en) { porNome[en.nome] = en; });
+      async function lerTexto(nome, obrigatorio) {
+        var en = porNome[nome];
+        if (!en) { if (obrigatorio) throw impErro('naoexcel'); return ''; }
+        if (en.tamU > IMP_MAX_XML) throw impErro('grande');
+        try { return new TextDecoder('utf-8').decode(await impLerEntradaZip(zip, en)); }
+        catch (e) { throw (e && e.codigo) ? e : impErro('corrompido'); }
+      }
+
+      var livro = impFilho(impXml(await lerTexto('xl/workbook.xml', true)), 'workbook');
+      if (!livro) throw impErro('naoexcel');
+      var pr = impFilho(livro, 'workbookPr'), d1904 = !!pr && /^(1|true)$/i.test(pr.attrs.date1904 || '');
+      var listaAbas = impFilhos(impFilho(livro, 'sheets'), 'sheet')
+        .filter(function (s) { return !/hidden/i.test(s.attrs.state || ''); })
+        .map(function (s) { return { nome: s.attrs.name || 'Aba', rid: s.attrs.id }; });
+      if (!listaAbas.length) throw impErro('naoexcel');
+
+      var alvos = Object.create(null);
+      impFilhos(impFilho(impXml(await lerTexto('xl/_rels/workbook.xml.rels', false)), 'Relationships'), 'Relationship')
+        .forEach(function (r) { alvos[r.attrs.Id] = r.attrs.Target; });
+      function caminho(alvo) {
+        if (!alvo) return '';
+        if (alvo.charAt(0) === '/') return alvo.slice(1);
+        var saida = [];
+        ('xl/' + alvo).split('/').forEach(function (p) { if (p === '..') saida.pop(); else if (p !== '.') saida.push(p); });
+        return saida.join('/');
+      }
+
+      var frases = [], sstTexto = await lerTexto('xl/sharedStrings.xml', false);
+      if (sstTexto) impFilhos(impFilho(impXml(sstTexto), 'sst'), 'si').forEach(function (si) { frases.push(impTextoDoSi(si)); });
+
+      var formatos = Object.create(null), estilos = [], estTexto = await lerTexto('xl/styles.xml', false);
+      if (estTexto) {
+        var ss = impFilho(impXml(estTexto), 'styleSheet');
+        impFilhos(impFilho(ss, 'numFmts'), 'numFmt').forEach(function (f) { formatos[f.attrs.numFmtId] = f.attrs.formatCode || ''; });
+        impFilhos(impFilho(ss, 'cellXfs'), 'xf').forEach(function (xf) { estilos.push(+xf.attrs.numFmtId || 0); });
+      }
+      function ehData(idxEstilo) {
+        if (idxEstilo === undefined) return false;
+        var id = estilos[+idxEstilo];
+        if (id === undefined) return false;
+        if (IMP_FORMATOS_DATA.indexOf(id) >= 0) return true;
+        var cod = formatos[id];
+        if (!cod) return false;
+        return /[dmyhs]/i.test(cod.replace(/"[^"]*"/g, '').replace(/\[[^\]]*\]/g, '').replace(/\\./g, '').replace(/_./g, '').replace(/\*./g, ''));
+      }
+      function valorDaCelula(c) {
+        var t = c.attrs.t || 'n', v, bruto, n, is;
+        if (t === 'inlineStr') { is = impFilho(c, 'is'); return is ? impTextoDoSi(is) : ''; }
+        v = impFilho(c, 'v');
+        bruto = v ? impTextoSimples(v) : '';
+        if (bruto === '') return '';
+        if (t === 's') return frases[+bruto] === undefined ? '' : frases[+bruto];
+        if (t === 'b') return bruto === '1' ? 'Sim' : 'Não';
+        if (t === 'e') return '';
+        if (t === 'str' || t === 'd') return bruto;
+        n = Number(bruto);
+        if (!isFinite(n)) return bruto;
+        if (ehData(c.attrs.s)) return impSerialParaISO(n, d1904);
+        return String(+n.toPrecision(15));
+      }
+      function lerFolha(xml) {
+        var dados = impFilho(impFilho(impXml(xml), 'worksheet'), 'sheetData'), linhas = [], r, row;
+        if (!dados) return linhas;
+        function lerLinha(row) {
+          var esparsa = [], ultimo = -1, vazia = true, k, densa = [];
+          impFilhos(row, 'c').forEach(function (c) {
+            var col = c.attrs.r ? impColuna(c.attrs.r) : ultimo + 1, v;
+            ultimo = col;
+            if (col < 0 || col >= IMP_MAX_COLUNAS) return;
+            v = valorDaCelula(c);
+            if (String(v).trim() !== '') vazia = false;
+            esparsa[col] = v;
+          });
+          if (vazia) return null;
+          for (k = 0; k < esparsa.length; k++) densa.push(esparsa[k] === undefined ? '' : esparsa[k]);
+          return densa;
+        }
+        for (r = 0; r < dados.filhos.length && linhas.length < IMP_MAX_LINHAS_LIDAS; r++) {
+          row = dados.filhos[r];
+          if (row.tag !== 'row') continue;
+          var linha = lerLinha(row);
+          if (linha) linhas.push(linha);
+        }
+        return linhas;
+      }
+
+      var abas = [], i, linhasDaAba, xml;
+      for (i = 0; i < listaAbas.length; i++) {
+        xml = await lerTexto(caminho(alvos[listaAbas[i].rid]) || ('xl/worksheets/sheet' + (i + 1) + '.xml'), false);
+        if (!xml) continue;
+        linhasDaAba = lerFolha(xml);
+        if (linhasDaAba.length) abas.push({ nome: listaAbas[i].nome, linhas: linhasDaAba });
+      }
+      if (!abas.length) throw impErro('vazio');
+      return abas;
+    }
+    /* Qual aba ler primeiro: a que tem títulos que o painel reconhece (e, no empate, a com mais linhas) */
+    function impEscolherAba(abas) {
+      var melhor = 0, pontos = -1;
+      abas.forEach(function (a, i) {
+        var reconhecidos = 0, k, r, p;
+        for (k = 0; k < Math.min(a.linhas.length, 10); k++) {
+          r = a.linhas[k].filter(function (c) { return impCampoDoCabecalho(c); }).length;
+          if (r > reconhecidos) reconhecidos = r;
+        }
+        p = reconhecidos * 10000 + Math.min(a.linhas.length, 9999);
+        if (p > pontos) { pontos = p; melhor = i; }
+      });
+      return melhor;
     }
 
     /* Excel em português usa ";" e o Google Planilhas usa ",". Olha a primeira linha e escolhe. */
@@ -1134,6 +1396,10 @@
       if (/\b(nicho|nichos|segmento|segmentos|categoria|categorias|setor|ramo)\b/.test(h)) return 'nicho';
       if (/\b(favorit[oa]s?|estrela)\b/.test(h)) return 'favorita';
       if (/^(nome( d[aeo])?( marca| empresa| cliente| lead)?|marcas?|empresas?|cliente|brand|razao social|anunciante|lead)$/.test(h)) return 'nome';
+      /* "Empresa (Marca)", "Marca / Empresa", "Nome da marca ou empresa": só palavras de nome e pelo menos uma que diga "marca" */
+      var palavras = h.split(' ');
+      if (palavras.every(function (p) { return /^(nome|da|do|de|e|ou|marcas?|empresas?|cliente|brand|lead)$/.test(p); }) &&
+          palavras.some(function (p) { return /^(marcas?|empresas?|cliente|brand)$/.test(p); })) return 'nome';
       return '';
     }
 
@@ -1159,7 +1425,7 @@
         var campo = impCampoDoCabecalho(titulo);
         if (campo && campo !== 'obs' && usados[campo]) campo = 'obs';
         if (campo && campo !== 'obs') usados[campo] = true;
-        cols.push({ indice: i, titulo: titulo || 'Coluna ' + (i + 1), campo: campo, comRotulo: !!titulo && impCampoDoCabecalho(titulo) !== 'obs' });
+        cols.push({ indice: i, titulo: titulo || 'Coluna ' + (i + 1), semTitulo: !titulo, campo: campo, comRotulo: !!titulo && impCampoDoCabecalho(titulo) !== 'obs' });
       }
       var testes = {
         email: impPareceEmail,
@@ -1183,21 +1449,57 @@
         if (primeira) { primeira.campo = 'nome'; primeira.comRotulo = false; usados.nome = true; }
       }
       cols.forEach(function (c) { if (!c.campo) c.campo = c.vazia ? '' : 'obs'; });
-      return cols;
+      /* coluna sem título e sem nenhum valor (sobra de formatação da planilha) nem aparece na lista */
+      return cols.filter(function (c) { return !(c.semTitulo && c.vazia); });
+    }
+
+    /* "Sim", "Parcial" e parecidos contam como "a marca respondeu" */
+    function impRespondeu(v) {
+      return /^(sim|s|yes|y|true|verdadeiro|parcial|parcialmente|em parte)$/.test(impNormalizar(v));
+    }
+    /* Acha uma coluna do tipo "Teve resposta?" cheia de Sim e Não. Devolve o número dela, ou null.
+       O painel só oferece usar essa coluna para definir a situação: nada muda sem você escolher. */
+    function impAcharColunaResposta(cols, corpo) {
+      var achada = null;
+      cols.forEach(function (c) {
+        if (achada !== null || c.campo !== 'obs') return;
+        if (!/\b(teve resposta|respondeu|resposta|retorno)\b/.test(impNormalizar(c.titulo))) return;
+        var amostra = impAmostra(corpo, c.indice, 60);
+        if (!amostra.length) return;
+        var simNao = amostra.filter(function (v) { return impRespondeu(v) || /^(nao|n|no|false|falso)$/.test(impNormalizar(v)); }).length;
+        if (simNao / amostra.length >= 0.8 && amostra.some(impRespondeu)) achada = c.indice;
+      });
+      return achada;
+    }
+
+    /* Nas primeiras linhas, acha a que tem os títulos das colunas (duas ou mais que o painel reconhece).
+       Serve para planilhas que começam com uma linha de título, como "Leads 2026". */
+    function impAcharCabecalho(linhas) {
+      var i;
+      for (i = 0; i < Math.min(linhas.length, 10); i++) {
+        if (linhas[i].filter(function (c) { return impCampoDoCabecalho(c); }).length >= 2) return i;
+      }
+      return 0;
     }
 
     /* Separa o cabeçalho do resto. Se a primeira linha já é um contato (tem e-mail, telefone ou @), não há cabeçalho. */
     function impPreparar(linhas) {
+      var topo = impAcharCabecalho(linhas);
+      if (topo > 0) linhas = linhas.slice(topo);
       var cab = linhas[0] || [];
       var semCab = !cab.some(function (c) { return impCampoDoCabecalho(c); }) &&
         cab.some(function (c) { return impPareceEmail(c) || impPareceTelefone(c) || impPareceInsta(c); });
       var corpo = semCab ? linhas : linhas.slice(1);
+      var cols = impDetectarColunas(semCab ? [] : cab, corpo);
       return {
-        cols: impDetectarColunas(semCab ? [] : cab, corpo),
+        cols: cols,
         corpo: corpo.slice(0, IMP_LIMITE_LINHAS),
         cortou: corpo.length > IMP_LIMITE_LINHAS,
         semCabecalho: semCab,
-        situacaoPadrao: 'lead'
+        puladas: topo,
+        situacaoPadrao: 'lead',
+        respostaIndice: impAcharColunaResposta(cols, corpo),
+        usarResposta: false
       };
     }
 
@@ -1255,6 +1557,8 @@
       (existentes || []).forEach(function (m) { if (!m.exemplo) impRegistrar(painel, m.nome, m.email); });
       imp.corpo.forEach(function (linha) {
         var r = impMontarLinha(imp.cols, linha);
+        /* opção da tela: quem respondeu ("Teve resposta?" = Sim ou Parcial) entra como Conversando, se a planilha não disse outra situação */
+        if (imp.usarResposta && imp.respostaIndice != null && !r.situacao && impRespondeu(linha[imp.respostaIndice])) r.situacao = 'conversando';
         if (r.cientifico) res.cientificos++;
         if (!r.nome) { res.semNome++; return; }
         if (impJaExiste(painel, r.nome, r.email)) { res.jaExistem.push(r.nome); return; }
@@ -1288,10 +1592,10 @@
         titulo: 'Importar planilha de marcas',
         largo: true,
         corpo: '<div id="impRaiz"><div id="impAviso"></div>' +
-          '<p class="imp-texto">Suba a sua planilha em <strong>CSV</strong>. O painel descobre sozinho qual coluna é a marca, o e-mail, o Instagram, o telefone e assim por diante. Você confere tudo antes de importar.</p>' +
-          '<label class="imp-zona" id="impZona" for="impArquivo">' + ic('subir') + '<strong>Escolher a planilha</strong><span>ou arraste o arquivo .csv para cá</span></label>' +
-          '<input type="file" id="impArquivo" class="sr-only" accept=".csv,.txt,text/csv,text/plain">' +
-          '<p class="imp-dica">No Excel ou no Google Planilhas: Arquivo, Salvar como (ou Fazer download), CSV. Nada é salvo antes de você confirmar. ' +
+          '<p class="imp-texto">Suba a sua planilha em <strong>Excel (.xlsx)</strong> ou <strong>CSV</strong>. O painel descobre sozinho qual coluna é a marca, o e-mail, o Instagram, o telefone e assim por diante. Você confere tudo antes de importar.</p>' +
+          '<label class="imp-zona" id="impZona" for="impArquivo">' + ic('subir') + '<strong>Escolher a planilha</strong><span>ou arraste o arquivo .xlsx ou .csv para cá</span></label>' +
+          '<input type="file" id="impArquivo" class="sr-only" accept=".xlsx,.xlsm,.csv,.txt,text/csv,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">' +
+          '<p class="imp-dica">Pode subir o arquivo do Excel do jeito que está. Se preferir CSV: Arquivo, Salvar como, CSV UTF-8 (no Google Planilhas, Fazer download). Nada é salvo antes de você confirmar. ' +
           '<button type="button" class="imp-link" id="impModelo">Baixar modelo em branco</button></p></div>',
         botoes: [{ rotulo: 'Cancelar', aoClicar: fecharModal }]
       });
@@ -1305,13 +1609,22 @@
         if (!arquivo) return;
         $('#impAviso', raiz).innerHTML = '';
         if (arquivo.size > IMP_LIMITE_ARQUIVO) { erro('Esse arquivo é grande demais. O limite é 2 MB.'); return; }
-        var lido;
-        try { lido = impDecodificar(await arquivo.arrayBuffer()); }
+        var buf, lido, linhas, abas = null, aba = 0;
+        try { buf = await arquivo.arrayBuffer(); lido = impDecodificar(buf); }
         catch (e) { erro('Não consegui abrir esse arquivo.'); return; }
-        if (lido.xlsx) { erro('Esse arquivo é do Excel (.xlsx). Abra no Excel, use Arquivo, Salvar como, CSV UTF-8, e suba o arquivo .csv.'); return; }
-        var linhas = impLerCSV(lido.texto);
+        if (lido.antigo) { erro('Esse arquivo é do formato antigo do Excel (.xls) ou está protegido com senha. Abra no Excel, use Arquivo, Salvar como, Pasta de Trabalho do Excel (.xlsx) ou CSV UTF-8, e suba de novo.'); return; }
+        if (lido.xlsx) {
+          try { abas = await impLerXlsx(buf); }
+          catch (e) { erro(impMensagemXlsx(e)); return; }
+          aba = impEscolherAba(abas);
+          linhas = abas[aba].linhas;
+        } else {
+          linhas = impLerCSV(lido.texto);
+        }
         if (!linhas.length) { erro('A planilha está vazia.'); return; }
         var imp = impPreparar(linhas);
+        imp.abas = abas;
+        imp.aba = aba;
         if (!imp.corpo.length) { erro('Só achei a linha de títulos. Não há marcas para importar.'); return; }
         await carregarMarcas();
         impConferir(imp);
@@ -1333,8 +1646,19 @@
     /* Tela 2: conferir as colunas e a prévia, e confirmar */
     function impConferir(imp) {
       var opcoesSituacao = SITUACOES.map(function (s) { return '<option value="' + s.v + '"' + (imp.situacaoPadrao === s.v ? ' selected' : '') + '>' + s.t + '</option>'; }).join('');
+      var seletorAba = (imp.abas && imp.abas.length > 1)
+        ? '<div class="campo imp-aba"><label for="impAba">Aba da planilha</label><select id="impAba">' + imp.abas.map(function (a, i) {
+            return '<option value="' + i + '"' + (i === imp.aba ? ' selected' : '') + '>' + esc(a.nome) + ' (' + a.linhas.length + (a.linhas.length === 1 ? ' linha' : ' linhas') + ')</option>';
+          }).join('') + '</select><span class="ajuda">A planilha tem mais de uma aba. Escolha a que tem as suas marcas.</span></div>'
+        : '';
+      var colResposta = imp.respostaIndice != null ? imp.cols.filter(function (c) { return c.indice === imp.respostaIndice; })[0] : null;
+      var blocoResposta = colResposta
+        ? '<div class="campo imp-situacao"><label for="impResposta">O que fazer com a coluna "' + esc(colResposta.titulo) + '"</label>' +
+            '<select id="impResposta"><option value="0"' + (imp.usarResposta ? '' : ' selected') + '>Só guardar na observação (todas entram com a situação acima)</option>' +
+            '<option value="1"' + (imp.usarResposta ? ' selected' : '') + '>Quem respondeu (Sim ou Parcial) entra como Conversando</option></select></div>'
+        : '';
       var linhasMapa = imp.cols.map(function (c, i) {
-        var primeiro = impAmostra(imp.corpo, c.indice, 1)[0] || '';
+        var primeiro = (impAmostra(imp.corpo, c.indice, 1)[0] || '').replace(/^'(?=[=+\-@])/, '');
         return '<tr><td><strong>' + esc(c.titulo) + '</strong></td>' +
           '<td class="imp-amostra" title="' + esc(primeiro) + '">' + esc(primeiro) + '</td>' +
           '<td><select class="entrada" data-col="' + i + '" aria-label="Para onde vai a coluna ' + esc(c.titulo) + '">' +
@@ -1344,11 +1668,11 @@
       var partes = abrirModal({
         titulo: 'Conferir a planilha',
         largo: true,
-        corpo: '<div id="impRaiz"><div id="impAviso"></div><div class="imp-resumo" id="impResumo"></div>' +
+        corpo: '<div id="impRaiz"><div id="impAviso"></div>' + seletorAba + '<div class="imp-resumo" id="impResumo"></div>' +
           '<h3 class="imp-titulo">Colunas da planilha</h3>' +
           '<div class="rolagem"><table class="tabela imp-mapa"><thead><tr><th>Coluna</th><th>Primeiro valor</th><th>Vai para</th></tr></thead><tbody>' + linhasMapa + '</tbody></table></div>' +
           '<div class="campo imp-situacao"><label for="impSituacao">Situação das marcas que não tiverem uma situação na planilha</label>' +
-            '<select id="impSituacao">' + opcoesSituacao + '</select></div>' +
+            '<select id="impSituacao">' + opcoesSituacao + '</select></div>' + blocoResposta +
           '<h3 class="imp-titulo">Prévia do que vai entrar</h3><div id="impPrevia"></div><div id="impNotas"></div></div>',
         botoes: [
           { rotulo: 'Trocar arquivo', esquerda: true, aoClicar: impEscolher },
@@ -1386,6 +1710,7 @@
         var notas = [];
         if (!colunasNovas) notas.push('<strong>Falta rodar o arquivo disparo.sql no Supabase.</strong> Enquanto isso, o botão Importar fica desligado (sem os campos Nicho e Favorita, o nicho da planilha se perderia).');
         if (imp.semCabecalho) notas.push('A planilha não tem linha de títulos. Reconheci as colunas pelo conteúdo.');
+        if (imp.puladas) notas.push('Pulei ' + imp.puladas + (imp.puladas === 1 ? ' linha' : ' linhas') + ' de título no começo da planilha e usei a linha seguinte como títulos das colunas.');
         var extras = imp.cols.filter(function (c) { return c.campo === 'obs' && c.comRotulo; });
         if (extras.length) {
           notas.push((extras.length === 1 ? 'A coluna ' : 'As colunas ') + extras.map(function (c) { return '"' + esc(c.titulo) + '"'; }).join(', ') +
@@ -1411,6 +1736,13 @@
           $$('select[data-col]', raiz).forEach(function (s) { s.value = imp.cols[+s.getAttribute('data-col')].campo; });
         } else if (sel.id === 'impSituacao') {
           imp.situacaoPadrao = sel.value;
+        } else if (sel.id === 'impResposta') {
+          imp.usarResposta = sel.value === '1';
+        } else if (sel.id === 'impAba') {
+          var novo = impPreparar(imp.abas[+sel.value].linhas);      /* outra aba: lê de novo os títulos e as colunas */
+          novo.abas = imp.abas; novo.aba = +sel.value; novo.situacaoPadrao = imp.situacaoPadrao;
+          impConferir(novo);
+          return;
         } else return;
         atualizar();
       });

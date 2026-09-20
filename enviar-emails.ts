@@ -37,6 +37,11 @@
 // =====================================================================
 
 const EMAIL_DA_DONA = "contatoesthercustodio@gmail.com";
+// PROVISÓRIO, enquanto o domínio não está verificado no Resend:
+// sem domínio verificado o Resend SÓ entrega para o e-mail dono da conta.
+// Por isso o teste é redirecionado para cá, mesmo que o painel peça outro endereço.
+// Quando o domínio estiver verificado, apague esta constante e volte a usar EMAIL_DA_DONA no teste.
+const EMAIL_DE_TESTE = "esthersilvacustodio@gmail.com";
 const REMETENTE_PADRAO = "Esther Custódio <onboarding@resend.dev>";
 const MAX_DESTINATARIOS = 250;
 const PAUSA_ENTRE_ENVIOS_MS = 200;
@@ -268,8 +273,16 @@ export async function tratar(
     vistos.add(email);
     lista.push({ email, marca, marca_id: marcaId });
   }
-  if (teste && (lista.length !== 1 || lista[0].email !== EMAIL_DA_DONA)) {
-    return responder(req, { ok: false, codigo: "teste", erro: "O teste só pode ir para o seu próprio e-mail." }, 400);
+  if (teste) {
+    if (lista.length !== 1) {
+      return responder(req, { ok: false, codigo: "teste", erro: "O teste vai para um endereço só." }, 400);
+    }
+    if (lista[0].email !== EMAIL_DA_DONA && lista[0].email !== EMAIL_DE_TESTE) {
+      return responder(req, { ok: false, codigo: "teste", erro: "O teste só pode ir para o seu próprio e-mail." }, 400);
+    }
+    // Força o destino do teste para a caixa dona da conta do Resend (veja EMAIL_DE_TESTE lá em cima).
+    lista[0].email = EMAIL_DE_TESTE;
+    lista[0].marca_id = null;
   }
 
   const descadastrados = new Set<string>();
