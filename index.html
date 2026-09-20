@@ -398,6 +398,7 @@ button,input,textarea{font:inherit;color:inherit}
 .form-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-lg);padding:clamp(1.5rem,3.5vw,2.5rem);box-shadow:var(--shadow)}
 .campo{display:flex;flex-direction:column;gap:.45rem;margin-bottom:1.15rem}
 .campo label{font-weight:600;font-size:.92rem}
+.campo-dica{display:block;margin-top:.15rem;font-weight:400;font-size:.78rem;color:var(--muted)}
 .campo input,.campo textarea{
   width:100%;padding:.85rem 1rem;background:#fff;
   border:1px solid rgba(20,17,13,.4);border-radius:var(--radius);
@@ -1130,12 +1131,29 @@ document.addEventListener('DOMContentLoaded', () => {
   const confirmacao = $('#confirmacaoContato');
   const hojeLocal = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 
-  /* Grava um contato na tabela "marcas", entrando como Lead. Devolve true se deu certo. */
-  const enviarContato = async ({ nome, email, obs }) => {
+  /* Envia um contato. Pela função "enviar_contato" do banco (contato.sql): ela guarda a mensagem para a aba
+     Portfólio e cria a marca como Lead na aba Marcas, sem repetir marca que já existe.
+     Reserva: se essa função ainda não existe no banco, grava direto em "marcas" como Lead (como antes).
+     Devolve true se deu certo. */
+  const enviarContato = async ({ nome, email, marca, orcamento, mensagem, tipo }) => {
     if (!window.banco) return false;
+    const corta = (v, n) => String(v || '').trim().slice(0, n);
+    const d = {
+      tipo: tipo === 'kit' ? 'kit' : 'mensagem', nome: corta(nome, 200), email: corta(email, 200),
+      marca: corta(marca, 200), orcamento: corta(orcamento, 100), mensagem: corta(mensagem, 2500)
+    };
     try {
+      const r = await window.banco.rpc('enviar_contato', {
+        p_nome: d.nome, p_email: d.email, p_marca: d.marca, p_orcamento: d.orcamento, p_mensagem: d.mensagem, p_tipo: d.tipo
+      });
+      if (!r.error) return true;
+    } catch (erro) { /* cai na reserva abaixo */ }
+    try {
+      const linhas = [d.tipo === 'kit' ? 'Pediu o mídia kit pelo site.' : 'Mensagem pelo site: ' + d.mensagem];
+      if (d.marca && d.marca.toLowerCase() !== d.nome.toLowerCase()) linhas.push('Contato: ' + d.nome);
+      if (d.orcamento) linhas.push('Orçamento: ' + d.orcamento);
       const r = await window.banco.from('marcas').insert({
-        nome: String(nome).slice(0, 200), email: String(email || '').slice(0, 200), obs: String(obs || '').slice(0, 3000),
+        nome: d.marca || d.nome, email: d.email, obs: linhas.join('\n').slice(0, 3000),
         situacao: 'lead', ultimo_contato: hojeLocal()
       });
       return !r.error;
@@ -1151,8 +1169,8 @@ document.addEventListener('DOMContentLoaded', () => {
     erroContato.hidden = true;
     botao.disabled = true;
     const enviou = await enviarContato({
-      nome: campos.nome.value.trim(), email: campos.email.value.trim(),
-      obs: 'Mensagem pelo site: ' + campos.mensagem.value.trim()
+      nome: campos.nome.value, email: campos.email.value, marca: campos.marca.value,
+      orcamento: campos.orcamento.value, mensagem: campos.mensagem.value, tipo: 'mensagem'
     });
     botao.disabled = false;
     if (!enviou) { erroContato.hidden = false; return; }
@@ -1218,8 +1236,7 @@ document.addEventListener('DOMContentLoaded', () => {
     formCaptura.addEventListener('submit', (e) => {
       e.preventDefault();
       enviarContato({                                                /* vira Lead na aba Marcas, sem mostrar erro para a pessoa */
-        nome: formCaptura.elements.nomeKit.value.trim(), email: formCaptura.elements.emailKit.value.trim(),
-        obs: 'Pediu o mídia kit pelo site.'
+        nome: formCaptura.elements.nomeKit.value, email: formCaptura.elements.emailKit.value, tipo: 'kit'
       });
       const primeiroNome = formCaptura.elements.nomeKit.value.trim().split(/\s+/)[0] || '';
       $('[data-nome]', okCaptura).textContent = primeiroNome ? `, ${primeiroNome}` : '';
@@ -1450,7 +1467,15 @@ document.addEventListener('DOMContentLoaded', () => {
           <input id="email" name="email" type="email" autocomplete="email" placeholder="seuemail@email.com" required>
         </div>
         <div class="campo">
-          <label for="mensagem">Mensagem</label>
+          <label for="marca">Marca / empresa</label>
+          <input id="marca" name="marca" type="text" autocomplete="organization" placeholder="Nome da marca" required>
+        </div>
+        <div class="campo">
+          <label for="orcamento">Orçamento estimado</label>
+          <input id="orcamento" name="orcamento" type="text" inputmode="text" placeholder="Ex: R$ 1.000 a R$ 5.000">
+        </div>
+        <div class="campo">
+          <label for="mensagem">Conte mais sobre o projeto <small class="campo-dica">categoria, formato, prazo, objetivo da campanha...</small></label>
           <textarea id="mensagem" name="mensagem" placeholder="Conte sobre a sua marca, o produto e o que você imagina para o conteúdo." required></textarea>
         </div>
         <div class="armadilha" aria-hidden="true"><label>Não preencha este campo<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>

@@ -515,39 +515,69 @@
       return todas;
     }
 
-    /* Mensagens do formulário do site. Elas chegam na tabela "marcas" como Lead, com o texto no campo obs
-       ("Mensagem pelo site: ..." ou "Pediu o mídia kit pelo site."). Aqui só são lidas e mostradas. */
+    /* Mensagens do formulário do site. Vêm de dois lugares:
+       1. a tabela "mensagens_site" (contato.sql): tem tudo separado (nome, marca, orçamento, texto);
+       2. as marcas que já entraram como Lead com o texto no campo obs ("Mensagem pelo site: ..." ou
+          "Pediu o mídia kit pelo site."), de antes do contato.sql, ou se o banco ainda não tem a função.
+       Aqui só são lidas e mostradas, nada é gravado. */
+    function lerObsDoSite(obs) {
+      var contato = '', orcamento = '', texto = [];
+      String(obs || '').split('\n').forEach(function (linha, i) {
+        var c = i > 0 ? /^Contato:\s*(.*)$/.exec(linha) : null;
+        var o = i > 0 ? /^Orçamento:\s*(.*)$/.exec(linha) : null;
+        if (c) contato = c[1].trim(); else if (o) orcamento = o[1].trim(); else texto.push(linha);
+      });
+      return { contato: contato, orcamento: orcamento, texto: texto.join('\n').trim() };
+    }
+
     async function carregarMensagens() {
+      var semTabela = false, mensagens = [], leads = [], erroMarcas = '';
       try {
-        var r = await banco.from('marcas').select('id,nome,email,obs,criado_em')
+        var r1 = await banco.from('mensagens_site').select('*').order('criado_em', { ascending: false }).limit(30);
+        if (r1.error) semTabela = true; else mensagens = r1.data || [];
+      } catch (e) { semTabela = true; }
+      try {
+        var r2 = await banco.from('marcas').select('id,nome,email,obs,criado_em')
           .ilike('obs', '%pelo site%').order('criado_em', { ascending: false }).limit(30);
-        if (r.error) return { erro: descreverErro('marcas', r.error), lista: [] };
-        var lista = [];
-        (r.data || []).forEach(function (m) {
-          var obs = String(m.obs || '');
-          if (obs.indexOf('Mensagem pelo site:') === 0) {
-            lista.push({ tipo: 'mensagem', nome: m.nome, email: m.email, quando: m.criado_em, texto: obs.slice('Mensagem pelo site:'.length).trim() });
-          } else if (obs.indexOf('Pediu o mídia kit') === 0) {
-            lista.push({ tipo: 'kit', nome: m.nome, email: m.email, quando: m.criado_em, texto: 'Pediu o mídia kit pelo site.' });
-          }
-        });
-        return { erro: '', lista: lista };
-      } catch (e) {
-        return { erro: descreverErro('marcas', e), lista: [] };
-      }
+        if (r2.error) erroMarcas = descreverErro('marcas', r2.error); else leads = r2.data || [];
+      } catch (e) { erroMarcas = descreverErro('marcas', e); }
+      if (semTabela && erroMarcas) return { erro: erroMarcas, lista: [], semTabela: true };
+
+      var lista = mensagens.map(function (m) {
+        return { tipo: m.tipo === 'kit' ? 'kit' : 'mensagem', nome: m.nome, marca: m.marca, email: m.email,
+          orcamento: m.orcamento, quando: m.criado_em, texto: m.mensagem || '' };
+      });
+      var jaListadas = {};
+      mensagens.forEach(function (m) { if (m.marca_id) jaListadas[m.marca_id] = true; });
+      leads.forEach(function (m) {
+        if (jaListadas[m.id]) return;
+        var obs = String(m.obs || '');
+        var dado = lerObsDoSite(obs);
+        var kit = obs.indexOf('Pediu o mídia kit') === 0;
+        if (!kit && obs.indexOf('Mensagem pelo site:') !== 0) return;
+        lista.push({ tipo: kit ? 'kit' : 'mensagem', nome: dado.contato || m.nome, marca: dado.contato ? m.nome : '', email: m.email,
+          orcamento: dado.orcamento, quando: m.criado_em,
+          texto: kit ? 'Pediu o mídia kit pelo site.' : dado.texto.slice('Mensagem pelo site:'.length).trim() });
+      });
+      lista.sort(function (a, b) { return String(b.quando || '').localeCompare(String(a.quando || '')); });
+      return { erro: '', lista: lista.slice(0, 30), semTabela: semTabela };
     }
 
     function htmlMensagem(m) {
       var email = String(m.email || '').trim();
       var emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
       var previa = m.texto.length > 90 ? m.texto.slice(0, 90).trim() + '...' : m.texto;
+      var detalhes = '';
+      if (m.marca) detalhes += '<span><b>Marca:</b> ' + esc(m.marca) + '</span>';
+      if (m.orcamento) detalhes += '<span><b>Orçamento:</b> ' + esc(m.orcamento) + '</span>';
+      detalhes += '<span><b>E-mail:</b> ' + (emailOk ? esc(email) : 'não informado') + '</span>';
       return '<details class="msg"><summary>' +
-        '<span class="msg-nome">' + esc(m.nome || 'Sem nome') + '</span>' +
+        '<span class="msg-nome">' + esc(m.nome || 'Sem nome') + (m.marca ? ' <span class="msg-marca">· ' + esc(m.marca) + '</span>' : '') + '</span>' +
         '<span class="pilula ' + (m.tipo === 'kit' ? 'p-briefing' : 'p-lead') + '">' + (m.tipo === 'kit' ? 'Mídia kit' : 'Mensagem') + '</span>' +
         '<span class="msg-data">' + esc(fmtDataHora(m.quando)) + '</span>' +
         '<span class="msg-previa">' + esc(previa || '(sem texto)') + '</span></summary>' +
-        '<div class="msg-corpo"><p class="msg-texto">' + esc(m.texto || '(sem texto)') + '</p>' +
-        '<p class="msg-contato">' + (emailOk ? esc(email) : 'Sem e-mail informado') + '</p>' +
+        '<div class="msg-corpo"><div class="msg-detalhes">' + detalhes + '</div>' +
+        '<p class="msg-texto">' + esc(m.texto || '(sem texto)') + '</p>' +
         '<div class="acoes-msg">' +
           (emailOk ? '<a class="btn pequeno principal-btn" href="mailto:' + esc(email) + '?subject=' + encodeURIComponent('Sobre a sua mensagem no meu portfólio') + '">' + ic('envelope') + 'Responder por e-mail</a>' : '') +
           '<a class="btn pequeno" href="#marcas">Abrir na aba Marcas</a></div></div></details>';
@@ -559,9 +589,12 @@
       else if (!res.lista.length) corpo = '<p class="vazio">Quando alguém enviar uma mensagem pelo formulário de contato do seu site, ela aparece aqui.</p>';
       else corpo = '<div class="msg-lista">' + res.lista.map(htmlMensagem).join('') + '</div>';
       var total = res.lista.filter(function (m) { return m.tipo === 'mensagem'; }).length;
+      var nota = res.semTabela && !res.erro
+        ? '<p class="cartao-corpo" style="border-top:1px solid var(--line);color:var(--muted);font-size:.8rem">Para ver aqui também a marca e o orçamento de cada mensagem nova, e criar a marca em Marcas sem repetir, rode o arquivo contato.sql no SQL Editor do Supabase.</p>'
+        : '';
       return '<div class="cartao" style="margin-bottom:1rem"><div class="cartao-cab"><h2>Mensagens do site' +
         (total ? ' <small style="font-weight:500;color:var(--muted)">(' + fmtInt(total) + ')</small>' : '') + '</h2>' +
-        '<a class="btn pequeno" href="#marcas">Ver todas na aba Marcas</a></div>' + corpo + '</div>';
+        '<a class="btn pequeno" href="#marcas">Ver todas na aba Marcas</a></div>' + corpo + nota + '</div>';
     }
 
     function calcular(videos, visitas) {
