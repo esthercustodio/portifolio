@@ -233,11 +233,42 @@ button,input,textarea{font:inherit;color:inherit}
    3. DESTAQUES
    ========================================================= */
 .escuro{background:var(--ink);color:var(--cream)}
-.destaques-grid{
-  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:clamp(1.25rem,3vw,2.5rem);max-width:1080px;margin-inline:auto;
+.destaques-layout{
+  display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);
+  gap:clamp(2rem,5vw,4.5rem);align-items:center;
 }
-.destaque{display:block;text-decoration:none;border-radius:var(--radius-lg)}
+.destaques-texto .titulo{font-size:clamp(2.3rem,4.4vw,3.4rem)}
+/* Carrossel: o card do meio fica nítido e os vizinhos ficam desfocados (a classe .ativo vem do script) */
+.carrossel{--card-w:clamp(210px,24vw,290px);--gap:1.25rem;position:relative;min-width:0}
+.carrossel-seta{
+  position:absolute;top:calc(50% - 2.4rem);transform:translateY(-50%);z-index:3;
+  width:46px;height:46px;border:0;border-radius:50%;cursor:pointer;
+  display:grid;place-items:center;background:var(--cream);color:var(--ink);
+  box-shadow:0 10px 26px rgba(0,0,0,.4);transition:opacity .25s,transform .25s;
+}
+.carrossel-seta svg{width:20px;height:20px}
+.carrossel-seta.ant{left:.25rem}
+.carrossel-seta.prox{right:.25rem}
+.carrossel-seta:hover:not(:disabled){transform:translateY(-50%) scale(1.08)}
+.carrossel-seta:disabled{opacity:.3;cursor:default}
+.destaques-grid{
+  position:relative;display:flex;align-items:flex-start;gap:var(--gap);padding-block:1.5rem;
+  overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;
+  scroll-snap-type:x mandatory;scrollbar-width:none;
+}
+.destaques-grid::-webkit-scrollbar{display:none}
+.destaques-grid::before,.destaques-grid::after{content:"";flex:0 0 calc(50% - var(--card-w) / 2 - var(--gap))}
+.destaque{
+  flex:0 0 var(--card-w);scroll-snap-align:center;
+  display:block;text-decoration:none;border-radius:var(--radius-lg);
+  opacity:.5;filter:blur(2.5px);transform:scale(.94);
+  transition:opacity .45s,filter .45s,transform .45s;
+}
+.destaque.ativo{opacity:1;filter:none;transform:none}
+.destaque-marca{
+  min-height:1.7rem;margin-bottom:.9rem;text-align:center;
+  font-family:var(--serif);font-weight:700;font-size:1.15rem;line-height:1.5;letter-spacing:.06em;text-transform:uppercase;
+}
 .destaque-capa{aspect-ratio:9/16;box-shadow:0 24px 50px -26px rgba(0,0,0,.8);transition:transform .5s cubic-bezier(.2,.7,.2,1)}
 .destaque:hover .destaque-capa{transform:translateY(-8px)}
 .play{
@@ -247,14 +278,40 @@ button,input,textarea{font:inherit;color:inherit}
 }
 .play svg{width:26px;height:26px;margin-left:4px}
 .destaque:hover .play{transform:scale(1.1)}
-.destaque-info{padding-top:1.4rem}
-.destaque-num{font-family:var(--serif);font-size:clamp(2.6rem,5vw,3.6rem);line-height:1;letter-spacing:-.03em;color:var(--marrom-claro)}
-.destaque-rotulo{margin-top:.5rem;font-size:.76rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(243,238,233,.78)}
-.destaque h3{font-family:var(--serif);font-weight:400;font-size:1.5rem;line-height:1.2;margin-top:1.1rem}
-.destaque-ctx{margin-top:.45rem;font-size:.95rem;color:rgba(243,238,233,.74)}
+.destaque-info{padding-top:1.25rem;text-align:center}
+.destaque-num{font-family:var(--serif);font-weight:700;font-size:clamp(1.5rem,2.4vw,1.9rem);line-height:1.15;letter-spacing:-.01em;color:var(--marrom-claro)}
+.destaque-rotulo{margin-top:.2rem;font-size:1rem;color:rgba(243,238,233,.78)}
+.destaque-ctx{margin-top:.2rem;font-size:.9rem;color:rgba(243,238,233,.62)}
 .assistir{display:inline-flex;align-items:center;gap:.5rem;margin-top:1rem;font-size:.9rem;font-weight:600;border-bottom:1px solid var(--marrom-claro);padding-bottom:.15rem}
 .assistir svg{width:14px;height:14px;transition:transform .3s}
 .destaque:hover .assistir svg{transform:translate(3px,-3px)}
+
+/* Espaço do áudio (estilo mensagem de voz). O arquivo entra em AUDIO_DESTAQUES, no começo do script. */
+.audio{
+  display:flex;align-items:center;gap:1rem;max-width:26rem;padding:.9rem 1.1rem;
+  border-radius:22px;background:var(--cream-2);color:var(--ink);
+  box-shadow:0 18px 40px -22px rgba(0,0,0,.7);
+}
+.escuro .audio :focus-visible{outline-color:var(--ink)}
+.audio-play{
+  flex:none;width:52px;height:52px;border:0;border-radius:50%;cursor:pointer;
+  display:grid;place-items:center;background:var(--ink);color:var(--cream);
+}
+.audio-play svg{width:20px;height:20px}
+.audio-play:not(.tocando) svg{margin-left:2px}
+.audio-play:disabled,.audio-vel:disabled{opacity:.45;cursor:default}
+.audio-meio{position:relative;flex:1;min-width:0}
+.audio-onda{display:flex;align-items:center;gap:2px;height:34px;border-radius:4px}
+.audio-onda span{flex:1;min-height:3px;border-radius:2px;background:rgba(20,17,13,.28)}
+.audio-onda span.tocado{background:var(--ink)}
+.audio-busca{position:absolute;left:0;top:0;width:100%;height:34px;margin:0;opacity:0;cursor:pointer}
+.audio-busca:disabled{cursor:default}
+.audio-meio:focus-within .audio-onda{outline:3px solid var(--ink);outline-offset:3px}
+.audio-tempos{display:flex;justify-content:space-between;margin-top:.2rem;font-size:.74rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.audio-lado{flex:none;display:flex;flex-direction:column;align-items:center;gap:.4rem}
+.audio-vel{min-width:3.2rem;padding:.15rem .6rem;border:0;border-radius:999px;background:var(--cream);font-size:.78rem;font-weight:600;cursor:pointer}
+.audio-lado svg{width:16px;height:16px;color:var(--accent-text)}
+.audio.sem-audio .audio-onda{opacity:.6}
 
 /* =========================================================
    4. TRABALHOS
@@ -406,7 +463,9 @@ button,input,textarea{font:inherit;color:inherit}
   .hero-foto{margin-inline:0;max-width:380px}
   .sobre-grid,.contato-grid{grid-template-columns:1fr}
   .sobre-foto{max-width:380px}
-  .destaques-grid{grid-template-columns:1fr;max-width:380px}
+  .destaques-layout{grid-template-columns:1fr}
+  .carrossel{--card-w:min(68vw,290px);margin-inline:calc(-1 * clamp(1.25rem,5vw,3rem))}
+  .carrossel-seta{width:40px;height:40px}
   .resultados{grid-template-columns:1fr}
   .depoimentos{grid-template-columns:1fr}
   .metricas{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -502,39 +561,50 @@ const LOGOS_MARCAS = [
   { arquivo: "authentic-feet", alt: "Logo Authentic Feet" }
 ];
 
-/* ---- CONTEÚDOS DE DESTAQUE (três cards grandes) ----
-   ATENÇÃO: os destaques agora vêm do painel (aba Portfólio, campo "Destaque").
-   Esta lista é só a RESERVA: aparece se o banco não responder.
-   link:    ONDE ENTRA O LINK DO VÍDEO. Cole aqui o endereço (YouTube, Instagram, TikTok...).
-            O card inteiro vira um link que abre esse vídeo em uma nova aba.
-   capa:    ONDE ENTRA A CAPA. Coloque o caminho da imagem vertical 9:16, por exemplo "img/capa1.jpg".
-            Deixe "" para mostrar o bloco com degradê.
-   alt:     descrição da imagem da capa (usada quando existir "capa").
-   numero:  número forte (exemplo: "+2,4M").
-   rotulo:  o que o número significa (exemplo: "views no reels"). */
+/* ---- CONTEÚDOS DE DESTAQUE (carrossel da seção "Conteúdos de destaque") ----
+   Estes cards aparecem sempre, nesta ordem. Vídeos do painel (aba Portfólio, campo "Destaque")
+   entram depois deles, sem repetir o mesmo link.
+   link:     ONDE ENTRA O LINK DO VÍDEO. Cole aqui o endereço (YouTube, Instagram, TikTok...).
+             O card inteiro vira um link que abre esse vídeo em uma nova aba.
+   capa:     ONDE ENTRA A CAPA. Coloque o caminho da imagem vertical 9:16, por exemplo "img/capa1.jpg".
+             Deixe "" para mostrar o bloco com degradê.
+   alt:      descrição da imagem da capa (usada quando existir "capa").
+   marca:    nome da marca, escrito acima do card.
+   numero:   destaque forte abaixo do card (exemplo: "190 mil").
+   rotulo:   complemento do número (exemplo: "visualizações"). Pode ficar "".
+   contexto: linha extra pequena (exemplo: "Protetor solar"). Pode ficar "".
+   titulo:   nome do vídeo, usado como descrição da capa e para leitores de tela. */
 const DESTAQUES = [
   {
-    link: "https://youtube.com/shorts/GYgeB-XAij8?is=fWOY9J7G4Q6OeR-u",
+    link: "https://youtube.com/shorts/GYgeB-XAij8",
     capa: "", alt: "",
-    numero: "+189 mil", rotulo: "views no YouTube Shorts",
-    titulo: "Título do conteúdo 01",
-    contexto: "Escreva aqui uma linha curta sobre a marca e o que o vídeo mostra."
+    marca: "Maxton", numero: "190 mil", rotulo: "visualizações", contexto: "",
+    titulo: "Vídeo da Maxton"
   },
   {
-    link: "#",   /* TROCAR: link do segundo vídeo */
+    link: "https://youtube.com/shorts/SsdtQwTMg0M",
     capa: "", alt: "",
-    numero: "+000 mil", rotulo: "views no reels",   /* TROCAR: número e rótulo */
-    titulo: "Título do conteúdo 02",
-    contexto: "Escreva aqui uma linha curta sobre a marca e o que o vídeo mostra."
+    marca: "Canva", numero: "Anúncio", rotulo: "no Pinterest", contexto: "",
+    titulo: "Anúncio da Canva no Pinterest"
   },
   {
-    link: "#",   /* TROCAR: link do terceiro vídeo */
+    link: "https://www.instagram.com/reel/DOMc6tFEYou/",
     capa: "", alt: "",
-    numero: "+000 mil", rotulo: "views no reels",   /* TROCAR: número e rótulo */
-    titulo: "Título do conteúdo 03",
-    contexto: "Escreva aqui uma linha curta sobre a marca e o que o vídeo mostra."
+    marca: "Hidrabene", numero: "225 mil", rotulo: "visualizações", contexto: "",
+    titulo: "Reel da Hidrabene"
+  },
+  {
+    link: "https://youtube.com/shorts/9OuYjMHHYOw",
+    capa: "", alt: "",
+    marca: "L'Oréal Paris", numero: "36 mil", rotulo: "visualizações", contexto: "Protetor solar",
+    titulo: "Vídeo da L'Oréal Paris sobre protetor solar"
   }
 ];
+
+/* ---- ÁUDIO DA SEÇÃO DE DESTAQUES ----
+   ONDE ENTRA O ÁUDIO: coloque o arquivo (mp3 ou m4a) em uma pasta chamada audio e escreva o caminho aqui,
+   por exemplo "audio/recado.mp3". Enquanto estiver "", o player aparece parado, com o aviso "Em breve". */
+const AUDIO_DESTAQUES = "";
 
 /* ---- NICHOS (viram os botões de filtro da galeria) ---- */
 const NICHOS = ["Beleza", "Skincare", "Moda", "Casa e decoração", "Fitness", "Viagem"];
@@ -621,6 +691,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const ICONES = {
     seta:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>',
     play:   '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>',
+    pausa:  '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4.5" width="4" height="15" rx="1"/><rect x="14" y="4.5" width="4" height="15" rx="1"/></svg>',
     check:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>'
   };
 
@@ -675,33 +746,130 @@ document.addEventListener('DOMContentLoaded', () => {
     return { numero: t, rotulo: 'views' };
   };
 
+  /* Carrossel dos destaques: o card que está no meio ganha a classe "ativo" (nítido); os vizinhos ficam desfocados.
+     Clicar em um vizinho só o traz para o meio; clicar no card do meio abre o vídeo. */
+  const trilho = $('#destaquesGrid');
+  const setaAnt = $('#destAnt');
+  const setaProx = $('#destProx');
+  let ativo = 0;
+  const cartoes = () => $$('.destaque', trilho);
+  const marcarAtivo = () => {
+    const lista = cartoes();
+    const centro = trilho.scrollLeft + trilho.clientWidth / 2;
+    let menor = Infinity;
+    lista.forEach((c, i) => {
+      const distancia = Math.abs(c.offsetLeft + c.offsetWidth / 2 - centro);
+      if (distancia < menor) { menor = distancia; ativo = i; }
+    });
+    lista.forEach((c, i) => c.classList.toggle('ativo', i === ativo));
+    setaAnt.disabled = ativo <= 0;
+    setaProx.disabled = ativo >= lista.length - 1;
+  };
+  const irPara = (i) => {
+    const c = cartoes()[i];
+    if (!c) return;
+    trilho.scrollTo({ left: c.offsetLeft + c.offsetWidth / 2 - trilho.clientWidth / 2, behavior: reduzir ? 'auto' : 'smooth' });
+  };
+  let quadro = 0;
+  trilho.addEventListener('scroll', () => { cancelAnimationFrame(quadro); quadro = requestAnimationFrame(marcarAtivo); }, { passive: true });
+  window.addEventListener('resize', marcarAtivo);
+  setaAnt.addEventListener('click', () => irPara(ativo - 1));
+  setaProx.addEventListener('click', () => irPara(ativo + 1));
+  trilho.addEventListener('click', (e) => {
+    const c = e.target.closest('.destaque');
+    if (c && !c.classList.contains('ativo')) { e.preventDefault(); irPara(cartoes().indexOf(c)); }
+  });
+  trilho.addEventListener('focusin', (e) => {          /* teclado: o card que recebe o foco vai para o meio */
+    const c = e.target.closest('.destaque');
+    if (c && !c.classList.contains('ativo') && e.target.matches(':focus-visible')) irPara(cartoes().indexOf(c));
+  });
+
   const desenharDestaques = (lista) => {
-    const grade = $('#destaquesGrid');
-    if (!lista.length) { grade.innerHTML = '<p class="vazio-site">Em breve, novos conteúdos por aqui.</p>'; return; }
-    grade.innerHTML = lista.map((d, i) => {
+    if (!lista.length) { trilho.innerHTML = '<p class="vazio-site">Em breve, novos conteúdos por aqui.</p>'; marcarAtivo(); return; }
+    trilho.innerHTML = lista.map((d, i) => {
       const capa = d.capa
         ? `<img src="${esc(d.capa)}" alt="${esc(d.alt || d.titulo)}" loading="lazy">`
         : '';
       const legenda = d.capa ? '' : '<span class="ph-legenda">capa vertical 9:16</span>';
       return `
-    <a class="destaque reveal" style="--d:${(0.12 * i).toFixed(2)}s" href="${esc(d.link)}" target="_blank" rel="noopener noreferrer"
-       aria-label="Assistir: ${esc(d.titulo)}, ${esc(d.numero)} ${esc(d.rotulo)} (abre em uma nova aba)">
-      <div class="destaque-capa ph g${[2, 0, 4][i % 3]}" ${d.capa ? '' : `role="img" aria-label="Espaço para a capa vertical 9:16 do conteúdo ${i + 1}"`}>
+    <a class="destaque" href="${esc(d.link)}" target="_blank" rel="noopener noreferrer"
+       aria-label="Assistir: ${esc(d.marca || d.titulo)}, ${esc(d.numero)} ${esc(d.rotulo)} (abre em uma nova aba)">
+      <p class="destaque-marca">${esc(d.marca || '')}</p>
+      <div class="destaque-capa ph g${[2, 0, 4, 1][i % 4]}" ${d.capa ? '' : `role="img" aria-label="Espaço para a capa vertical 9:16 do conteúdo ${i + 1}"`}>
         ${capa}
         <span class="play" aria-hidden="true">${ICONES.play}</span>
         ${legenda}
       </div>
       <div class="destaque-info">
         <p class="destaque-num">${esc(d.numero)}</p>
-        <p class="destaque-rotulo">${esc(d.rotulo)}</p>
-        <h3>${esc(d.titulo)}</h3>
+        ${d.rotulo ? `<p class="destaque-rotulo">${esc(d.rotulo)}</p>` : ''}
         ${d.contexto ? `<p class="destaque-ctx">${esc(d.contexto)}</p>` : ''}
         <span class="assistir" aria-hidden="true">Assistir ${ICONES.seta}</span>
       </div>
     </a>`;
     }).join('');
-    $$('.reveal', grade).forEach((el) => observarNovos(el));
+    trilho.scrollLeft = 0;
+    marcarAtivo();
   };
+  desenharDestaques(DESTAQUES);   /* aparece já ao abrir; os vídeos do painel entram depois, se houver */
+
+  /* Player de áudio da seção Destaques (o arquivo vem de AUDIO_DESTAQUES) */
+  const cartaoAudio = $('#audioCartao');
+  const audio = $('#audioEl');
+  const botaoAudio = $('#audioPlay');
+  const ondaAudio = $('#audioOnda');
+  const buscaAudio = $('#audioBusca');
+  const atualAudio = $('#audioAtual');
+  const totalAudio = $('#audioTotal');
+  const velAudio = $('#audioVel');
+  const VELOCIDADES = [1, 1.5, 2];
+  const NUM_BARRAS = 44;
+  ondaAudio.innerHTML = Array.from({ length: NUM_BARRAS }, (_, i) =>
+    `<span style="height:${Math.round(22 + 70 * Math.abs(Math.sin(i * 1.3) * Math.cos(i * 0.55)))}%"></span>`).join('');
+  const barras = $$('span', ondaAudio);
+  const tempo = (s) => (Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '0:00');
+  const semAudio = (aviso) => {
+    cartaoAudio.classList.add('sem-audio');
+    [botaoAudio, buscaAudio, velAudio].forEach((el) => { el.disabled = true; });
+    totalAudio.textContent = aviso;
+  };
+  const mostrarProgresso = () => {
+    const p = Number.isFinite(audio.duration) && audio.duration > 0 ? audio.currentTime / audio.duration : 0;
+    barras.forEach((b, i) => b.classList.toggle('tocado', i < Math.round(p * NUM_BARRAS)));
+    buscaAudio.value = String(p * 100);
+    atualAudio.textContent = tempo(audio.currentTime);
+  };
+  const atualizarBotao = () => {
+    const tocando = !audio.paused;
+    botaoAudio.classList.toggle('tocando', tocando);
+    botaoAudio.innerHTML = tocando ? ICONES.pausa : ICONES.play;
+    botaoAudio.setAttribute('aria-label', tocando ? 'Pausar o áudio' : 'Ouvir o áudio');
+  };
+  if (AUDIO_DESTAQUES) {
+    audio.src = AUDIO_DESTAQUES;
+    audio.preload = 'metadata';
+    audio.addEventListener('loadedmetadata', () => { totalAudio.textContent = tempo(audio.duration); });
+    audio.addEventListener('timeupdate', mostrarProgresso);
+    audio.addEventListener('play', atualizarBotao);
+    audio.addEventListener('pause', atualizarBotao);
+    audio.addEventListener('ended', () => { audio.currentTime = 0; mostrarProgresso(); });
+    audio.addEventListener('error', () => semAudio('Indisponível'));
+    botaoAudio.addEventListener('click', () => { if (audio.paused) audio.play().catch(() => {}); else audio.pause(); });
+    buscaAudio.addEventListener('input', () => {
+      if (!Number.isFinite(audio.duration)) return;
+      audio.currentTime = (Number(buscaAudio.value) / 100) * audio.duration;
+      mostrarProgresso();
+    });
+    velAudio.addEventListener('click', () => {
+      const proxima = VELOCIDADES[(VELOCIDADES.indexOf(audio.playbackRate) + 1) % VELOCIDADES.length];
+      const texto = `${String(proxima).replace('.', ',')}x`;
+      audio.playbackRate = proxima;
+      velAudio.textContent = texto;
+      velAudio.setAttribute('aria-label', `Velocidade do áudio: ${texto}`);
+    });
+  } else {
+    semAudio('Em breve');
+  }
 
   /* Galeria com filtros por nicho */
   const galeria = $('#galeria');
@@ -772,12 +940,14 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   (async () => {
     const linhas = await carregarVideos();
-    if (linhas === null) { desenharDestaques(DESTAQUES); desenharTrabalhos(TRABALHOS); return; }   /* banco fora do ar: reserva */
-    const destaques = linhas.filter((v) => String(v.destaque || '').trim()).slice(0, 3).map((v) => {
+    if (linhas === null) { desenharTrabalhos(TRABALHOS); return; }   /* banco fora do ar: reserva (os destaques já estão na tela) */
+    const semParametros = (u) => String(u).split(/[?#]/)[0].replace(/\/+$/, '');
+    const jaTem = new Set(DESTAQUES.map((d) => semParametros(d.link)));
+    const doPainel = linhas.filter((v) => String(v.destaque || '').trim()).slice(0, 3).map((v) => {
       const p = partirDestaque(v.destaque);
-      return { link: seguro(v.link) || '#', capa: '', alt: '', numero: p.numero, rotulo: p.rotulo, titulo: v.titulo, contexto: v.marca || v.nicho || '' };
-    });
-    desenharDestaques(destaques);
+      return { link: seguro(v.link) || '#', capa: '', alt: '', marca: v.marca || '', numero: p.numero, rotulo: p.rotulo, titulo: v.titulo, contexto: v.nicho || '' };
+    }).filter((d) => !jaTem.has(semParametros(d.link)));
+    if (doPainel.length) desenharDestaques([...DESTAQUES, ...doPainel]);
     desenharTrabalhos(linhas.map((v) => ({
       titulo: v.titulo, marca: v.marca || '', nicho: v.nicho || '', formato: v.formato || 'Vídeo',
       imagem: '', alt: '', link: seguro(v.link)
@@ -1166,16 +1336,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <!-- ============================ 3. CONTEÚDOS DE DESTAQUE ============================ -->
 <section class="secao escuro" id="destaques" aria-labelledby="titulo-destaques">
-  <div class="container">
-    <header class="secao-topo">
-      <p class="eyebrow reveal"><b>02</b>Em evidência</p>
-      <h2 class="titulo reveal" id="titulo-destaques" style="--d:.06s">Conteúdos de <em>destaque</em></h2>
-      <p class="lead reveal" style="--d:.12s">Três vídeos que mostram como uma boa ideia, contada com verdade, vira resultado. Toque em um card para assistir.</p>
-    </header>
+  <div class="container destaques-layout">
+    <div class="destaques-texto">
+      <header class="secao-topo">
+        <p class="eyebrow reveal"><b>02</b>Em evidência</p>
+        <h2 class="titulo reveal" id="titulo-destaques" style="--d:.06s">Conteúdos de <em>destaque</em></h2>
+        <p class="lead reveal" style="--d:.12s">Vídeos que mostram como uma boa ideia, contada com verdade, vira resultado. Toque em um card para assistir.</p>
+      </header>
 
-    <!-- Os três cards são criados pela lista DESTAQUES no começo do script.
+      <!-- ESPAÇO DO ÁUDIO: o arquivo entra em AUDIO_DESTAQUES, no começo do script. -->
+      <div class="audio reveal" id="audioCartao" style="--d:.18s" role="group" aria-label="Player de áudio">
+        <audio id="audioEl" preload="none"></audio>
+        <button type="button" class="audio-play" id="audioPlay" aria-label="Ouvir o áudio"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg></button>
+        <div class="audio-meio">
+          <div class="audio-onda" id="audioOnda" aria-hidden="true"></div>
+          <input class="audio-busca" id="audioBusca" type="range" min="0" max="100" step="0.1" value="0" aria-label="Posição do áudio">
+          <div class="audio-tempos"><span id="audioAtual">0:00</span><span id="audioTotal">0:00</span></div>
+        </div>
+        <div class="audio-lado">
+          <button type="button" class="audio-vel" id="audioVel" aria-label="Velocidade do áudio: 1x">1x</button>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Os cards do carrossel são criados pela lista DESTAQUES no começo do script.
          Nela você troca: o LINK DO VÍDEO (campo "link") e a CAPA vertical 9:16 (campo "capa"). -->
-    <div class="destaques-grid" id="destaquesGrid"></div>
+    <div class="carrossel reveal" style="--d:.1s" role="region" aria-roledescription="carrossel" aria-label="Conteúdos de destaque">
+      <button type="button" class="carrossel-seta ant" id="destAnt" aria-label="Vídeo anterior" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button>
+      <div class="destaques-grid" id="destaquesGrid"></div>
+      <button type="button" class="carrossel-seta prox" id="destProx" aria-label="Próximo vídeo" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
+    </div>
   </div>
 </section>
 
