@@ -178,6 +178,14 @@ table.tabela{width:100%;border-collapse:collapse;font-size:.84rem}
 .tabela .sub{display:block;font-size:.76rem;color:var(--muted)}
 .tabela a{text-decoration:underline;text-underline-offset:2px}
 .tabela tr.favorita td:first-child{box-shadow:inset 3px 0 0 var(--marrom)}
+.tabela tr.selecionada td{background:rgba(128,128,128,.09)}
+.tabela td.sel{padding:0;width:34px}
+.sel-rotulo{display:flex;align-items:center;justify-content:center;width:34px;min-height:40px;cursor:pointer}
+.sel-check{width:18px;height:18px;margin:0;accent-color:var(--accent-text);cursor:pointer}
+.sel-check:disabled{cursor:not-allowed;opacity:.4}
+.selecao-barra{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;padding:.55rem 1rem;border-bottom:1px solid var(--line);background:rgba(128,128,128,.07);font-size:.84rem}
+.selecao-texto{flex:1;min-width:14rem}
+.selecao-acoes{display:flex;flex-wrap:wrap;gap:.45rem}
 .tabela tr.escondido td{opacity:.55}
 .tabela tr.arrastando{background:var(--accent-suave);outline:2px dashed var(--accent-text)}
 .alca{cursor:grab;touch-action:none;color:var(--muted);width:30px;height:30px;display:inline-grid;place-items:center;border-radius:6px}
@@ -355,6 +363,102 @@ dialog.modal::backdrop{background:rgba(20,17,13,.5)}
 .imp-situacao{margin-top:.9rem;margin-bottom:0}
 .imp-nota{margin-top:.55rem;color:var(--muted);font-size:.8rem}
 
+/* ---------- aba Prospecção ---------- */
+.imp-chip.erro{background:var(--vermelho-fundo);color:var(--vermelho-texto)}
+.p-envio-ok{background:var(--verde-fundo);color:var(--verde-texto)}
+.p-envio-erro{background:var(--vermelho-fundo);color:var(--vermelho-texto)}
+
+/* 1. capa */
+.pro-capa{
+  position:relative;overflow:hidden;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1.4rem;
+  padding:clamp(1.3rem,3vw,2rem);margin-bottom:1rem;border-radius:22px;color:var(--cream);
+  background:radial-gradient(120% 140% at 100% 0%,rgba(201,166,127,.34),transparent 55%),linear-gradient(135deg,#595959 0%,#2b2724 100%);
+  box-shadow:0 22px 40px -26px rgba(20,17,13,.7);
+}
+.pro-capa-texto{flex:1 1 22rem;min-width:0}
+.pro-capa-topo{display:flex;align-items:center;gap:.9rem;margin-bottom:.7rem}
+.pro-capa-icone{flex:none;width:50px;height:50px;border-radius:15px;display:grid;place-items:center;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.24)}
+.pro-capa-icone svg.ic{width:25px;height:25px;stroke-width:1.7}
+.pro-capa h2{font-size:clamp(1.5rem,3vw,2rem);font-weight:700;line-height:1.1;letter-spacing:-.01em}
+.pro-capa .explica{max-width:38rem;font-size:.95rem;color:rgba(243,238,233,.9)}
+.pro-etiquetas{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:1rem}
+.pro-etiqueta{padding:.28rem .75rem;border-radius:999px;font-size:.76rem;font-weight:600;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.24)}
+.pro-capa-numero{flex:none;text-align:right}
+.pro-capa-numero b{display:block;font-size:clamp(2.6rem,6vw,4rem);line-height:1;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.pro-capa-numero span{font-size:.82rem;color:rgba(243,238,233,.82)}
+
+/* 2. cartões de números */
+.pro-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:.85rem;margin-bottom:1.1rem}
+.pro-kpi{position:relative;overflow:hidden;padding:.95rem 1rem .9rem 1.3rem;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow)}
+.pro-kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--faixa)}
+.pro-kpi b{display:block;font-size:2rem;line-height:1.1;font-weight:700;color:var(--cor);font-variant-numeric:tabular-nums}
+.pro-kpi strong{display:block;margin-top:.15rem;font-size:.84rem;font-weight:600}
+.pro-kpi small{display:block;margin-top:.15rem;font-size:.74rem;color:var(--muted)}
+.k-principal{--cor:#4d4d4d;--faixa:#808080}
+.k-verde{--cor:#1d4f27;--faixa:#4c9a5a}
+.k-ambar{--cor:#7a5200;--faixa:#d9a21b}
+.k-azul{--cor:#1f4a78;--faixa:#4a86c5}
+.k-vermelho{--cor:#8a2a1c;--faixa:#d9776a}
+
+/* 3. formulário e prévia lado a lado */
+.pro-grade{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.1rem;align-items:start;margin-bottom:1.1rem}
+.pro-form{display:flex;flex-direction:column;gap:1rem;min-width:0}
+.pro-previa{position:sticky;top:68px;min-width:0}
+.pro-lembrete{margin-top:.6rem;font-size:.78rem;color:var(--muted)}
+.pro-origem{display:flex;gap:.5rem;align-items:flex-start;margin-bottom:.8rem;padding:.6rem .8rem;border-radius:var(--radius);background:var(--accent-suave);font-size:.84rem;font-weight:600}
+.pro-origem svg.ic{margin-top:.15rem}
+.pro-contagem{margin:.1rem 0 .7rem;font-size:.86rem}
+.pro-contagem b{font-variant-numeric:tabular-nums}
+.pro-contagem span{color:var(--muted)}
+.pro-caixa{margin:.2rem 0 .8rem;padding:.75rem .95rem;border-radius:var(--radius);font-size:.86rem}
+.pro-caixa strong{display:block;margin-bottom:.15rem}
+.pro-caixa .btn{margin-top:.5rem}
+.pro-caixa.ok{background:var(--verde-fundo);color:var(--verde-texto)}
+.pro-caixa.aviso{background:var(--amarelo-fundo);color:var(--amarelo-texto)}
+.pro-caixa.erro{background:var(--vermelho-fundo);color:var(--vermelho-texto)}
+.pro-modos{margin-bottom:.9rem}
+.pro-editor{width:100%;min-height:240px;padding:.7rem .8rem;background:#fff;border:1px solid var(--line-forte);border-radius:var(--radius);resize:vertical;line-height:1.55}
+.pro-editor:focus{outline:none;border-color:var(--accent-text);box-shadow:0 0 0 3px rgba(128,128,128,.35)}
+.pro-codigo{min-height:300px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.78rem;line-height:1.5;white-space:pre;overflow:auto}
+.pro-linha-botao{display:grid;grid-template-columns:1fr 1.4fr;gap:.6rem}
+.pro-botoes{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem}
+.pro-dica{margin-top:.55rem;font-size:.8rem;color:var(--muted)}
+.pro-progresso{height:10px;border-radius:999px;background:rgba(128,128,128,.22);overflow:hidden;margin:.5rem 0 .35rem}
+.pro-progresso i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-text));transition:width .3s}
+.pro-fila-item{margin-top:.6rem;padding:.9rem 1rem;border:1px solid var(--line-forte);border-radius:var(--radius);background:#fff}
+.pro-fila-item dl{display:grid;grid-template-columns:auto 1fr;gap:.25rem .8rem;margin:0 0 .7rem;font-size:.86rem}
+.pro-fila-item dt{color:var(--muted);font-weight:600}
+.pro-fila-item dd{margin:0;overflow-wrap:anywhere}
+.pro-fila-corpo{width:100%;min-height:210px;padding:.6rem .75rem;border:1px solid var(--line-forte);border-radius:var(--radius);background:var(--paper);font-size:.86rem;line-height:1.55;resize:vertical}
+
+/* a prévia: um palco mais escuro com a janela do e-mail flutuando */
+.pro-previa-topo{display:flex;align-items:center;justify-content:space-between;gap:.6rem;margin-bottom:.6rem}
+.pro-previa-topo h3{font-size:.92rem;font-weight:600}
+.pro-palco{padding:clamp(.8rem,2vw,1.3rem);border-radius:var(--radius-lg);background:#e3dbd0;box-shadow:inset 0 0 0 1px var(--line)}
+.pro-janela{overflow:hidden;background:#fff;border-radius:14px;box-shadow:0 18px 40px -20px rgba(20,17,13,.45),0 2px 6px rgba(20,17,13,.08)}
+.pro-janela-cab{display:flex;align-items:center;gap:.75rem;padding:.9rem 1rem;border-bottom:1px solid #ececec}
+.pro-avatar{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--accent-text);color:#fff;font-weight:700}
+.pro-janela-txt{min-width:0}
+.pro-assunto{font-size:1.08rem;font-weight:700;line-height:1.25;overflow-wrap:anywhere}
+.pro-remetente{margin-top:.1rem;font-size:.78rem;color:var(--muted);overflow-wrap:anywhere}
+.pro-quadro{display:block;width:100%;height:340px;border:0;background:#fff}
+
+/* descadastro e histórico */
+.pro-optout-form{display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:.8rem}
+.pro-optout-form input{flex:1 1 14rem;padding:.5rem .7rem;background:#fff;border:1px solid var(--line-forte);border-radius:var(--radius)}
+.pro-vazio{padding:2rem 1.2rem;text-align:center}
+.pro-vazio h2{font-size:1.15rem;margin-bottom:.4rem}
+.pro-vazio p{max-width:34rem;margin:0 auto 1rem;color:var(--muted)}
+
+@media (max-width:1000px){
+  .pro-grade{grid-template-columns:1fr}
+  .pro-previa{position:static}
+}
+@media (max-width:640px){
+  .pro-capa-numero{text-align:left}
+  .pro-linha-botao{grid-template-columns:1fr}
+}
+
 /* ---------- resumo, verificação, conteúdo do site e prévia ---------- */
 .v-resumo{margin:0 0 .8rem;padding:.55rem .8rem;border-radius:var(--radius);font-weight:700;font-size:.9rem}
 .v-resumo.v-ok{background:var(--verde-fundo);color:var(--verde-texto)}
@@ -449,6 +553,9 @@ li.v-erro .v-ico{background:var(--vermelho-fundo);color:var(--vermelho-texto)}
       </a>
 
       <p class="lateral-titulo">Minha rotina</p>
+      <a class="nav-item" href="#prospeccao" data-aba="prospeccao">
+        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>Prospecção
+      </a>
       <a class="nav-item" href="#calendario" data-aba="calendario">
         <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>Calendário
       </a>
@@ -487,6 +594,7 @@ li.v-erro .v-ico{background:var(--vermelho-fundo);color:var(--vermelho-texto)}
       <section id="aba-conteudo" hidden></section>
       <section id="aba-site" hidden></section>
       <section id="aba-marcas" hidden></section>
+      <section id="aba-prospeccao" hidden></section>
       <section id="aba-calendario" hidden></section>
       <section id="aba-campanhas" hidden></section>
       <section id="aba-checklist" hidden></section>
