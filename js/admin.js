@@ -97,6 +97,7 @@
     copiar: '<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>',
     expandir: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
     estrela: '<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+    arquivo: '<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"/>',
     zap: '<path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.55L3 20.5l1.5-5.4A8.5 8.5 0 1 1 21 11.5z"/>',
     insta: '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".9" fill="currentColor" stroke="none"/>',
     setaCima: '<path d="M12 19V5M5 12l7-7 7 7"/>',
@@ -124,7 +125,7 @@
   function descreverErro(tabela, erro) {
     var cod = String((erro && erro.code) || '');
     var msg = String((erro && erro.message) || '');
-    var arquivoSql = tabela === 'site_conteudo' ? 'banco-2.sql' : (/^email_/.test(tabela) ? 'disparo.sql' : 'banco.sql');
+    var arquivoSql = tabela === 'site_conteudo' ? 'banco-2.sql' : (/^email_/.test(tabela) ? 'disparo.sql' : (tabela === 'mensagens_site' ? 'contato.sql' : 'banco.sql'));
     var col = /find the '([^']+)' column/i.exec(msg) || /column "?([\w]+)"? (?:of relation "?\w+"? )?does not exist/i.exec(msg);
     if (tabela === 'marcas' && col && /^(nicho|favorita|selecionada)$/.test(col[1])) arquivoSql = 'disparo.sql';
     if (cod === 'PGRST205' || cod === '42P01' || /could not find the table|relation "[^"]*" does not exist/i.test(msg)) {
@@ -515,52 +516,28 @@
       return todas;
     }
 
-    /* Mensagens do formulário do site. Vêm de dois lugares:
-       1. a tabela "mensagens_site" (contato.sql): tem tudo separado (nome, marca, orçamento, texto);
-       2. as marcas que já entraram como Lead com o texto no campo obs ("Mensagem pelo site: ..." ou
-          "Pediu o mídia kit pelo site."), de antes do contato.sql, ou se o banco ainda não tem a função.
-       Aqui só são lidas e mostradas, nada é gravado. */
-    function lerObsDoSite(obs) {
-      var contato = '', orcamento = '', texto = [];
-      String(obs || '').split('\n').forEach(function (linha, i) {
-        var c = i > 0 ? /^Contato:\s*(.*)$/.exec(linha) : null;
-        var o = i > 0 ? /^Orçamento:\s*(.*)$/.exec(linha) : null;
-        if (c) contato = c[1].trim(); else if (o) orcamento = o[1].trim(); else texto.push(linha);
-      });
-      return { contato: contato, orcamento: orcamento, texto: texto.join('\n').trim() };
-    }
+    /* Mensagens do formulário do site: ficam na tabela "mensagens_site" (contato.sql), uma linha para cada mensagem,
+       mesmo quando a marca ou o e-mail se repetem. Aqui dá para ler, responder, arquivar e apagar.
+       Apagar ou arquivar aqui não mexe na marca da aba Marcas. */
+    var verArquivadas = false;
+    var mensagensAtuais = { erro: '', lista: [] };
 
     async function carregarMensagens() {
-      var semTabela = false, mensagens = [], leads = [], erroMarcas = '';
       try {
-        var r1 = await banco.from('mensagens_site').select('*').order('criado_em', { ascending: false }).limit(30);
-        if (r1.error) semTabela = true; else mensagens = r1.data || [];
-      } catch (e) { semTabela = true; }
-      try {
-        var r2 = await banco.from('marcas').select('id,nome,email,obs,criado_em')
-          .ilike('obs', '%pelo site%').order('criado_em', { ascending: false }).limit(30);
-        if (r2.error) erroMarcas = descreverErro('marcas', r2.error); else leads = r2.data || [];
-      } catch (e) { erroMarcas = descreverErro('marcas', e); }
-      if (semTabela && erroMarcas) return { erro: erroMarcas, lista: [], semTabela: true };
-
-      var lista = mensagens.map(function (m) {
-        return { tipo: m.tipo === 'kit' ? 'kit' : 'mensagem', nome: m.nome, marca: m.marca, email: m.email,
-          orcamento: m.orcamento, quando: m.criado_em, texto: m.mensagem || '' };
-      });
-      var jaListadas = {};
-      mensagens.forEach(function (m) { if (m.marca_id) jaListadas[m.marca_id] = true; });
-      leads.forEach(function (m) {
-        if (jaListadas[m.id]) return;
-        var obs = String(m.obs || '');
-        var dado = lerObsDoSite(obs);
-        var kit = obs.indexOf('Pediu o mídia kit') === 0;
-        if (!kit && obs.indexOf('Mensagem pelo site:') !== 0) return;
-        lista.push({ tipo: kit ? 'kit' : 'mensagem', nome: dado.contato || m.nome, marca: dado.contato ? m.nome : '', email: m.email,
-          orcamento: dado.orcamento, quando: m.criado_em,
-          texto: kit ? 'Pediu o mídia kit pelo site.' : dado.texto.slice('Mensagem pelo site:'.length).trim() });
-      });
-      lista.sort(function (a, b) { return String(b.quando || '').localeCompare(String(a.quando || '')); });
-      return { erro: '', lista: lista.slice(0, 30), semTabela: semTabela };
+        var r = await banco.from('mensagens_site').select('*').order('criado_em', { ascending: false }).limit(500);
+        if (r.error) return { erro: descreverErro('mensagens_site', r.error), lista: [] };
+        var dados = r.data || [];
+        return {
+          erro: '',
+          semColuna: dados.length > 0 && dados[0].arquivada === undefined,
+          lista: dados.map(function (m) {
+            return { id: m.id, tipo: m.tipo === 'kit' ? 'kit' : 'mensagem', nome: m.nome, marca: m.marca, email: m.email,
+              orcamento: m.orcamento, quando: m.criado_em, texto: m.mensagem || '', arquivada: !!m.arquivada, marcaId: m.marca_id };
+          })
+        };
+      } catch (e) {
+        return { erro: descreverErro('mensagens_site', e), lista: [] };
+      }
     }
 
     function htmlMensagem(m) {
@@ -571,7 +548,7 @@
       if (m.marca) detalhes += '<span><b>Marca:</b> ' + esc(m.marca) + '</span>';
       if (m.orcamento) detalhes += '<span><b>Orçamento:</b> ' + esc(m.orcamento) + '</span>';
       detalhes += '<span><b>E-mail:</b> ' + (emailOk ? esc(email) : 'não informado') + '</span>';
-      return '<details class="msg"><summary>' +
+      return '<details class="msg" data-id="' + esc(m.id) + '"><summary>' +
         '<span class="msg-nome">' + esc(m.nome || 'Sem nome') + (m.marca ? ' <span class="msg-marca">· ' + esc(m.marca) + '</span>' : '') + '</span>' +
         '<span class="pilula ' + (m.tipo === 'kit' ? 'p-briefing' : 'p-lead') + '">' + (m.tipo === 'kit' ? 'Mídia kit' : 'Mensagem') + '</span>' +
         '<span class="msg-data">' + esc(fmtDataHora(m.quando)) + '</span>' +
@@ -580,21 +557,64 @@
         '<p class="msg-texto">' + esc(m.texto || '(sem texto)') + '</p>' +
         '<div class="acoes-msg">' +
           (emailOk ? '<a class="btn pequeno principal-btn" href="mailto:' + esc(email) + '?subject=' + encodeURIComponent('Sobre a sua mensagem no meu portfólio') + '">' + ic('envelope') + 'Responder por e-mail</a>' : '') +
-          '<a class="btn pequeno" href="#marcas">Abrir na aba Marcas</a></div></div></details>';
+          (m.marcaId ? '<a class="btn pequeno" href="#marcas">Abrir na aba Marcas</a>' : '') +
+          '<button type="button" class="btn pequeno" data-msg-acao="arquivar" data-id="' + esc(m.id) + '">' + ic('arquivo') + (m.arquivada ? 'Tirar do arquivo' : 'Arquivar') + '</button>' +
+          '<button type="button" class="btn pequeno perigo" data-msg-acao="apagar" data-id="' + esc(m.id) + '">' + ic('lixo') + 'Apagar</button>' +
+        '</div></div></details>';
     }
 
     function htmlMensagens(res) {
+      var novas = res.lista.filter(function (m) { return !m.arquivada; });
+      var arquivadas = res.lista.filter(function (m) { return m.arquivada; });
+      var mostrar = verArquivadas ? arquivadas : novas;
       var corpo;
       if (res.erro) corpo = '<p class="vazio">' + esc(res.erro) + '</p>';
-      else if (!res.lista.length) corpo = '<p class="vazio">Quando alguém enviar uma mensagem pelo formulário de contato do seu site, ela aparece aqui.</p>';
-      else corpo = '<div class="msg-lista">' + res.lista.map(htmlMensagem).join('') + '</div>';
-      var total = res.lista.filter(function (m) { return m.tipo === 'mensagem'; }).length;
-      var nota = res.semTabela && !res.erro
-        ? '<p class="cartao-corpo" style="border-top:1px solid var(--line);color:var(--muted);font-size:.8rem">Para ver aqui também a marca e o orçamento de cada mensagem nova, e criar a marca em Marcas sem repetir, rode o arquivo contato.sql no SQL Editor do Supabase.</p>'
+      else if (!mostrar.length) corpo = '<p class="vazio">' + (verArquivadas
+        ? 'Você não tem mensagens arquivadas.'
+        : (arquivadas.length ? 'Nenhuma mensagem na caixa de entrada. As que você arquivou estão em "Arquivadas".' : 'Quando alguém enviar uma mensagem pelo formulário de contato do seu site, ela aparece aqui.')) + '</p>';
+      else corpo = '<div class="msg-lista">' + mostrar.map(htmlMensagem).join('') + '</div>';
+      var nota = res.semColuna
+        ? '<p class="cartao-corpo" style="border-top:1px solid var(--line);color:var(--muted);font-size:.8rem">Para poder arquivar mensagens, rode o arquivo contato.sql de novo no SQL Editor do Supabase.</p>'
         : '';
-      return '<div class="cartao" style="margin-bottom:1rem"><div class="cartao-cab"><h2>Mensagens do site' +
-        (total ? ' <small style="font-weight:500;color:var(--muted)">(' + fmtInt(total) + ')</small>' : '') + '</h2>' +
-        '<a class="btn pequeno" href="#marcas">Ver todas na aba Marcas</a></div>' + corpo + nota + '</div>';
+      return '<div class="cartao" style="margin-bottom:1rem"><div class="cartao-cab"><h2>Mensagens do site</h2>' +
+        '<div class="segmentos" role="group" aria-label="Mostrar mensagens">' +
+          '<button type="button" data-msg-aba="novas" aria-pressed="' + (verArquivadas ? 'false' : 'true') + '">Recebidas (' + fmtInt(novas.length) + ')</button>' +
+          '<button type="button" data-msg-aba="arquivadas" aria-pressed="' + (verArquivadas ? 'true' : 'false') + '">Arquivadas (' + fmtInt(arquivadas.length) + ')</button></div>' +
+        '<a class="btn pequeno" href="#marcas">Ver a aba Marcas</a></div>' + corpo + nota + '</div>';
+    }
+
+    function desenharMensagens() {
+      var alvo = $('#mensagensSite', secaoAtual);
+      if (!alvo) return;
+      alvo.innerHTML = htmlMensagens(mensagensAtuais);
+    }
+
+    async function recarregarMensagens() {
+      mensagensAtuais = await carregarMensagens();
+      desenharMensagens();
+    }
+
+    async function cliqueMensagens(e) {
+      var aba = e.target.closest('button[data-msg-aba]');
+      if (aba) { verArquivadas = aba.getAttribute('data-msg-aba') === 'arquivadas'; desenharMensagens(); return; }
+      var bt = e.target.closest('button[data-msg-acao]');
+      if (!bt) return;
+      var id = bt.getAttribute('data-id');
+      var m = mensagensAtuais.lista.filter(function (x) { return x.id === id; })[0];
+      if (!m) return;
+      var acao = bt.getAttribute('data-msg-acao');
+      if (acao === 'arquivar') {
+        bt.disabled = true;
+        var r = await gravar('mensagens_site', { arquivada: !m.arquivada }, id);
+        if (r.ok) { aviso(m.arquivada ? 'Mensagem de volta para as recebidas.' : 'Mensagem arquivada.'); await recarregarMensagens(); }
+        else { bt.disabled = false; aviso(r.erro, 'erro'); }
+      }
+      if (acao === 'apagar') {
+        if (!(await confirmar('Apagar a mensagem de "' + (m.nome || 'sem nome') + '"? Ela some daqui e não dá para desfazer. A marca na aba Marcas continua como está.'))) return;
+        var r2 = await apagar('mensagens_site', id);
+        if (r2.ok) { aviso('Mensagem apagada.'); await recarregarMensagens(); }
+        else aviso(r2.erro, 'erro');
+      }
     }
 
     function calcular(videos, visitas) {
@@ -802,10 +822,13 @@
         if (!secao.innerHTML.trim()) secao.innerHTML = '<p class="carregando">Carregando...</p>';
         var resultado = await Promise.all([listar('videos', true), carregarVisitas(), carregarMensagens()]);
         var videos = resultado[0], visitas = resultado[1];
+        mensagensAtuais = resultado[2];
         var c = calcular(videos, visitas);
-        secao.innerHTML = htmlNumeros(c) + htmlMensagens(resultado[2]) +
+        secao.innerHTML = htmlNumeros(c) + '<div id="mensagensSite"></div>' +
           '<div class="duas-colunas">' + htmlGrafico(c) + htmlOrigens(c) + '</div>' +
           '<div id="tabelaVideos"></div>';
+        desenharMensagens();
+        $('#mensagensSite', secao).addEventListener('click', cliqueMensagens);
         desenharTabela(videos);
       }
     };
