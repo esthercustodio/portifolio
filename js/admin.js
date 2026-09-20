@@ -91,6 +91,7 @@
     mais: '<path d="M12 5v14M5 12h14"/>',
     busca: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
     baixar: '<path d="M12 3v12M7 10l5 5 5-5M4 21h16"/>',
+    subir: '<path d="M12 15V3M7 8l5-5 5 5M4 21h16"/>',
     estrela: '<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
     zap: '<path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.55L3 20.5l1.5-5.4A8.5 8.5 0 1 1 21 11.5z"/>',
     insta: '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".9" fill="currentColor" stroke="none"/>',
@@ -121,6 +122,7 @@
     var msg = String((erro && erro.message) || '');
     var arquivoSql = tabela === 'site_conteudo' ? 'banco-2.sql' : 'banco.sql';
     var col = /find the '([^']+)' column/i.exec(msg) || /column "?([\w]+)"? (?:of relation "?\w+"? )?does not exist/i.exec(msg);
+    if (tabela === 'marcas' && col && /^(nicho|favorita)$/.test(col[1])) arquivoSql = 'banco-3.sql';
     if (cod === 'PGRST205' || cod === '42P01' || /could not find the table|relation "[^"]*" does not exist/i.test(msg)) {
       return 'A tabela "' + tabela + '" ainda não existe no seu banco. Cole o arquivo ' + arquivoSql + ' no SQL Editor do Supabase e clique em Run.';
     }
@@ -718,8 +720,10 @@
       { v: 'cliente', t: 'Cliente', classe: 'p-cliente' },
       { v: 'parada', t: 'Parada', classe: 'p-parada' }
     ];
-    var estado = { busca: '', situacao: 'todas' };
+    var estado = { busca: '', situacao: 'todas', nicho: 'todos', favoritas: false };
     var secaoAtual = null;
+    var colunasNovas = true;     /* false enquanto o banco-3.sql (nicho e favorita) não foi rodado no Supabase */
+    var pendentes = {};          /* marcas cuja estrela está sendo gravada agora */
 
     function situacao(v) {
       return SITUACOES.filter(function (s) { return s.v === v; })[0] || SITUACOES[0];
@@ -736,13 +740,37 @@
       return d.indexOf('55') === 0 && d.length >= 12 ? d : '55' + d;
     }
     function textoBusca(m) {
-      return (String(m.nome || '') + ' ' + String(m.instagram || '') + ' ' + String(m.email || '')).toLowerCase();
+      return (String(m.nome || '') + ' ' + String(m.instagram || '') + ' ' + String(m.email || '') + ' ' + String(m.nicho || '')).toLowerCase();
+    }
+
+    /* Os nichos que já aparecem nas suas marcas (sem repetir "Cabelo" e "cabelo"), para o filtro e para as sugestões */
+    function nichosUsados() {
+      var mapa = Object.create(null), lista = [];
+      (cache.marcas || []).forEach(function (m) {
+        impNichos(m.nicho).forEach(function (n) {
+          var k = impNormalizar(n);
+          if (!mapa[k]) { mapa[k] = n; lista.push({ v: k, t: n }); }
+        });
+      });
+      return lista.sort(function (a, b) { return comparaTexto(a.t, b.t); });
+    }
+    function montarNichos() {
+      var sel = $('#marcasNicho', secaoAtual);
+      if (!sel) return;
+      var lista = nichosUsados();
+      if (estado.nicho !== 'todos' && !lista.some(function (n) { return n.v === estado.nicho; })) estado.nicho = 'todos';
+      sel.innerHTML = '<option value="todos">Todos os nichos</option>' + lista.map(function (n) {
+        return '<option value="' + esc(n.v) + '"' + (estado.nicho === n.v ? ' selected' : '') + '>' + esc(n.t) + '</option>';
+      }).join('');
+      sel.hidden = !lista.length;
     }
 
     function filtradas(lista) {
       var q = estado.busca.trim().toLowerCase().replace(/^@/, '');
       return lista.filter(function (m) {
         if (estado.situacao !== 'todas' && m.situacao !== estado.situacao) return false;
+        if (estado.favoritas && !m.favorita) return false;
+        if (estado.nicho !== 'todos' && !impNichos(m.nicho).some(function (n) { return impNormalizar(n) === estado.nicho; })) return false;
         return !q || textoBusca(m).indexOf(q) >= 0;
       }).sort(function (a, b) {
         var da = a.ultimo_contato || '', db = b.ultimo_contato || '';
@@ -755,8 +783,10 @@
       var s = situacao(m.situacao);
       var insta = limparInsta(m.instagram);
       var whats = numeroWhats(m.telefone);
-      return '<tr class="clicavel" data-id="' + esc(m.id) + '" tabindex="0">' +
+      return '<tr class="clicavel' + (m.favorita ? ' favorita' : '') + '" data-id="' + esc(m.id) + '" tabindex="0">' +
+        '<td><button type="button" class="estrela' + (m.favorita ? ' ligada' : '') + '" data-acao="estrela" aria-pressed="' + (m.favorita ? 'true' : 'false') + '" title="' + (m.favorita ? 'Tirar dos favoritos' : 'Favoritar') + '" aria-label="' + (m.favorita ? 'Tirar dos favoritos: ' : 'Favoritar ') + esc(m.nome) + '">' + ic('estrela') + '</button></td>' +
         '<td><strong>' + esc(m.nome) + '</strong>' + (m.exemplo ? '<span class="exemplo-tag">EXEMPLO</span>' : '') + '</td>' +
+        '<td>' + impNichos(m.nicho).map(function (n) { return '<span class="pilula p-nicho">' + esc(n) + '</span>'; }).join(' ') + '</td>' +
         '<td>' + (insta ? '<a href="https://instagram.com/' + esc(insta) + '" target="_blank" rel="noopener noreferrer" title="Abrir o Instagram">@' + esc(insta) + '</a>' : '') + '</td>' +
         '<td>' + (m.email ? '<a href="mailto:' + esc(m.email) + '">' + esc(m.email) + '</a>' : '') + '</td>' +
         '<td>' + (m.telefone ? esc(m.telefone) : '') +
@@ -768,14 +798,15 @@
 
     function desenhar() {
       var todas = cache.marcas || [];
+      montarNichos();
       var lista = filtradas(todas);
       var corpo;
       if (!todas.length) {
-        corpo = '<p class="vazio">Você ainda não tem marcas cadastradas. Clique em "Adicionar marca" ou espere chegar um contato pelo formulário do site.</p>';
+        corpo = '<p class="vazio">Você ainda não tem marcas cadastradas. Clique em "Adicionar marca" ou "Importar planilha", ou espere chegar um contato pelo formulário do site.</p>';
       } else if (!lista.length) {
         corpo = '<p class="vazio">Nenhuma marca encontrada com essa busca ou esse filtro.</p>';
       } else {
-        corpo = '<div class="rolagem"><table class="tabela"><thead><tr><th>Marca</th><th>Instagram</th><th>E-mail</th><th>Telefone</th><th>Situação</th><th>Observação</th><th>Último contato</th></tr></thead><tbody id="marcasCorpo">' +
+        corpo = '<div class="rolagem"><table class="tabela"><thead><tr><th style="width:44px"><span class="sr-only">Favorita</span></th><th>Marca</th><th>Nicho</th><th>Instagram</th><th>E-mail</th><th>Telefone</th><th>Situação</th><th>Observação</th><th>Último contato</th></tr></thead><tbody id="marcasCorpo">' +
           lista.map(htmlLinha).join('') + '</tbody></table></div>';
       }
       $('#marcasTabela', secaoAtual).innerHTML = corpo;
@@ -785,19 +816,34 @@
     }
 
     function campos() {
+      /* sugestões do nicho: os que você já usa, mais os três exemplos que você deu */
+      var sugestoes = nichosUsados().map(function (n) { return n.t; });
+      ['Cabelo', 'Skincare', 'App'].forEach(function (n) {
+        if (!sugestoes.some(function (s) { return impNormalizar(s) === impNormalizar(n); })) sugestoes.push(n);
+      });
       return [
         { nome: 'nome', rotulo: 'Marca', obrigatorio: true, largo: true },
+        { nome: 'nicho', rotulo: 'Nicho', placeholder: 'cabelo, skincare, app', lista: sugestoes, ajuda: 'Pode colocar mais de um, separados por vírgula.' },
         { nome: 'instagram', rotulo: 'Instagram', placeholder: '@nomedamarca' },
         { nome: 'email', rotulo: 'E-mail', tipo: 'email' },
         { nome: 'telefone', rotulo: 'Telefone (com DDD)', tipo: 'tel', placeholder: '(00) 00000-0000' },
         { nome: 'situacao', rotulo: 'Situação', tipo: 'select', opcoes: SITUACOES.map(function (s) { return { v: s.v, t: s.t }; }) },
         { nome: 'ultimo_contato', rotulo: 'Último contato', tipo: 'date' },
-        { nome: 'obs', rotulo: 'Observação', tipo: 'textarea', largo: true }
-      ];
+        { nome: 'obs', rotulo: 'Observação', tipo: 'textarea', largo: true },
+        { nome: 'favorita', rotulo: 'Favorita (estrela)', tipo: 'checkbox', largo: true }
+      ].filter(function (c) { return colunasNovas || (c.nome !== 'nicho' && c.nome !== 'favorita'); });
+    }
+
+    /* Lê as marcas e confere se o banco-3.sql já foi rodado (se os campos nicho e favorita existem) */
+    async function carregarMarcas() {
+      await listar('marcas', true);
+      var m = (cache.marcas || [])[0];
+      colunasNovas = !m || ('nicho' in m && 'favorita' in m);
+      if (!colunasNovas) problemas.marcas = 'Faltam os campos Nicho e Favorita na tabela "marcas". Cole o arquivo banco-3.sql no SQL Editor do Supabase e clique em Run. Até lá, o painel funciona sem eles.';
     }
 
     async function recarregar() {
-      await listar('marcas', true);
+      await carregarMarcas();
       desenhar();
       mostrarProblemas(TABELAS);
     }
@@ -815,6 +861,7 @@
             if (!h) return { ok: false, erro: 'O Instagram parece estranho. Use só o @ da marca.' };
             v.instagram = '@' + h;
           }
+          if ('nicho' in v) v.nicho = impLimparNicho(v.nicho) || null;
           var r = await gravar('marcas', v, editando ? marca.id : null);
           if (r.ok) { aviso(editando ? 'Marca atualizada.' : 'Marca adicionada.'); await recarregar(); }
           return r;
@@ -830,13 +877,492 @@
     function baixar() {
       var lista = (cache.marcas || []).filter(function (m) { return !m.exemplo; });
       if (!lista.length) { aviso('Ainda não há marcas para baixar.', 'erro'); return; }
-      var cab = ['Marca', 'Instagram', 'E-mail', 'Telefone', 'Situação', 'Observação', 'Último contato'].map(function (t) { return celulaCSV(t); });
+      var cab = ['Marca', 'Nicho', 'Instagram', 'E-mail', 'Telefone', 'Situação', 'Observação', 'Último contato', 'Favorita'].map(function (t) { return celulaCSV(t); });
       var linhas = [cab].concat(lista.sort(function (a, b) { return comparaTexto(a.nome, b.nome); }).map(function (m) {
-        return [celulaCSV(m.nome), celulaCSV(m.instagram), celulaCSV(m.email), celulaCSV(m.telefone, true),
-          celulaCSV(situacao(m.situacao).t), celulaCSV(m.obs), celulaCSV(fmtData(m.ultimo_contato))];
+        return [celulaCSV(m.nome), celulaCSV(m.nicho), celulaCSV(m.instagram), celulaCSV(m.email), celulaCSV(m.telefone, true),
+          celulaCSV(situacao(m.situacao).t), celulaCSV(m.obs), celulaCSV(fmtData(m.ultimo_contato)), celulaCSV(m.favorita ? 'Sim' : 'Não')];
       }));
       baixarCSV('marcas-' + hojeISO() + '.csv', linhas);
       aviso('Arquivo baixado. Ele abre direto no Excel.');
+    }
+
+    /* ---------------------------------------------------------
+       IMPORTAR PLANILHA (CSV)
+       Lê o arquivo, descobre sozinho o que é cada coluna, mostra uma prévia
+       e só grava quando você confirmar. Marcas que já estão no painel são puladas.
+       As funções entre IMP-LEITURA-INICIO e IMP-LEITURA-FIM só leem e organizam
+       os dados: não mexem na tela nem no banco.
+       --------------------------------------------------------- */
+    /* IMP-LEITURA-INICIO */
+    var IMP_LIMITE_ARQUIVO = 2 * 1024 * 1024;   /* 2 MB */
+    var IMP_LIMITE_LINHAS = 1000;               /* o painel lê até 1000 marcas */
+    var IMP_CAMPOS = [
+      { v: 'nome', t: 'Marca' },
+      { v: 'nicho', t: 'Nicho' },
+      { v: 'instagram', t: 'Instagram' },
+      { v: 'email', t: 'E-mail' },
+      { v: 'telefone', t: 'Telefone' },
+      { v: 'situacao', t: 'Situação' },
+      { v: 'ultimo_contato', t: 'Último contato' },
+      { v: 'favorita', t: 'Favorita (sim ou não)' },
+      { v: 'obs', t: 'Observação' },
+      { v: '', t: 'Não importar' }
+    ];
+
+    /* Minúsculas, sem acento e sem símbolos: "E-mail" vira "e mail", "L'Oréal" vira "l oreal" */
+    function impNormalizar(s) {
+      return String(s == null ? '' : s).toLowerCase().normalize('NFD').replace(/\p{M}/gu, '')
+        .replace(/[^a-z0-9@]+/g, ' ').trim();
+    }
+    function impCortar(s, max) {
+      s = String(s == null ? '' : s);
+      return s.length > max ? s.slice(0, max) : s;
+    }
+
+    /* Nichos: "cabelo; skincare / app" vira "Cabelo, Skincare, App". A marca pode ter vários, separados por vírgula.
+       Só coloca maiúscula na primeira letra quando a palavra está toda em minúscula ("iFood" e "APP" ficam como estão). */
+    function impLimparNicho(v) {
+      var vistos = Object.create(null), itens = String(v == null ? '' : v).split(/[,;\/|]+/).map(function (n) { return n.trim(); }).filter(function (n) {
+        var k = impNormalizar(n);
+        if (!k || vistos[k]) return false;
+        vistos[k] = true;
+        return true;
+      }).map(function (n) { return n === n.toLowerCase() ? n.charAt(0).toUpperCase() + n.slice(1) : n; });
+      return impCortar(itens.join(', '), 100);
+    }
+    function impNichos(v) {
+      return String(v == null ? '' : v).split(',').map(function (n) { return n.trim(); }).filter(Boolean);
+    }
+    /* "Sim", "s", "x", "1" ou uma estrela contam como favorita. "Não", vazio ou qualquer outra coisa, não. */
+    function impEhSim(v) {
+      var s = String(v);
+      return /^(sim|s|x|1|true|verdadeiro|yes|y|favorit[oa]|estrela)$/.test(impNormalizar(v)) ||
+        s.indexOf(String.fromCodePoint(0x2605)) >= 0 || s.indexOf(String.fromCodePoint(0x2B50)) >= 0;   /* estrela preta ou estrela de emoji */
+    }
+
+    /* Tenta UTF-8 e, se não der, Windows-1252 (o CSV antigo do Excel). Avisa se for .xlsx. */
+    function impDecodificar(buf) {
+      var b = new Uint8Array(buf), texto;
+      if (b.length > 3 && b[0] === 0x50 && b[1] === 0x4B && b[2] === 0x03 && b[3] === 0x04) return { xlsx: true };
+      if (b.length > 1 && b[0] === 0xFF && b[1] === 0xFE) texto = new TextDecoder('utf-16le').decode(b);
+      else if (b.length > 1 && b[0] === 0xFE && b[1] === 0xFF) texto = new TextDecoder('utf-16be').decode(b);
+      else {
+        try { texto = new TextDecoder('utf-8', { fatal: true }).decode(b); }
+        catch (e) { texto = new TextDecoder('windows-1252').decode(b); }
+      }
+      return { texto: texto.charCodeAt(0) === 0xFEFF ? texto.slice(1) : texto };
+    }
+
+    /* Excel em português usa ";" e o Google Planilhas usa ",". Olha a primeira linha e escolhe. */
+    function impSeparador(texto) {
+      var dica = /^sep=(.)\r?\n/i.exec(texto);
+      if (dica) return dica[1];
+      var cont = { ';': 0, ',': 0, '\t': 0 }, aspas = false, i = 0, c;
+      while (texto.charAt(i) === '\n' || texto.charAt(i) === '\r') i++;   /* pula linhas em branco no começo */
+      for (; i < texto.length; i++) {
+        c = texto.charAt(i);
+        if (c === '"') aspas = !aspas;
+        else if (!aspas && (c === '\n' || c === '\r')) break;
+        else if (!aspas && cont[c] !== undefined) cont[c]++;
+      }
+      if (cont[';'] > 0 && cont[';'] >= cont[','] && cont[';'] >= cont['\t']) return ';';
+      if (cont[','] > 0 && cont[','] >= cont['\t']) return ',';
+      return cont['\t'] > 0 ? '\t' : ',';
+    }
+
+    /* Texto do CSV vira lista de linhas (cada linha, uma lista de células). Aceita aspas, "" e quebra de linha dentro da célula. */
+    function impLerCSV(texto) {
+      var dicaSep = /^sep=.\r?\n/i;
+      var sep = impSeparador(texto);
+      if (dicaSep.test(texto)) texto = texto.replace(dicaSep, '');
+      var linhas = [], linha = [], campo = '', aspas = false, i = 0, c;
+      while (i < texto.length) {
+        c = texto.charAt(i);
+        if (aspas) {
+          if (c === '"') {
+            if (texto.charAt(i + 1) === '"') { campo += '"'; i++; } else aspas = false;
+          } else campo += c;
+        } else if (c === '"' && campo === '') {
+          aspas = true;
+        } else if (c === sep) {
+          linha.push(campo); campo = '';
+        } else if (c === '\n' || c === '\r') {
+          if (c === '\r' && texto.charAt(i + 1) === '\n') i++;
+          linha.push(campo); campo = '';
+          linhas.push(linha); linha = [];
+        } else campo += c;
+        i++;
+      }
+      if (campo !== '' || linha.length) { linha.push(campo); linhas.push(linha); }
+      return linhas.filter(function (l) { return l.some(function (x) { return String(x).trim() !== ''; }); });
+    }
+
+    function impEmails(v) {
+      var vistos = {};
+      return (String(v).match(/[^\s;,<>()"'\[\]]+@[^\s;,<>()"'\[\]]+\.[^\s;,<>()"'\[\]]+/g) || [])
+        .map(function (e) { return e.replace(/[.\-]+$/, ''); })
+        .filter(function (e) { var k = e.toLowerCase(); if (vistos[k]) return false; vistos[k] = true; return true; });
+    }
+    function impPareceEmail(v) { return /^[^\s@;,]+@[^\s@;,]+\.[^\s@;,]+$/.test(String(v).trim()); }
+    function impPareceTelefone(v) {
+      v = String(v).trim();
+      var d = v.replace(/\D/g, '');
+      return /^[\d\s()+.\-]+$/.test(v) && d.length >= 10 && d.length <= 13;
+    }
+    function impPareceInsta(v) { v = String(v).trim(); return /^@[A-Za-z0-9._]+$/.test(v) || /instagram\.com\//i.test(v); }
+
+    /* "15/03/2024", "15-3-24", "2024-03-15" (com ou sem hora) viram "2024-03-15". Se não der, devolve "". */
+    function impLerData(v) {
+      var s = String(v || '').trim(), m = /^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2}|\d{4})(?:\D.*)?$/.exec(s), d, mes, a;
+      if (m) {
+        d = +m[1]; mes = +m[2]; a = +m[3];
+        if (m[3].length === 2) a += 2000;
+      } else {
+        m = /^(\d{4})[\/.\-](\d{1,2})[\/.\-](\d{1,2})(?:\D.*)?$/.exec(s);
+        if (!m) return '';
+        a = +m[1]; mes = +m[2]; d = +m[3];
+      }
+      if (a < 1990 || a > 2100 || mes < 1 || mes > 12 || d < 1) return '';
+      var dt = new Date(a, mes - 1, d);
+      if (dt.getFullYear() !== a || dt.getMonth() !== mes - 1 || dt.getDate() !== d) return '';
+      return a + '-' + pad(mes) + '-' + pad(d);
+    }
+
+    /* "Proposta enviada", "Fechado", "Sem resposta" e parecidos viram uma das quatro situações. "" se não reconhecer. */
+    function impLerSituacao(v) {
+      var h = impNormalizar(v);
+      if (!h) return '';
+      if (/\b(parad[oa]|pausad[oa]|inativ[oa]|perdid[oa]|recusou|recusad[oa]|arquivad[oa]|sem resposta|sem retorno|nao respondeu|declinou|cancelad[oa]|descartad[oa]|desistiu)\b/.test(h)) return 'parada';
+      if (/\b(cliente|clientes|fechad[oa]|fechou|ativ[oa]|parceria|parceir[oa]|contratad[oa]|aprovad[oa]|ganh[oa]|convertid[oa])\b/.test(h)) return 'cliente';
+      if (/\b(conversando|conversa|negociando|negociacao|em andamento|andamento|respondeu|em contato|retorno|interessad[oa]|quente|follow ?up|aguardando)\b/.test(h)) return 'conversando';
+      if (/\b(lead|leads|novo|nova|prospect|prospeccao|primeiro contato|proposta|enviad[oa])\b/.test(h)) return 'lead';
+      return '';
+    }
+
+    /* Pelo título da coluna, descobre para onde ela vai. Devolve "" se não reconhecer. */
+    function impCampoDoCabecalho(titulo) {
+      var h = impNormalizar(titulo);
+      if (!h) return '';
+      if (/\be ?mails?\b|\bcorreio\b/.test(h)) return 'email';
+      if (/\b(telefone|tel|fone|celular|whats|whatsapp|zap|wpp)\b/.test(h)) return 'telefone';
+      if (/\b(instagram|insta|ig|arroba)\b/.test(h) || h === '@') return 'instagram';
+      if (/\bultim[oa] (contato|interacao|resposta|mensagem|retorno)\b|\bdata\b|\benviad[oa] em\b/.test(h)) return 'ultimo_contato';
+      if (/\b(situacao|status|etapa|fase|estagio|andamento)\b/.test(h)) return 'situacao';
+      if (/\b(obs|observacao|observacoes|nota|notas|comentario|comentarios|anotacao|anotacoes|detalhe|detalhes|descricao|historico)\b/.test(h)) return 'obs';
+      if (/\b(nicho|nichos|segmento|segmentos|categoria|categorias|setor|ramo)\b/.test(h)) return 'nicho';
+      if (/\b(favorit[oa]s?|estrela)\b/.test(h)) return 'favorita';
+      if (/^(nome( d[aeo])?( marca| empresa| cliente| lead)?|marcas?|empresas?|cliente|brand|razao social|anunciante|lead)$/.test(h)) return 'nome';
+      return '';
+    }
+
+    function impAmostra(corpo, indice, max) {
+      var out = [], i, v;
+      for (i = 0; i < corpo.length && out.length < max; i++) {
+        v = String(corpo[i][indice] == null ? '' : corpo[i][indice]).trim();
+        if (v) out.push(v);
+      }
+      return out;
+    }
+    function impProporcao(amostra, teste) {
+      return amostra.length ? amostra.filter(teste).length / amostra.length : 0;
+    }
+
+    /* Decide o destino de cada coluna: primeiro pelo título, depois pelo conteúdo.
+       O que sobrar com conteúdo vai para a Observação (com o título na frente), para não perder nada. */
+    function impDetectarColunas(titulos, corpo) {
+      var n = titulos.length, cols = [], usados = {}, i;
+      corpo.forEach(function (l) { if (l.length > n) n = l.length; });
+      for (i = 0; i < n; i++) {
+        var titulo = String(titulos[i] == null ? '' : titulos[i]).trim();
+        var campo = impCampoDoCabecalho(titulo);
+        if (campo && campo !== 'obs' && usados[campo]) campo = 'obs';
+        if (campo && campo !== 'obs') usados[campo] = true;
+        cols.push({ indice: i, titulo: titulo || 'Coluna ' + (i + 1), campo: campo, comRotulo: !!titulo && impCampoDoCabecalho(titulo) !== 'obs' });
+      }
+      var testes = {
+        email: impPareceEmail,
+        telefone: impPareceTelefone,
+        instagram: impPareceInsta,
+        ultimo_contato: function (v) { return !!impLerData(v); },
+        situacao: function (v) { return !!impLerSituacao(v); }
+      };
+      cols.forEach(function (c) {
+        if (c.campo) return;
+        var amostra = impAmostra(corpo, c.indice, 40);
+        if (!amostra.length) { c.vazia = true; return; }
+        Object.keys(testes).some(function (f) {
+          if (usados[f] || impProporcao(amostra, testes[f]) < 0.6) return false;
+          c.campo = f; c.comRotulo = false; usados[f] = true;
+          return true;
+        });
+      });
+      if (!usados.nome) {
+        var primeira = cols.filter(function (c) { return !c.campo && !c.vazia; })[0];
+        if (primeira) { primeira.campo = 'nome'; primeira.comRotulo = false; usados.nome = true; }
+      }
+      cols.forEach(function (c) { if (!c.campo) c.campo = c.vazia ? '' : 'obs'; });
+      return cols;
+    }
+
+    /* Separa o cabeçalho do resto. Se a primeira linha já é um contato (tem e-mail, telefone ou @), não há cabeçalho. */
+    function impPreparar(linhas) {
+      var cab = linhas[0] || [];
+      var semCab = !cab.some(function (c) { return impCampoDoCabecalho(c); }) &&
+        cab.some(function (c) { return impPareceEmail(c) || impPareceTelefone(c) || impPareceInsta(c); });
+      var corpo = semCab ? linhas : linhas.slice(1);
+      return {
+        cols: impDetectarColunas(semCab ? [] : cab, corpo),
+        corpo: corpo.slice(0, IMP_LIMITE_LINHAS),
+        cortou: corpo.length > IMP_LIMITE_LINHAS,
+        semCabecalho: semCab,
+        situacaoPadrao: 'lead'
+      };
+    }
+
+    /* Uma linha da planilha vira uma marca. O que não cabe em nenhum campo vai para a lista "obs". */
+    function impMontarLinha(cols, linha) {
+      var r = { nome: '', nicho: '', instagram: '', email: '', telefone: '', situacao: '', ultimo_contato: '', favorita: false, obs: [], cientifico: false };
+      cols.forEach(function (c) {
+        if (!c.campo) return;
+        var v = String(linha[c.indice] == null ? '' : linha[c.indice]).replace(/\r\n?/g, '\n').trim().replace(/^'(?=[=+\-@])/, '');
+        if (!v || /^-+$/.test(v) || /^(n a|nao tem|sem|nenhum|nulo|null)$/.test(impNormalizar(v))) return;
+        if (c.campo === 'nome') r.nome = v;
+        else if (c.campo === 'nicho') r.nicho = impLimparNicho(v);
+        else if (c.campo === 'favorita') r.favorita = impEhSim(v);
+        else if (c.campo === 'instagram') {
+          var h = limparInsta(v);
+          if (h) r.instagram = '@' + h; else r.obs.push('Instagram: ' + v);
+        } else if (c.campo === 'email') {
+          var achados = impEmails(v);
+          if (achados.length) {
+            r.email = achados[0];
+            if (achados.length > 1) r.obs.push('Outros e-mails: ' + achados.slice(1).join(', '));
+          } else r.obs.push('E-mail: ' + v);
+        } else if (c.campo === 'telefone') {
+          if (/^\d+(?:[.,]\d+)?e\+?\d+$/i.test(v.replace(/\s/g, ''))) r.cientifico = true; else r.telefone = v;
+        } else if (c.campo === 'situacao') {
+          r.situacao = impLerSituacao(v);
+          if (!r.situacao) r.obs.push('Situação: ' + v);
+        } else if (c.campo === 'ultimo_contato') {
+          r.ultimo_contato = impLerData(v);
+          if (!r.ultimo_contato) r.obs.push('Último contato: ' + v);
+        } else r.obs.push((c.comRotulo ? c.titulo + ': ' : '') + v);
+      });
+      return r;
+    }
+
+    /* Marca repetida = mesmo e-mail, ou mesmo nome sem e-mail diferente (a mesma marca com dois contatos entra as duas vezes). */
+    function impNovoIndice() { return { porEmail: Object.create(null), porNome: Object.create(null) }; }
+    function impChaveNome(nome) { return impNormalizar(nome).replace(/ /g, ''); }
+    function impRegistrar(idx, nome, email) {
+      var e = String(email || '').trim().toLowerCase(), k = impChaveNome(nome);
+      if (e) idx.porEmail[e] = true;
+      if (k) (idx.porNome[k] = idx.porNome[k] || []).push(e);
+    }
+    function impJaExiste(idx, nome, email) {
+      var e = String(email || '').trim().toLowerCase();
+      if (e && idx.porEmail[e]) return true;
+      var lista = idx.porNome[impChaveNome(nome)];
+      return !!lista && lista.some(function (x) { return !x || !e || x === e; });
+    }
+
+    /* Faz a conta toda: quantas entram, quantas já existem, quantas ficam de fora. */
+    function impCalcular(imp, existentes) {
+      var painel = impNovoIndice(), arquivo = impNovoIndice();
+      var res = { lidas: imp.corpo.length, prontas: [], jaExistem: [], repetidas: 0, semNome: 0, cientificos: 0 };
+      (existentes || []).forEach(function (m) { if (!m.exemplo) impRegistrar(painel, m.nome, m.email); });
+      imp.corpo.forEach(function (linha) {
+        var r = impMontarLinha(imp.cols, linha);
+        if (r.cientifico) res.cientificos++;
+        if (!r.nome) { res.semNome++; return; }
+        if (impJaExiste(painel, r.nome, r.email)) { res.jaExistem.push(r.nome); return; }
+        if (impJaExiste(arquivo, r.nome, r.email)) { res.repetidas++; return; }
+        impRegistrar(arquivo, r.nome, r.email);
+        res.prontas.push({
+          nome: impCortar(r.nome, 200),
+          nicho: r.nicho || null,
+          favorita: !!r.favorita,
+          instagram: impCortar(r.instagram, 100) || null,
+          email: impCortar(r.email, 200) || null,
+          telefone: impCortar(r.telefone, 40) || null,
+          situacao: r.situacao || imp.situacaoPadrao,
+          obs: impCortar(r.obs.join('\n'), 3000) || null,
+          ultimo_contato: r.ultimo_contato || null,
+          exemplo: false
+        });
+      });
+      return res;
+    }
+    /* IMP-LEITURA-FIM */
+
+    /* Baixa só a linha de títulos, no mesmo formato do "Baixar CSV" (dá para subir de volta). */
+    function impBaixarModelo() {
+      baixarCSV('modelo-importar-marcas.csv', [['Marca', 'Nicho', 'Instagram', 'E-mail', 'Telefone', 'Situação', 'Observação', 'Último contato', 'Favorita'].map(function (t) { return celulaCSV(t); })]);
+    }
+
+    /* Tela 1: escolher o arquivo (clicando ou arrastando) */
+    function impEscolher() {
+      var partes = abrirModal({
+        titulo: 'Importar planilha de marcas',
+        largo: true,
+        corpo: '<div id="impRaiz"><div id="impAviso"></div>' +
+          '<p class="imp-texto">Suba a sua planilha em <strong>CSV</strong>. O painel descobre sozinho qual coluna é a marca, o e-mail, o Instagram, o telefone e assim por diante. Você confere tudo antes de importar.</p>' +
+          '<label class="imp-zona" id="impZona" for="impArquivo">' + ic('subir') + '<strong>Escolher a planilha</strong><span>ou arraste o arquivo .csv para cá</span></label>' +
+          '<input type="file" id="impArquivo" class="sr-only" accept=".csv,.txt,text/csv,text/plain">' +
+          '<p class="imp-dica">No Excel ou no Google Planilhas: Arquivo, Salvar como (ou Fazer download), CSV. Nada é salvo antes de você confirmar. ' +
+          '<button type="button" class="imp-link" id="impModelo">Baixar modelo em branco</button></p></div>',
+        botoes: [{ rotulo: 'Cancelar', aoClicar: fecharModal }]
+      });
+      var raiz = $('#impRaiz', partes.corpo), entrada = $('#impArquivo', raiz), zona = $('#impZona', raiz);
+      if (!colunasNovas) $('#impAviso', raiz).innerHTML = '<div class="aviso grave" role="alert"><strong>Antes de importar</strong>Rode o arquivo banco-3.sql no SQL Editor do Supabase (cria os campos Nicho e Favorita). Sem isso, o nicho da sua planilha se perderia.</div>';
+      function erro(texto) {
+        $('#impAviso', raiz).innerHTML = '<div class="aviso grave" role="alert">' + esc(texto) + '</div>';
+        entrada.value = '';
+      }
+      async function receber(arquivo) {
+        if (!arquivo) return;
+        $('#impAviso', raiz).innerHTML = '';
+        if (arquivo.size > IMP_LIMITE_ARQUIVO) { erro('Esse arquivo é grande demais. O limite é 2 MB.'); return; }
+        var lido;
+        try { lido = impDecodificar(await arquivo.arrayBuffer()); }
+        catch (e) { erro('Não consegui abrir esse arquivo.'); return; }
+        if (lido.xlsx) { erro('Esse arquivo é do Excel (.xlsx). Abra no Excel, use Arquivo, Salvar como, CSV UTF-8, e suba o arquivo .csv.'); return; }
+        var linhas = impLerCSV(lido.texto);
+        if (!linhas.length) { erro('A planilha está vazia.'); return; }
+        var imp = impPreparar(linhas);
+        if (!imp.corpo.length) { erro('Só achei a linha de títulos. Não há marcas para importar.'); return; }
+        await carregarMarcas();
+        impConferir(imp);
+      }
+      entrada.addEventListener('change', function () { receber(entrada.files && entrada.files[0]); });
+      ['dragover', 'drop'].forEach(function (nome) {      /* soltar o arquivo fora da caixa não faz o navegador sair do painel */
+        raiz.addEventListener(nome, function (e) { e.preventDefault(); });
+      });
+      ['dragenter', 'dragover'].forEach(function (nome) {
+        zona.addEventListener(nome, function (e) { e.preventDefault(); zona.classList.add('sobre'); });
+      });
+      ['dragleave', 'drop'].forEach(function (nome) {
+        zona.addEventListener(nome, function (e) { e.preventDefault(); zona.classList.remove('sobre'); });
+      });
+      zona.addEventListener('drop', function (e) { receber(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]); });
+      $('#impModelo', raiz).addEventListener('click', impBaixarModelo);
+    }
+
+    /* Tela 2: conferir as colunas e a prévia, e confirmar */
+    function impConferir(imp) {
+      var opcoesSituacao = SITUACOES.map(function (s) { return '<option value="' + s.v + '"' + (imp.situacaoPadrao === s.v ? ' selected' : '') + '>' + s.t + '</option>'; }).join('');
+      var linhasMapa = imp.cols.map(function (c, i) {
+        var primeiro = impAmostra(imp.corpo, c.indice, 1)[0] || '';
+        return '<tr><td><strong>' + esc(c.titulo) + '</strong></td>' +
+          '<td class="imp-amostra" title="' + esc(primeiro) + '">' + esc(primeiro) + '</td>' +
+          '<td><select class="entrada" data-col="' + i + '" aria-label="Para onde vai a coluna ' + esc(c.titulo) + '">' +
+            IMP_CAMPOS.map(function (o) { return '<option value="' + o.v + '"' + (c.campo === o.v ? ' selected' : '') + '>' + o.t + '</option>'; }).join('') +
+          '</select></td></tr>';
+      }).join('');
+      var partes = abrirModal({
+        titulo: 'Conferir a planilha',
+        largo: true,
+        corpo: '<div id="impRaiz"><div id="impAviso"></div><div class="imp-resumo" id="impResumo"></div>' +
+          '<h3 class="imp-titulo">Colunas da planilha</h3>' +
+          '<div class="rolagem"><table class="tabela imp-mapa"><thead><tr><th>Coluna</th><th>Primeiro valor</th><th>Vai para</th></tr></thead><tbody>' + linhasMapa + '</tbody></table></div>' +
+          '<div class="campo imp-situacao"><label for="impSituacao">Situação das marcas que não tiverem uma situação na planilha</label>' +
+            '<select id="impSituacao">' + opcoesSituacao + '</select></div>' +
+          '<h3 class="imp-titulo">Prévia do que vai entrar</h3><div id="impPrevia"></div><div id="impNotas"></div></div>',
+        botoes: [
+          { rotulo: 'Trocar arquivo', esquerda: true, aoClicar: impEscolher },
+          { rotulo: 'Cancelar', aoClicar: fecharModal },
+          { rotulo: 'Importar', classe: 'principal-btn', aoClicar: function () { importar(); } }
+        ]
+      });
+      var raiz = $('#impRaiz', partes.corpo);
+      var botaoImportar = $$('button', partes.rodape).pop();
+
+      function tabelaPrevia(lista) {
+        if (!lista.length) return '<p class="vazio">Nada novo para importar.</p>';
+        return '<div class="rolagem"><table class="tabela imp-previa"><thead><tr><th>Marca</th><th>Nicho</th><th>Instagram</th><th>E-mail</th><th>Telefone</th><th>Situação</th><th>Último contato</th><th>Observação</th></tr></thead><tbody>' +
+          lista.slice(0, 8).map(function (m) {
+            var s = situacao(m.situacao);
+            return '<tr><td><strong>' + esc(m.nome) + '</strong>' + (m.favorita ? '<span class="fav-marca" title="Favorita">' + ic('estrela') + '</span>' : '') + '</td>' +
+              '<td>' + impNichos(m.nicho).map(function (n) { return '<span class="pilula p-nicho">' + esc(n) + '</span>'; }).join(' ') + '</td>' +
+              '<td>' + esc(m.instagram || '') + '</td><td>' + esc(m.email || '') + '</td><td>' + esc(m.telefone || '') + '</td>' +
+              '<td><span class="pilula ' + s.classe + '">' + s.t + '</span></td><td>' + esc(fmtData(m.ultimo_contato)) + '</td>' +
+              '<td title="' + esc(m.obs || '') + '">' + esc((m.obs || '').replace(/\n/g, ' | ')) + '</td></tr>';
+          }).join('') + '</tbody></table></div>' +
+          (lista.length > 8 ? '<p class="imp-nota">E mais ' + (lista.length - 8) + (lista.length - 8 === 1 ? ' marca.' : ' marcas.') + '</p>' : '');
+      }
+
+      function atualizar() {
+        var r = imp.resultado = impCalcular(imp, cache.marcas);
+        var chips = ['<span class="imp-chip"><b>' + r.lidas + '</b> ' + (r.lidas === 1 ? 'linha lida' : 'linhas lidas') + '</span>',
+          '<span class="imp-chip ok"><b>' + r.prontas.length + '</b> ' + (r.prontas.length === 1 ? 'marca para importar' : 'marcas para importar') + '</span>'];
+        if (r.jaExistem.length) chips.push('<span class="imp-chip aviso"><b>' + r.jaExistem.length + '</b> já ' + (r.jaExistem.length === 1 ? 'está' : 'estão') + ' no painel</span>');
+        if (r.repetidas) chips.push('<span class="imp-chip aviso"><b>' + r.repetidas + '</b> ' + (r.repetidas === 1 ? 'repetida' : 'repetidas') + ' na planilha</span>');
+        if (r.semNome) chips.push('<span class="imp-chip aviso"><b>' + r.semNome + '</b> sem nome de marca</span>');
+        $('#impResumo', raiz).innerHTML = chips.join('');
+        $('#impPrevia', raiz).innerHTML = tabelaPrevia(r.prontas);
+
+        var notas = [];
+        if (!colunasNovas) notas.push('<strong>Falta rodar o arquivo banco-3.sql no Supabase.</strong> Enquanto isso, o botão Importar fica desligado (sem os campos Nicho e Favorita, o nicho da planilha se perderia).');
+        if (imp.semCabecalho) notas.push('A planilha não tem linha de títulos. Reconheci as colunas pelo conteúdo.');
+        var extras = imp.cols.filter(function (c) { return c.campo === 'obs' && c.comRotulo; });
+        if (extras.length) {
+          notas.push((extras.length === 1 ? 'A coluna ' : 'As colunas ') + extras.map(function (c) { return '"' + esc(c.titulo) + '"'; }).join(', ') +
+            ' vão para a Observação, para você não perder nada. Se preferir, escolha "Não importar" na lista acima.');
+        }
+        if (r.jaExistem.length) {
+          notas.push('Puladas porque já estão no painel: ' + r.jaExistem.slice(0, 6).map(esc).join(', ') + (r.jaExistem.length > 6 ? ' e mais ' + (r.jaExistem.length - 6) : '') + '.');
+        }
+        if (r.cientificos) notas.push(r.cientificos + (r.cientificos === 1 ? ' telefone veio' : ' telefones vieram') + ' em notação científica (o Excel estraga números longos) e ficou de fora. Formate a coluna como texto e salve de novo.');
+        if (imp.cortou) notas.push('A planilha tem mais de ' + IMP_LIMITE_LINHAS + ' linhas. Só as primeiras ' + IMP_LIMITE_LINHAS + ' serão lidas.');
+        $('#impNotas', raiz).innerHTML = notas.map(function (t) { return '<p class="imp-nota">' + t + '</p>'; }).join('');
+
+        botaoImportar.textContent = r.prontas.length ? 'Importar ' + r.prontas.length + (r.prontas.length === 1 ? ' marca' : ' marcas') : 'Importar';
+        botaoImportar.disabled = !r.prontas.length || !colunasNovas;
+      }
+
+      raiz.addEventListener('change', function (e) {
+        var sel = e.target;
+        if (sel.matches('select[data-col]')) {
+          var i = +sel.getAttribute('data-col'), campo = sel.value;
+          if (campo && campo !== 'obs') imp.cols.forEach(function (c, j) { if (j !== i && c.campo === campo) c.campo = ''; });
+          imp.cols[i].campo = campo;
+          $$('select[data-col]', raiz).forEach(function (s) { s.value = imp.cols[+s.getAttribute('data-col')].campo; });
+        } else if (sel.id === 'impSituacao') {
+          imp.situacaoPadrao = sel.value;
+        } else return;
+        atualizar();
+      });
+
+      async function importar() {
+        var lista = imp.resultado.prontas, botoes = $$('button', partes.rodape), feitas = 0, falhou = '', i, lote, r;
+        if (!lista.length || !colunasNovas) return;
+        botoes.forEach(function (b) { b.disabled = true; });
+        for (i = 0; i < lista.length && !falhou; i += 50) {
+          lote = lista.slice(i, i + 50);
+          botaoImportar.textContent = 'Importando ' + (i + lote.length) + ' de ' + lista.length + '...';
+          r = await gravar('marcas', lote);
+          if (r.ok) feitas += lote.length; else falhou = r.erro;
+        }
+        await recarregar();
+        if (falhou) {
+          $('#impAviso', raiz).innerHTML = '<div class="aviso grave" role="alert"><strong>' + (feitas ? 'Importei ' + feitas + ' e parei.' : 'Não consegui importar.') + '</strong>' + esc(falhou) +
+            (feitas ? ' As que entraram não serão repetidas se você tentar de novo.' : '') + '</div>';
+          partes.corpo.scrollTop = 0;
+          botoes.forEach(function (b) { b.disabled = false; });
+          atualizar();
+          return;
+        }
+        estado.busca = ''; estado.situacao = 'todas'; estado.nicho = 'todos'; estado.favoritas = false;
+        var caixa = $('#marcasBusca', secaoAtual), filtro = $('#marcasFiltro', secaoAtual);
+        if (caixa) caixa.value = '';
+        if (filtro) filtro.value = 'todas';
+        $$('#marcasFav button', secaoAtual).forEach(function (x) { x.setAttribute('aria-pressed', String(x.getAttribute('data-fav') === '0')); });
+        desenhar();
+        fecharModal();
+        aviso(feitas + (feitas === 1 ? ' marca importada.' : ' marcas importadas.'));
+      }
+
+      atualizar();
     }
 
     Abas.marcas = {
@@ -845,30 +1371,57 @@
       abrir: async function (secao) {
         secaoAtual = secao;
         if (!secao.innerHTML.trim()) secao.innerHTML = '<p class="carregando">Carregando...</p>';
-        await listar('marcas', true);
+        await carregarMarcas();
         secao.innerHTML = '<div class="cartao">' +
           '<div class="ferramentas">' +
-            '<div class="busca">' + ic('busca') + '<input type="search" id="marcasBusca" placeholder="Buscar por nome, @ ou e-mail" aria-label="Buscar marca" value="' + esc(estado.busca) + '"></div>' +
+            '<div class="busca">' + ic('busca') + '<input type="search" id="marcasBusca" placeholder="Buscar por nome, nicho, @ ou e-mail" aria-label="Buscar marca" value="' + esc(estado.busca) + '"></div>' +
             '<select class="entrada" id="marcasFiltro" aria-label="Filtrar por situação"><option value="todas">Todas as situações</option>' +
               SITUACOES.map(function (s) { return '<option value="' + s.v + '"' + (estado.situacao === s.v ? ' selected' : '') + '>' + s.t + '</option>'; }).join('') + '</select>' +
+            '<select class="entrada" id="marcasNicho" aria-label="Filtrar por nicho" hidden></select>' +
+            '<div class="segmentos" id="marcasFav" role="group" aria-label="Mostrar marcas">' +
+              '<button type="button" data-fav="0" aria-pressed="' + (!estado.favoritas) + '">Todas</button>' +
+              '<button type="button" data-fav="1" aria-pressed="' + estado.favoritas + '">' + ic('estrela') + 'Favoritas</button></div>' +
             '<span id="marcasContagem" style="color:var(--muted);font-size:.8rem"></span>' +
             '<span class="espaco"></span>' +
             '<button type="button" class="btn" id="marcasBaixar">' + ic('baixar') + 'Baixar CSV</button>' +
+            '<button type="button" class="btn" id="marcasImportar">' + ic('subir') + 'Importar planilha</button>' +
             '<button type="button" class="btn principal-btn" id="marcasNova">' + ic('mais') + 'Adicionar marca</button>' +
           '</div><div id="marcasTabela"></div></div>';
 
         $('#marcasBusca', secao).addEventListener('input', function (e) { estado.busca = e.target.value; desenhar(); });
         $('#marcasFiltro', secao).addEventListener('change', function (e) { estado.situacao = e.target.value; desenhar(); });
+        $('#marcasNicho', secao).addEventListener('change', function (e) { estado.nicho = e.target.value; desenhar(); });
+        $('#marcasFav', secao).addEventListener('click', function (e) {
+          var b = e.target.closest('button[data-fav]');
+          if (!b) return;
+          estado.favoritas = b.getAttribute('data-fav') === '1';
+          $$('#marcasFav button', secao).forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+          desenhar();
+        });
         $('#marcasBaixar', secao).addEventListener('click', baixar);
+        $('#marcasImportar', secao).addEventListener('click', impEscolher);
         $('#marcasNova', secao).addEventListener('click', function () { abrirFormulario(null); });
 
         var alvo = $('#marcasTabela', secao);
-        function abrirLinha(e) {
+        async function abrirLinha(e) {
           if (e.target.closest('a')) return;      /* link de Instagram, e-mail ou WhatsApp: deixa abrir */
           var tr = e.target.closest('tr[data-id]');
           if (!tr) return;
           var m = (cache.marcas || []).filter(function (x) { return x.id === tr.getAttribute('data-id'); })[0];
-          if (m) abrirFormulario(m);
+          if (!m) return;
+          if (e.target.closest('button[data-acao="estrela"]')) {
+            if (!colunasNovas) { aviso('Para usar as favoritas, rode o arquivo banco-3.sql no Supabase.', 'erro'); return; }
+            if (pendentes[m.id]) return;
+            pendentes[m.id] = true;
+            var nova = !m.favorita;
+            var foco = function () { var b = $('tr[data-id="' + m.id + '"] button[data-acao="estrela"]', secao); if (b) b.focus({ preventScroll: true }); };
+            m.favorita = nova; desenhar(); foco();                       /* a estrela muda na hora, sem esperar o banco */
+            var r = await gravar('marcas', { favorita: nova }, m.id);
+            delete pendentes[m.id];
+            if (!r.ok) { m.favorita = !nova; desenhar(); foco(); aviso(r.erro, 'erro'); }
+            return;
+          }
+          abrirFormulario(m);
         }
         alvo.addEventListener('click', abrirLinha);
         alvo.addEventListener('keydown', function (e) {

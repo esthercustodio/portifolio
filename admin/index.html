@@ -109,6 +109,7 @@ svg.ic{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-wid
 .p-conversando{background:#efe0cb;color:#4d301b}
 .p-cliente{background:var(--verde-fundo);color:var(--verde-texto)}
 .p-parada{background:#ebe6e0;color:#6b645c;border:1px dashed #b5aca1}
+.p-nicho{background:var(--accent-suave);color:var(--ink);margin:1px 0}
 .p-conteudo{background:#e4e4e4;color:#3d3d3d}
 .p-publicidade{background:#e9d9c4;color:#4d301b}
 .p-briefing{background:#e8e8e8;color:#4a4a4a}
@@ -204,6 +205,9 @@ th.ordenavel.ativa .seta{opacity:1;color:var(--ink)}
 .segmentos button:first-child{border-left:0}
 .segmentos button[aria-pressed="true"]{background:var(--accent-suave)}
 .segmentos button:focus-visible{outline-offset:-3px}
+.segmentos button svg.ic{margin-right:.3rem;vertical-align:-3px}
+.segmentos button[aria-pressed="true"] svg.ic{fill:var(--marrom);color:var(--marrom)}
+.fav-marca svg.ic{width:13px;height:13px;margin-left:.35rem;vertical-align:-2px;fill:var(--marrom);color:var(--marrom)}
 
 /* ---------- calendário ---------- */
 .cal-cab{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin-bottom:.9rem}
@@ -325,6 +329,31 @@ dialog.modal::backdrop{background:rgba(20,17,13,.5)}
 .rapido.erro{background:var(--vermelho-texto)}
 @keyframes entra{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* ---------- importar planilha (aba Marcas) ---------- */
+.imp-texto{margin-bottom:.9rem}
+.imp-zona{
+  display:flex;flex-direction:column;align-items:center;gap:.3rem;padding:1.7rem 1rem;text-align:center;cursor:pointer;
+  border:2px dashed var(--line-forte);border-radius:var(--radius-lg);background:#fff;transition:background .15s,border-color .15s;
+}
+.imp-zona:hover,.imp-zona.sobre{background:var(--accent-suave);border-color:var(--accent-text)}
+.imp-zona:focus-within{outline:3px solid var(--accent);outline-offset:2px}
+.imp-zona svg.ic{width:28px;height:28px}
+.imp-zona strong{font-size:.95rem}
+.imp-zona span{color:var(--muted);font-size:.82rem}
+.imp-dica{margin-top:.8rem;color:var(--muted);font-size:.8rem}
+.imp-link{border:0;background:none;padding:0;font:inherit;color:var(--ink);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.imp-resumo{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.4rem}
+.imp-chip{padding:.2rem .65rem;border-radius:999px;font-size:.78rem;font-weight:600;background:#e4e4e4;color:#3d3d3d}
+.imp-chip b{font-variant-numeric:tabular-nums}
+.imp-chip.ok{background:var(--verde-fundo);color:var(--verde-texto)}
+.imp-chip.aviso{background:var(--amarelo-fundo);color:var(--amarelo-texto)}
+.imp-titulo{margin:1.1rem 0 .4rem;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.imp-mapa .entrada{width:100%;min-width:9.5rem}
+.imp-amostra{max-width:13rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+.imp-previa td{max-width:11rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.imp-situacao{margin-top:.9rem;margin-bottom:0}
+.imp-nota{margin-top:.55rem;color:var(--muted);font-size:.8rem}
 
 /* ---------- resumo, verificação, conteúdo do site e prévia ---------- */
 .v-resumo{margin:0 0 .8rem;padding:.55rem .8rem;border-radius:var(--radius);font-weight:700;font-size:.9rem}
