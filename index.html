@@ -282,9 +282,6 @@ button,input,textarea{font:inherit;color:inherit}
 .destaque-num{font-family:var(--serif);font-weight:700;font-size:clamp(1.5rem,2.4vw,1.9rem);line-height:1.15;letter-spacing:-.01em;color:var(--marrom)}
 .destaque-rotulo{margin-top:.2rem;font-size:1rem;color:var(--muted)}
 .destaque-ctx{margin-top:.2rem;font-size:.9rem;color:var(--accent-text)}
-.assistir{display:inline-flex;align-items:center;gap:.5rem;margin-top:1rem;font-size:.9rem;font-weight:600;border-bottom:1px solid var(--marrom);padding-bottom:.15rem}
-.assistir svg{width:14px;height:14px;transition:transform .3s}
-.destaque:hover .assistir svg{transform:translate(3px,-3px)}
 
 /* Espaço do áudio (estilo mensagem de voz). O arquivo entra em AUDIO_DESTAQUES, no começo do script. */
 .audio{
@@ -384,9 +381,17 @@ button,input,textarea{font:inherit;color:inherit}
 .player-fechar:hover{transform:scale(1.08)}
 .player-fechar svg{width:20px;height:20px}
 .player-fechar:focus-visible{outline-color:var(--cream)}
-.player-quadro{height:min(76vh,760px);max-width:94vw;aspect-ratio:9/16;border-radius:var(--radius-lg);overflow:hidden;background:#000;box-shadow:0 34px 80px -24px rgba(0,0,0,.7)}
-.player-quadro iframe{display:block;width:100%;height:100%;border:0}
-.player-legenda{margin-top:.8rem;text-align:center;font-family:var(--serif);font-size:1.05rem;color:var(--cream)}
+.player-quadro{position:relative;height:min(72vh,720px);max-width:94vw;aspect-ratio:9/16;border-radius:var(--radius-lg);overflow:hidden;background:#000;box-shadow:0 34px 80px -24px rgba(0,0,0,.7)}
+/* o player é montado com 1080 x 1920 por dentro (o YouTube entrega 1080p) e reduzido na tela pelo script */
+.player-quadro iframe{position:absolute;left:0;top:0;display:block;width:1080px;height:1920px;max-width:none;border:0;transform-origin:0 0}
+.player-controles{display:flex;align-items:center;gap:.6rem;margin-top:.7rem}
+.player-controles button{flex:none;width:38px;height:38px;border:0;border-radius:50%;background:rgba(243,238,233,.16);color:var(--cream);cursor:pointer;display:grid;place-items:center;transition:background .2s}
+.player-controles button:hover{background:rgba(243,238,233,.3)}
+.player-controles button:focus-visible{outline-color:var(--cream)}
+.player-controles button svg{width:18px;height:18px}
+.player-busca{flex:1;min-width:0;margin:0;accent-color:var(--marrom-claro);cursor:pointer}
+.player-tempo{flex:none;font-size:.78rem;font-variant-numeric:tabular-nums;color:rgba(243,238,233,.82)}
+.player-legenda{width:0;min-width:100%;margin-top:.7rem;text-align:center;font-family:var(--serif);font-size:1.05rem;color:var(--cream)}
 
 .vazio-site{grid-column:1/-1;padding:2rem 0;text-align:center;color:var(--muted)}
 .escuro .vazio-site{color:rgba(243,238,233,.78)}
@@ -724,7 +729,9 @@ document.addEventListener('DOMContentLoaded', () => {
     seta:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>',
     play:   '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>',
     pausa:  '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4.5" width="4" height="15" rx="1"/><rect x="14" y="4.5" width="4" height="15" rx="1"/></svg>',
-    check:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>'
+    check:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
+    som:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>',
+    mudo:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="m22 9-6 6M16 9l6 6"/></svg>'
   };
 
   /* Contador: mostra "00" quando o valor é null, senão anima até o valor */
@@ -864,7 +871,6 @@ document.addEventListener('DOMContentLoaded', () => {
         ${p.numero ? `<p class="destaque-num">${esc(p.numero)}</p>` : ''}
         ${p.rotulo ? `<p class="destaque-rotulo">${esc(p.rotulo)}</p>` : ''}
         ${contexto ? `<p class="destaque-ctx">${esc(contexto)}</p>` : ''}
-        <span class="assistir" aria-hidden="true">Assistir ${ICONES.seta}</span>
       </div>
     </a>`;
     }).join('');
@@ -932,32 +938,112 @@ document.addEventListener('DOMContentLoaded', () => {
     semAudio('Em breve');
   }
 
-  /* ---------- Player: o vídeo toca aqui mesmo, numa janela do site (nada de abrir o YouTube) ---------- */
+  /* ---------- Player: o vídeo toca aqui mesmo, numa janela do site (nada de abrir o YouTube) ----------
+     QUALIDADE 1080p: o YouTube escolhe a qualidade pelo tamanho do player e ignora qualquer pedido direto de "1080".
+     Por isso o player é montado por dentro com 1080 x 1920 e reduzido na tela (transform): assim o YouTube entrega 1080p.
+     Como isso deixaria os botões do YouTube minúsculos, eles ficam desligados (controls=0) e o site tem os seus próprios:
+     tocar e pausar, barra de tempo e som. A legenda do YouTube fica desligada (cc_load_policy=0). */
   const janelaPlayer = $('#player');
   const quadroPlayer = $('#playerQuadro');
   const legendaPlayer = $('#playerLegenda');
+  const controlesPlayer = $('#playerControles');
+  const botaoPlayer = $('#playerPlay');
+  const buscaPlayer = $('#playerBusca');
+  const tempoPlayer = $('#playerTempo');
+  const botaoSom = $('#playerSom');
+  const LARGURA_INTERNA = 1080;
+  const estadoPlayer = { tocando: true, mudo: false, duracao: 0, atual: 0, arrastando: false };
   let quemAbriu = null;
+  let iframePlayer = null;
+  let vigiaLegenda = null;
+
+  const falarComPlayer = (funcao, args) => {
+    if (iframePlayer && iframePlayer.contentWindow) iframePlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: funcao, args: args || [], id: 1, channel: 'widget' }), '*');
+  };
+  const desligarLegenda = () => falarComPlayer('unloadModule', ['captions']);   /* o YouTube liga a legenda dele depois de um pulo no vídeo: este comando desliga */
+  const ajustarEscalaPlayer = () => {
+    const largura = quadroPlayer.clientWidth;
+    if (iframePlayer && largura) iframePlayer.style.transform = `scale(${largura / LARGURA_INTERNA})`;
+  };
+  const pintarControlesPlayer = () => {
+    botaoPlayer.innerHTML = estadoPlayer.tocando ? ICONES.pausa : ICONES.play;
+    botaoPlayer.setAttribute('aria-label', estadoPlayer.tocando ? 'Pausar o vídeo' : 'Tocar o vídeo');
+    botaoSom.innerHTML = estadoPlayer.mudo ? ICONES.mudo : ICONES.som;
+    botaoSom.setAttribute('aria-label', estadoPlayer.mudo ? 'Ligar o som' : 'Desligar o som');
+    if (!estadoPlayer.arrastando) buscaPlayer.value = String(estadoPlayer.duracao ? (estadoPlayer.atual / estadoPlayer.duracao) * 100 : 0);
+    tempoPlayer.textContent = `${tempo(estadoPlayer.atual)} / ${tempo(estadoPlayer.duracao)}`;
+  };
+
   const abrirPlayer = (v, origem) => {
     if (!v || !v.yt || !janelaPlayer || typeof janelaPlayer.showModal !== 'function') return false;
     const nome = nomeDoVideo(v);
     const legenda = legendaDoVideo(v);
     quemAbriu = origem || null;
-    quadroPlayer.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(v.yt)}?autoplay=1&rel=0&playsinline=1&modestbranding=1" title="Vídeo: ${esc(nome)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+    Object.assign(estadoPlayer, { tocando: true, mudo: false, duracao: 0, atual: 0, arrastando: false });
+    controlesPlayer.hidden = true;                                    /* aparecem quando o YouTube responder */
+    quadroPlayer.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(v.yt)}?autoplay=1&controls=0&rel=0&playsinline=1&modestbranding=1&iv_load_policy=3&cc_load_policy=0&disablekb=1&fs=0&hl=pt-BR&enablejsapi=1" title="Vídeo: ${esc(nome)}" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+    iframePlayer = $('iframe', quadroPlayer);
+    iframePlayer.addEventListener('load', () => {
+      iframePlayer.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }), '*');   /* pede ao YouTube os avisos de tempo e estado */
+      desligarLegenda();
+    });
+    clearInterval(vigiaLegenda);
+    vigiaLegenda = setInterval(desligarLegenda, 1000);                    /* enquanto o vídeo está aberto, a legenda do YouTube fica desligada */
     legendaPlayer.textContent = legenda ? `${nome} · ${legenda}` : nome;
     document.body.classList.add('sem-rolagem');
     janelaPlayer.showModal();
+    ajustarEscalaPlayer();
     return true;
   };
+
   if (janelaPlayer) {
     const fecharPlayer = () => { if (janelaPlayer.open) janelaPlayer.close(); };
     janelaPlayer.addEventListener('close', () => {
       quadroPlayer.innerHTML = '';                                   /* tira o iframe: o vídeo para de tocar */
+      clearInterval(vigiaLegenda);
+      iframePlayer = null;
+      controlesPlayer.hidden = true;
       document.body.classList.remove('sem-rolagem');
       if (quemAbriu && document.contains(quemAbriu)) quemAbriu.focus();
       quemAbriu = null;
     });
     $('.player-fechar', janelaPlayer).addEventListener('click', fecharPlayer);
     janelaPlayer.addEventListener('click', (e) => { if (e.target === janelaPlayer) fecharPlayer(); });   /* clique no fundo escuro */
+    window.addEventListener('resize', ajustarEscalaPlayer);
+
+    /* Avisos que o YouTube manda: tempo, duração, tocando ou parado, mudo */
+    window.addEventListener('message', (e) => {
+      if (!iframePlayer || e.source !== iframePlayer.contentWindow) return;
+      let d = null;
+      try { d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data; } catch (erro) { return; }
+      const info = d && d.info;
+      if (!info || typeof info !== 'object') return;
+      if (typeof info.currentTime === 'number') estadoPlayer.atual = info.currentTime;
+      if (typeof info.duration === 'number' && info.duration > 0) estadoPlayer.duracao = info.duration;
+      if (typeof info.playerState === 'number') estadoPlayer.tocando = info.playerState === 1 || info.playerState === 3;
+      if (typeof info.muted === 'boolean') estadoPlayer.mudo = info.muted;
+      controlesPlayer.hidden = false;
+      pintarControlesPlayer();
+    });
+    botaoPlayer.addEventListener('click', () => {
+      falarComPlayer(estadoPlayer.tocando ? 'pauseVideo' : 'playVideo');
+      estadoPlayer.tocando = !estadoPlayer.tocando;
+      pintarControlesPlayer();
+    });
+    botaoSom.addEventListener('click', () => {
+      falarComPlayer(estadoPlayer.mudo ? 'unMute' : 'mute');
+      estadoPlayer.mudo = !estadoPlayer.mudo;
+      pintarControlesPlayer();
+    });
+    buscaPlayer.addEventListener('input', () => {
+      estadoPlayer.arrastando = true;
+      tempoPlayer.textContent = `${tempo((Number(buscaPlayer.value) / 100) * estadoPlayer.duracao)} / ${tempo(estadoPlayer.duracao)}`;
+    });
+    buscaPlayer.addEventListener('change', () => {
+      falarComPlayer('seekTo', [(Number(buscaPlayer.value) / 100) * estadoPlayer.duracao, true]);
+      desligarLegenda();
+      estadoPlayer.arrastando = false;
+    });
   }
 
   /* ---------- Trabalhos por nicho: uma linha para cada nicho, com setas para passar os vídeos ---------- */
@@ -1681,6 +1767,12 @@ document.addEventListener('DOMContentLoaded', () => {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
     </button>
     <div class="player-quadro" id="playerQuadro"></div>
+    <div class="player-controles" id="playerControles" hidden>
+      <button type="button" id="playerPlay" aria-label="Pausar o vídeo"></button>
+      <input class="player-busca" id="playerBusca" type="range" min="0" max="100" step="0.1" value="0" aria-label="Posição do vídeo">
+      <span class="player-tempo" id="playerTempo">0:00 / 0:00</span>
+      <button type="button" id="playerSom" aria-label="Desligar o som"></button>
+    </div>
     <p class="player-legenda" id="playerLegenda"></p>
   </div>
 </dialog>
