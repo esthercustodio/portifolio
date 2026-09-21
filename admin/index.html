@@ -149,6 +149,21 @@ svg.ic{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-wid
 .numero-sub{font-size:.75rem;color:var(--muted);margin-top:.1rem}
 .duas-colunas{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:1rem;margin-bottom:1rem}
 
+/* vídeos do site (aba Conteúdo do site) */
+.vgrupo{border-top:1px solid var(--line)}
+.vgrupo-cab{display:flex;flex-wrap:wrap;align-items:baseline;gap:.15rem .6rem;padding:.85rem 1rem .35rem}
+.vgrupo-cab h3{font-size:.92rem;font-weight:700}
+.vgrupo-cab small{color:var(--muted);font-size:.78rem}
+.vlinha{display:flex;align-items:center;gap:.8rem;padding:.55rem 1rem;border-top:1px solid var(--line)}
+.vgrupo-cab + .vlinha{border-top:0}
+.vlinha.escondida .vthumb,.vlinha.escondida .vinfo{opacity:.5}
+.vthumb{flex:none;display:block;width:40px;height:71px;border-radius:6px;object-fit:cover;background:var(--accent-suave)}
+.vinfo{flex:1;min-width:0}
+.vinfo strong{display:block;font-size:.9rem}
+.vinfo span{display:block;font-size:.78rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vlinha .acoes{flex:none;flex-wrap:wrap;justify-content:flex-end}
+.btn-icone:disabled{opacity:.3;cursor:default}
+
 /* mensagens que chegam pelo formulário do site (aba Portfólio) */
 .msg-lista{max-height:27rem;overflow:auto}
 .msg{border-bottom:1px solid var(--line)}

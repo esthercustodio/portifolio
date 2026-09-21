@@ -243,8 +243,8 @@ button,input,textarea{font:inherit;color:inherit}
 .carrossel-seta{
   position:absolute;top:calc(50% - 2.4rem);transform:translateY(-50%);z-index:3;
   width:46px;height:46px;border:0;border-radius:50%;cursor:pointer;
-  display:grid;place-items:center;background:var(--cream);color:var(--ink);
-  box-shadow:0 10px 26px rgba(0,0,0,.4);transition:opacity .25s,transform .25s;
+  display:grid;place-items:center;background:var(--paper);color:var(--ink);
+  box-shadow:0 8px 22px rgba(20,17,13,.2),0 0 0 1px var(--line);transition:opacity .25s,transform .25s;
 }
 .carrossel-seta svg{width:20px;height:20px}
 .carrossel-seta.ant{left:.25rem}
@@ -269,28 +269,28 @@ button,input,textarea{font:inherit;color:inherit}
   min-height:1.7rem;margin-bottom:.9rem;text-align:center;
   font-family:var(--serif);font-weight:700;font-size:1.15rem;line-height:1.5;letter-spacing:.06em;text-transform:uppercase;
 }
-.destaque-capa{aspect-ratio:9/16;box-shadow:0 24px 50px -26px rgba(0,0,0,.8);transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.destaque-capa{aspect-ratio:9/16;box-shadow:0 24px 50px -26px rgba(20,17,13,.55);transition:transform .5s cubic-bezier(.2,.7,.2,1)}
 .destaque:hover .destaque-capa{transform:translateY(-8px)}
 .play{
   position:absolute;top:50%;left:50%;width:74px;height:74px;margin:-37px 0 0 -37px;z-index:2;
-  border-radius:50%;background:var(--cream);color:var(--accent);display:grid;place-items:center;
-  box-shadow:0 12px 30px rgba(0,0,0,.35);transition:transform .35s cubic-bezier(.2,.7,.2,1);
+  border-radius:50%;background:var(--ink);color:var(--cream);display:grid;place-items:center;
+  box-shadow:0 12px 30px rgba(20,17,13,.35);transition:transform .35s cubic-bezier(.2,.7,.2,1);
 }
 .play svg{width:26px;height:26px;margin-left:4px}
 .destaque:hover .play{transform:scale(1.1)}
 .destaque-info{padding-top:1.25rem;text-align:center}
-.destaque-num{font-family:var(--serif);font-weight:700;font-size:clamp(1.5rem,2.4vw,1.9rem);line-height:1.15;letter-spacing:-.01em;color:var(--marrom-claro)}
-.destaque-rotulo{margin-top:.2rem;font-size:1rem;color:rgba(243,238,233,.78)}
-.destaque-ctx{margin-top:.2rem;font-size:.9rem;color:rgba(243,238,233,.62)}
-.assistir{display:inline-flex;align-items:center;gap:.5rem;margin-top:1rem;font-size:.9rem;font-weight:600;border-bottom:1px solid var(--marrom-claro);padding-bottom:.15rem}
+.destaque-num{font-family:var(--serif);font-weight:700;font-size:clamp(1.5rem,2.4vw,1.9rem);line-height:1.15;letter-spacing:-.01em;color:var(--marrom)}
+.destaque-rotulo{margin-top:.2rem;font-size:1rem;color:var(--muted)}
+.destaque-ctx{margin-top:.2rem;font-size:.9rem;color:var(--accent-text)}
+.assistir{display:inline-flex;align-items:center;gap:.5rem;margin-top:1rem;font-size:.9rem;font-weight:600;border-bottom:1px solid var(--marrom);padding-bottom:.15rem}
 .assistir svg{width:14px;height:14px;transition:transform .3s}
 .destaque:hover .assistir svg{transform:translate(3px,-3px)}
 
 /* Espaço do áudio (estilo mensagem de voz). O arquivo entra em AUDIO_DESTAQUES, no começo do script. */
 .audio{
   display:flex;align-items:center;gap:1rem;max-width:26rem;padding:.9rem 1.1rem;
-  border-radius:22px;background:var(--cream-2);color:var(--ink);
-  box-shadow:0 18px 40px -22px rgba(0,0,0,.7);
+  border-radius:22px;background:var(--cream);color:var(--ink);
+  box-shadow:0 18px 40px -24px rgba(20,17,13,.4),0 0 0 1px var(--line);
 }
 .escuro .audio :focus-visible{outline-color:var(--ink)}
 .audio-play{
@@ -309,35 +309,89 @@ button,input,textarea{font:inherit;color:inherit}
 .audio-meio:focus-within .audio-onda{outline:3px solid var(--ink);outline-offset:3px}
 .audio-tempos{display:flex;justify-content:space-between;margin-top:.2rem;font-size:.74rem;color:var(--muted);font-variant-numeric:tabular-nums}
 .audio-lado{flex:none;display:flex;flex-direction:column;align-items:center;gap:.4rem}
-.audio-vel{min-width:3.2rem;padding:.15rem .6rem;border:0;border-radius:999px;background:var(--cream);font-size:.78rem;font-weight:600;cursor:pointer}
+.audio-vel{min-width:3.2rem;padding:.15rem .6rem;border:0;border-radius:999px;background:var(--cream-2);font-size:.78rem;font-weight:600;cursor:pointer}
 .audio-lado svg{width:16px;height:16px;color:var(--accent-text)}
 .audio.sem-audio .audio-onda{opacity:.6}
 
 /* =========================================================
    4. TRABALHOS
    ========================================================= */
-.filtros{display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:.9rem}
-.filtro{
-  padding:.65rem 1.15rem;border:1.5px solid var(--ink);border-radius:var(--radius);
-  background:transparent;font-size:.92rem;font-weight:600;cursor:pointer;
-  transition:background .25s,color .25s,transform .25s;
+/* Chips que levam até a linha de cada nicho */
+.chips-nichos{display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:clamp(2rem,5vw,3rem)}
+.chip-nicho{
+  display:inline-block;padding:.55rem 1.1rem;border:1px solid var(--line);border-radius:999px;
+  background:var(--paper);font-size:.92rem;font-weight:600;text-decoration:none;color:var(--ink);
+  box-shadow:0 1px 2px rgba(20,17,13,.05);transition:background .25s,color .25s,transform .25s;
 }
-.filtro:hover{transform:translateY(-2px)}
-.filtro[aria-pressed="true"]{background:var(--ink);color:var(--cream)}
-.filtro-status{font-size:.9rem;color:var(--muted);margin-bottom:1.75rem}
-.galeria{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(.75rem,2vw,1.5rem)}
-.trabalho.entrar{animation:aparecer .55s cubic-bezier(.2,.7,.2,1) both}
-.trabalho .ph{aspect-ratio:4/5;transition:transform .45s cubic-bezier(.2,.7,.2,1),box-shadow .45s}
-.trabalho:hover .ph{transform:translateY(-6px);box-shadow:var(--shadow)}
-.trabalho-link{display:block;color:inherit;text-decoration:none;border-radius:var(--radius-lg)}
+.chip-nicho:hover{background:var(--ink);color:var(--cream);transform:translateY(-2px)}
+/* Uma linha por nicho: título, quantidade pequena, frase em itálico e as setas que passam os vídeos */
+.nichos{--gap:clamp(.7rem,1.6vw,1.25rem)}
+.nicho-linha{margin-top:clamp(2.4rem,5vw,3.6rem)}
+.nicho-linha:first-child{margin-top:0}
+.nicho-cab{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;margin-bottom:1rem}
+.nicho-titulo{font-family:var(--serif);font-weight:700;font-size:clamp(1.7rem,3.2vw,2.2rem);line-height:1.1;letter-spacing:-.015em}
+.nicho-qtd{margin-left:.35rem;font-family:var(--serif);font-style:italic;font-weight:400;font-size:.8rem;letter-spacing:.02em;color:var(--accent-text)}
+.nicho-sub{margin-top:.2rem;font-family:var(--serif);font-style:italic;font-weight:400;font-size:1rem;color:var(--muted)}
+.nicho-setas{display:flex;flex:none;gap:.5rem}
+.nicho-linha.sem-setas .nicho-setas{visibility:hidden}
+.seta-mini{
+  width:42px;height:42px;border:1px solid var(--line);border-radius:50%;background:var(--paper);color:var(--ink);
+  display:grid;place-items:center;cursor:pointer;transition:background .25s,color .25s,opacity .25s;
+}
+.seta-mini svg{width:18px;height:18px}
+.seta-mini:hover:not(:disabled){background:var(--ink);color:var(--cream)}
+.seta-mini:disabled{opacity:.35;cursor:default}
+.nicho-trilho{
+  --vw:calc((100% - var(--gap) * 4) / 5);
+  display:flex;gap:var(--gap);padding:.7rem 0 1.1rem;margin-top:-.7rem;
+  overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scrollbar-width:none;
+}
+.nicho-trilho::-webkit-scrollbar{display:none}
+.vcard-item{flex:0 0 var(--vw);min-width:0;scroll-snap-align:start}
+.vcard{
+  position:relative;display:block;aspect-ratio:9/16;overflow:hidden;isolation:isolate;
+  border-radius:var(--radius-lg);background:var(--grad);color:#fff;text-decoration:none;
+  box-shadow:0 18px 34px -22px rgba(20,17,13,.55);transition:transform .4s cubic-bezier(.2,.7,.2,1),box-shadow .4s;
+}
+.vcard:hover{transform:translateY(-6px);box-shadow:0 26px 40px -22px rgba(20,17,13,.6)}
+.vcard img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
+.vcard::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(to top,rgba(20,17,13,.86) 0%,rgba(20,17,13,.32) 30%,transparent 56%),linear-gradient(to bottom,rgba(20,17,13,.28) 0%,transparent 22%)}
+.vcard-topo{position:absolute;top:.7rem;left:.7rem;right:.7rem;display:flex;flex-wrap:wrap;gap:.35rem}
+.vcard-chip,.vcard-views{
+  max-width:100%;padding:.26rem .6rem;border-radius:999px;font-size:.64rem;font-weight:700;letter-spacing:.07em;
+  text-transform:uppercase;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.vcard-chip{background:rgba(251,249,246,.95);color:var(--ink)}
+.vcard-views{background:var(--marrom);color:var(--cream)}
+.vplay{
+  position:absolute;top:50%;left:50%;width:58px;height:58px;margin:-29px 0 0 -29px;border-radius:50%;
+  background:var(--ink);color:var(--cream);display:grid;place-items:center;
+  box-shadow:0 10px 26px rgba(0,0,0,.4);transition:transform .35s cubic-bezier(.2,.7,.2,1);
+}
+.vplay svg{width:22px;height:22px;margin-left:3px}
+.vcard:hover .vplay{transform:scale(1.1)}
+.vcard-info{position:absolute;left:.95rem;right:.95rem;bottom:.85rem}
+.vcard-info strong{display:block;font-family:var(--serif);font-weight:700;font-size:1.12rem;line-height:1.15;color:#fff;overflow-wrap:anywhere}
+.vcard-info small{display:block;margin-top:.3rem;font-size:.66rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:rgba(255,255,255,.74)}
+.vcard:focus-visible{outline-offset:4px}
+
+/* Janela do player (o vídeo toca aqui mesmo) */
+.player-dialog{border:0;padding:0;background:transparent;width:fit-content;max-width:94vw;max-height:none;overflow:visible;color:#fff}
+.player-dialog::backdrop{background:rgba(20,17,13,.86);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.player{position:relative;padding-top:3rem}
+.player-dialog[open] .player{animation:subir .45s cubic-bezier(.2,.7,.2,1)}
+.player-fechar{position:absolute;top:0;right:0;width:40px;height:40px;border:0;border-radius:50%;background:var(--cream);color:var(--ink);cursor:pointer;display:grid;place-items:center;transition:transform .2s}
+.player-fechar:hover{transform:scale(1.08)}
+.player-fechar svg{width:20px;height:20px}
+.player-fechar:focus-visible{outline-color:var(--cream)}
+.player-quadro{height:min(76vh,760px);max-width:94vw;aspect-ratio:9/16;border-radius:var(--radius-lg);overflow:hidden;background:#000;box-shadow:0 34px 80px -24px rgba(0,0,0,.7)}
+.player-quadro iframe{display:block;width:100%;height:100%;border:0}
+.player-legenda{margin-top:.8rem;text-align:center;font-family:var(--serif);font-size:1.05rem;color:var(--cream)}
+
 .vazio-site{grid-column:1/-1;padding:2rem 0;text-align:center;color:var(--muted)}
 .escuro .vazio-site{color:rgba(243,238,233,.78)}
 .armadilha{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 .form-erro{margin:0 0 1rem;padding:.7rem .9rem;border-radius:var(--radius);background:#f6d5d0;color:#7a1a0d;font-size:.9rem}
-.trabalho-nicho{margin-top:.9rem;font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-text)}
-.trabalho h3{font-family:var(--serif);font-weight:400;font-size:1.25rem;line-height:1.2;margin-top:.15rem}
-.trabalho-marca{font-size:.9rem;color:var(--muted)}
-.trabalho-marca a{font-weight:600;color:var(--ink)}
 @keyframes aparecer{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 
 /* =========================================================
@@ -455,11 +509,14 @@ button,input,textarea{font:inherit;color:inherit}
 /* =========================================================
    RESPONSIVO
    ========================================================= */
+@media (max-width:1100px){
+  .nicho-trilho{--vw:calc((100% - var(--gap) * 3) / 4)}
+}
 @media (max-width:980px){
-  .galeria{grid-template-columns:repeat(3,minmax(0,1fr))}
   .servicos{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (max-width:820px){
+  .nicho-trilho{--vw:calc((100% - var(--gap) * 2) / 3)}
   .hero-grid{grid-template-columns:1fr;align-items:start}
   .hero-foto{margin-inline:0;max-width:380px}
   .sobre-grid,.contato-grid{grid-template-columns:1fr}
@@ -474,9 +531,9 @@ button,input,textarea{font:inherit;color:inherit}
   .metricas li:nth-child(n+3){border-top:1px solid var(--line)}
 }
 @media (max-width:620px){
-  .galeria{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .trabalho h3{font-size:1.05rem}
-  .trabalho-marca{font-size:.82rem}
+  .nicho-trilho{--vw:calc((100% - var(--gap)) / 2.25)}
+  .nicho-cab{align-items:flex-start}
+  .vcard-info strong{font-size:1rem}
   .ph{padding:.7rem}
   .ph-legenda{font-size:.66rem}
   .servicos{grid-template-columns:1fr}
@@ -562,44 +619,33 @@ const LOGOS_MARCAS = [
   { arquivo: "authentic-feet", alt: "Logo Authentic Feet" }
 ];
 
-/* ---- CONTEÚDOS DE DESTAQUE (carrossel da seção "Conteúdos de destaque") ----
-   Estes cards aparecem sempre, nesta ordem. Vídeos do painel (aba Portfólio, campo "Destaque")
-   entram depois deles, sem repetir o mesmo link.
-   link:     ONDE ENTRA O LINK DO VÍDEO. Cole aqui o endereço (YouTube, Instagram, TikTok...).
-             O card inteiro vira um link que abre esse vídeo em uma nova aba.
-   capa:     ONDE ENTRA A CAPA. Coloque o caminho da imagem vertical 9:16, por exemplo "img/capa1.jpg".
-             Deixe "" para mostrar o bloco com degradê.
-   alt:      descrição da imagem da capa (usada quando existir "capa").
-   marca:    nome da marca, escrito acima do card.
-   numero:   destaque forte abaixo do card (exemplo: "190 mil").
-   rotulo:   complemento do número (exemplo: "visualizações"). Pode ficar "".
-   contexto: linha extra pequena (exemplo: "Protetor solar"). Pode ficar "".
-   titulo:   nome do vídeo, usado como descrição da capa e para leitores de tela. */
-const DESTAQUES = [
-  {
-    link: "https://youtube.com/shorts/GYgeB-XAij8",
-    capa: "", alt: "",
-    marca: "Maxton", numero: "190 mil", rotulo: "visualizações", contexto: "",
-    titulo: "Vídeo da Maxton"
-  },
-  {
-    link: "https://youtube.com/shorts/SsdtQwTMg0M",
-    capa: "", alt: "",
-    marca: "Canva", numero: "Anúncio", rotulo: "no Pinterest", contexto: "",
-    titulo: "Anúncio da Canva no Pinterest"
-  },
-  {
-    link: "https://www.instagram.com/reel/DOMc6tFEYou/",
-    capa: "", alt: "",
-    marca: "Hidrabene", numero: "225 mil", rotulo: "visualizações", contexto: "",
-    titulo: "Reel da Hidrabene"
-  },
-  {
-    link: "https://youtube.com/shorts/9OuYjMHHYOw",
-    capa: "", alt: "",
-    marca: "L'Oréal Paris", numero: "36 mil", rotulo: "visualizações", contexto: "Protetor solar",
-    titulo: "Vídeo da L'Oréal Paris sobre protetor solar"
-  }
+/* ---- VÍDEOS DO SITE (RESERVA) ----
+   Os vídeos vêm do painel (aba Conteúdo do site, cartão "Vídeos do site"). Esta lista é só a RESERVA:
+   o site usa ela se o banco não responder ou ainda não tiver rodado o arquivo videos-site.sql.
+   marca:       nome da marca (aparece no card).
+   titulo:      o que é o vídeo (exemplo: "Olheira"). Se for igual à marca, o card mostra só a marca.
+   nicho:       em qual linha da galeria o vídeo entra. Vazio: aparece só nos Destaques.
+   link:        ONDE ENTRA O LINK DO VÍDEO. Endereço do YouTube; o vídeo toca aqui mesmo, numa janela do site.
+   destaque:    texto do resultado (exemplo: "190 mil visualizações"). Aparece abaixo do card nos Destaques.
+   capa:        ONDE ENTRA A CAPA. Caminho da imagem vertical 9:16 (exemplo: "img/capas/maxton.webp").
+                Vazio: usa um momento do próprio vídeo.
+   emDestaques: true para o vídeo aparecer no carrossel de Destaques. */
+const VIDEOS_PADRAO = [
+  { marca: "Maxton", titulo: "Maxton", nicho: "", link: "https://youtube.com/shorts/GYgeB-XAij8", destaque: "190 mil visualizações", capa: "img/capas/maxton.webp", emDestaques: true },
+  { marca: "Pantene", titulo: "Pantene", nicho: "", link: "https://youtube.com/shorts/LP1pZtUuFn8", destaque: "Roteiro Criativo", capa: "img/capas/pantene.webp", emDestaques: true },
+  { marca: "L'Oréal Paris", titulo: "Protetor solar", nicho: "", link: "https://youtube.com/shorts/9OuYjMHHYOw", destaque: "36 mil visualizações", capa: "img/capas/loreal-protetor.webp", emDestaques: true },
+  { marca: "Rildy", titulo: "Rildy", nicho: "Cabelo", link: "https://youtube.com/shorts/4-styHGm9jk", destaque: "", capa: "img/capas/rildy.webp", emDestaques: false },
+  { marca: "Dabelle", titulo: "Dabelle", nicho: "Cabelo", link: "https://youtube.com/shorts/4j38U8fWZCs", destaque: "", capa: "img/capas/dabelle.webp", emDestaques: false },
+  { marca: "Rohto", titulo: "Rohto", nicho: "Skincare", link: "https://youtube.com/shorts/5EIKLLxBqcQ", destaque: "", capa: "img/capas/rohto.webp", emDestaques: false },
+  { marca: "Creamy", titulo: "Olheira", nicho: "Skincare", link: "https://youtube.com/shorts/B5byimjdoZc", destaque: "", capa: "img/capas/creamy-olheira.webp", emDestaques: false },
+  { marca: "Creamy", titulo: "Emulsão de limpeza", nicho: "Skincare", link: "https://youtube.com/shorts/y84PadXZ1NQ", destaque: "", capa: "img/capas/creamy-emulsao.webp", emDestaques: false },
+  { marca: "Celina Locks Beauty", titulo: "Celina Locks Beauty", nicho: "Skincare", link: "https://youtube.com/shorts/Gno9DLhuRVU", destaque: "", capa: "img/capas/celina-locks.webp", emDestaques: false },
+  { marca: "Hidrabene", titulo: "Protetor", nicho: "Skincare", link: "https://youtube.com/shorts/_aBO9JXqb1M", destaque: "", capa: "img/capas/hidrabene-protetor.webp", emDestaques: false },
+  { marca: "Hidrabene", titulo: "Rotina completa", nicho: "Skincare", link: "https://youtube.com/shorts/Qy3aW0LeY3I", destaque: "", capa: "img/capas/hidrabene-rotina.webp", emDestaques: false },
+  { marca: "Petrizi", titulo: "Petrizi", nicho: "Maquiagem", link: "https://youtube.com/shorts/JugPCSsmG_E", destaque: "", capa: "img/capas/petrizi.webp", emDestaques: false },
+  { marca: "99 Food", titulo: "99 Food", nicho: "Aplicativo", link: "https://youtube.com/shorts/eZYKw-aAPQg", destaque: "", capa: "img/capas/99food.webp", emDestaques: false },
+  { marca: "iFood", titulo: "iFood", nicho: "Aplicativo", link: "https://youtube.com/shorts/twn0qIEjCLw", destaque: "", capa: "img/capas/ifood.webp", emDestaques: false },
+  { marca: "Canva", titulo: "Anúncio no Pinterest", nicho: "Aplicativo", link: "https://youtube.com/shorts/SsdtQwTMg0M", destaque: "", capa: "img/capas/canva.webp", emDestaques: false }
 ];
 
 /* ---- ÁUDIO DA SEÇÃO DE DESTAQUES ----
@@ -607,30 +653,15 @@ const DESTAQUES = [
    por exemplo "audio/recado.mp3". Enquanto estiver "", o player aparece parado, com o aviso "Em breve". */
 const AUDIO_DESTAQUES = "";
 
-/* ---- NICHOS (viram os botões de filtro da galeria) ---- */
-const NICHOS = ["Beleza", "Skincare", "Moda", "Casa e decoração", "Fitness", "Viagem"];
-
-/* ---- TRABALHOS POR NICHO ----
-   ATENÇÃO: os trabalhos agora vêm do painel (aba Portfólio).
-   Esta lista é só a RESERVA: aparece se o banco não responder.
-   nicho:   precisa ser igual a um dos nomes da lista NICHOS acima.
-   formato: legenda do bloco (exemplo: "Vídeo 9:16" ou "Foto 4:5").
-   imagem:  caminho da imagem real (exemplo "img/trabalho1.jpg"). Deixe "" para mostrar o degradê.
-   alt:     descrição da imagem.
-   link:    endereço do trabalho publicado. Deixe "" se não quiser link. */
-const TRABALHOS = [
-  { titulo: "Trabalho 01", marca: "Marca 01", nicho: "Beleza",            formato: "Vídeo 9:16", imagem: "", alt: "", link: "" },
-  { titulo: "Trabalho 02", marca: "Marca 02", nicho: "Beleza",            formato: "Foto 4:5",   imagem: "", alt: "", link: "" },
-  { titulo: "Trabalho 03", marca: "Marca 03", nicho: "Skincare",          formato: "Vídeo 9:16", imagem: "", alt: "", link: "" },
-  { titulo: "Trabalho 04", marca: "Marca 04", nicho: "Skincare",          formato: "Foto 4:5",   imagem: "", alt: "", link: "" },
-  { titulo: "Trabalho 05", marca: "Marca 05", nicho: "Moda",              formato: "Vídeo 9:16", imagem: "", alt: "", link: "" },
-  { titulo: "Trabalho 06", marca: "Marca 06", nicho: "Moda",              formato: "Foto 4:5",   imagem: "", alt: "", link: "" },
-  { titulo: "Trabalho 07", marca: "Marca 07", nicho: "Casa e decoração",  formato: "Vídeo 9:16", imagem: "", alt: "", link: "" },
-  { titulo: "Trabalho 08", marca: "Marca 08", nicho: "Casa e decoração",  formato: "Foto 4:5",   imagem: "", alt: "", link: "" },
-  { titulo: "Trabalho 09", marca: "Marca 09", nicho: "Fitness",           formato: "Vídeo 9:16", imagem: "", alt: "", link: "" },
-  { titulo: "Trabalho 10", marca: "Marca 10", nicho: "Fitness",           formato: "Foto 4:5",   imagem: "", alt: "", link: "" },
-  { titulo: "Trabalho 11", marca: "Marca 11", nicho: "Viagem",            formato: "Vídeo 9:16", imagem: "", alt: "", link: "" },
-  { titulo: "Trabalho 12", marca: "Marca 12", nicho: "Viagem",            formato: "Foto 4:5",   imagem: "", alt: "", link: "" }
+/* ---- NICHOS (as linhas da galeria, na ordem em que aparecem) ----
+   nome:      precisa ser igual ao "nicho" dos vídeos.
+   subtitulo: frase pequena, em itálico, abaixo do nome.
+   O painel (Conteúdo do site, cartão "Nichos") sobrescreve esta lista. */
+const NICHOS_PADRAO = [
+  { nome: "Cabelo", subtitulo: "Cor, cuidado e rotina para os fios" },
+  { nome: "Skincare", subtitulo: "Cuidados com a pele que entram na rotina" },
+  { nome: "Maquiagem", subtitulo: "Maquiagem no dia a dia" },
+  { nome: "Aplicativo", subtitulo: "Apps e serviços mostrados na prática" }
 ];
 
 /* ---- SERVIÇOS (seis, na ordem em que aparecem) ---- */
@@ -739,13 +770,36 @@ document.addEventListener('DOMContentLoaded', () => {
   const seguro = (u) => (/^https?:\/\//i.test(String(u || '').trim()) ? String(u).trim() : '');
   const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
 
-  /* "2,4M views" vira número "2,4M" e rótulo "views" */
+  /* "2,4M views" vira número "2,4M" e rótulo "views". Texto sem número ("Roteiro Criativo") fica inteiro, sem rótulo. */
   const partirDestaque = (texto) => {
     const t = String(texto || '').trim();
     const m = t.match(/^(\+?\s*[\d.,]+\s*(?:mil|mi|milhões|milhão|k|m|b)?)\s+(.+)$/i);
     if (m) return { numero: m[1].replace(/\s+/g, ' ').trim(), rotulo: m[2].trim() };
-    return { numero: t, rotulo: 'views' };
+    if (/^\+?\s*[\d.,]+\s*(?:mil|mi|milhões|milhão|k|m|b)?$/i.test(t)) return { numero: t, rotulo: 'views' };
+    return { numero: t, rotulo: '' };
   };
+
+  /* Link do YouTube (shorts, watch, youtu.be ou embed) vira o código do vídeo. Vazio se não for do YouTube. */
+  const idYoutube = (link) => {
+    const m = String(link || '').match(/(?:youtube(?:-nocookie)?\.com\/(?:shorts\/|embed\/|live\/|watch\?(?:[^#\s]*&)?v=)|youtu\.be\/)([\w-]{11})(?![\w-])/i);
+    return m ? m[1] : '';
+  };
+  /* Capa: a imagem que você colocou; se não houver, um momento do próprio vídeo */
+  const capaDoVideo = (v) => {
+    const c = String(v.capa || '').trim();
+    if (/^(https:\/\/|img\/)/i.test(c)) return c;
+    const codigo = idYoutube(v.link);
+    return codigo ? `https://i.ytimg.com/vi/${codigo}/maxresdefault.jpg` : '';
+  };
+  const prepararVideo = (v) => ({
+    yt: idYoutube(v.link), link: seguro(v.link), marca: String(v.marca || '').trim(), titulo: String(v.titulo || '').trim(),
+    nicho: String(v.nicho || '').trim(), destaque: String(v.destaque || '').trim(), capa: capaDoVideo(v),
+    emDestaques: Boolean(v.em_destaques || v.emDestaques)
+  });
+  const nomeDoVideo = (v) => v.marca || v.titulo || 'Vídeo';
+  const legendaDoVideo = (v) => (v.titulo && v.titulo.toLowerCase() !== v.marca.toLowerCase() ? v.titulo : '');
+  let videosSite = VIDEOS_PADRAO.map(prepararVideo);      /* trocada pela lista do painel quando o banco responde */
+  let nichosSite = NICHOS_PADRAO;
 
   /* Carrossel dos destaques: o card que está no meio ganha a classe "ativo" (nítido); os vizinhos ficam desfocados.
      Clicar em um vizinho só o traz para o meio; clicar no card do meio abre o vídeo. */
@@ -778,41 +832,47 @@ document.addEventListener('DOMContentLoaded', () => {
   setaProx.addEventListener('click', () => irPara(ativo + 1));
   trilho.addEventListener('click', (e) => {
     const c = e.target.closest('.destaque');
-    if (c && !c.classList.contains('ativo')) { e.preventDefault(); irPara(cartoes().indexOf(c)); }
+    if (!c) return;
+    const i = cartoes().indexOf(c);
+    if (!c.classList.contains('ativo')) { e.preventDefault(); irPara(i); return; }
+    const v = destaquesAtuais[i];
+    if (v && v.yt && abrirPlayer(v, c)) e.preventDefault();      /* o vídeo toca aqui mesmo, numa janela do site */
   });
   trilho.addEventListener('focusin', (e) => {          /* teclado: o card que recebe o foco vai para o meio */
     const c = e.target.closest('.destaque');
     if (c && !c.classList.contains('ativo') && e.target.matches(':focus-visible')) irPara(cartoes().indexOf(c));
   });
 
+  let destaquesAtuais = [];
   const desenharDestaques = (lista) => {
+    destaquesAtuais = lista;
     if (!lista.length) { trilho.innerHTML = '<p class="vazio-site">Em breve, novos conteúdos por aqui.</p>'; marcarAtivo(); return; }
-    trilho.innerHTML = lista.map((d, i) => {
-      const capa = d.capa
-        ? `<img src="${esc(d.capa)}" alt="${esc(d.alt || d.titulo)}" loading="lazy">`
-        : '';
-      const legenda = d.capa ? '' : '<span class="ph-legenda">capa vertical 9:16</span>';
+    trilho.innerHTML = lista.map((v, i) => {
+      const p = partirDestaque(v.destaque);
+      const nome = nomeDoVideo(v);
+      const contexto = legendaDoVideo(v);
+      const resultado = [p.numero, p.rotulo].filter(Boolean).join(' ');
       return `
-    <a class="destaque" href="${esc(d.link)}" target="_blank" rel="noopener noreferrer"
-       aria-label="Assistir: ${esc(d.marca || d.titulo)}, ${esc(d.numero)} ${esc(d.rotulo)} (abre em uma nova aba)">
-      <p class="destaque-marca">${esc(d.marca || '')}</p>
-      <div class="destaque-capa ph g${[2, 0, 4, 1][i % 4]}" ${d.capa ? '' : `role="img" aria-label="Espaço para a capa vertical 9:16 do conteúdo ${i + 1}"`}>
-        ${capa}
+    <a class="destaque" href="${esc(v.link || '#')}" target="_blank" rel="noopener noreferrer"
+       aria-label="Assistir: ${esc(nome)}${resultado ? ', ' + esc(resultado) : ''}">
+      <p class="destaque-marca">${esc(nome)}</p>
+      <div class="destaque-capa ph g${[2, 0, 4, 1][i % 4]}">
+        ${v.capa ? `<img src="${esc(v.capa)}" alt="" loading="lazy" decoding="async">` : ''}
         <span class="play" aria-hidden="true">${ICONES.play}</span>
-        ${legenda}
       </div>
       <div class="destaque-info">
-        <p class="destaque-num">${esc(d.numero)}</p>
-        ${d.rotulo ? `<p class="destaque-rotulo">${esc(d.rotulo)}</p>` : ''}
-        ${d.contexto ? `<p class="destaque-ctx">${esc(d.contexto)}</p>` : ''}
+        ${p.numero ? `<p class="destaque-num">${esc(p.numero)}</p>` : ''}
+        ${p.rotulo ? `<p class="destaque-rotulo">${esc(p.rotulo)}</p>` : ''}
+        ${contexto ? `<p class="destaque-ctx">${esc(contexto)}</p>` : ''}
         <span class="assistir" aria-hidden="true">Assistir ${ICONES.seta}</span>
       </div>
     </a>`;
     }).join('');
+    $$('.destaque-capa img', trilho).forEach((img) => img.addEventListener('error', () => img.remove()));   /* capa que não abre: fica o degradê */
     trilho.scrollLeft = 0;
     marcarAtivo();
   };
-  desenharDestaques(DESTAQUES);   /* aparece já ao abrir; os vídeos do painel entram depois, se houver */
+  desenharDestaques(videosSite.filter((v) => v.emDestaques));   /* aparece já ao abrir; os vídeos do painel entram depois, se houver */
 
   /* Player de áudio da seção Destaques (o arquivo vem de AUDIO_DESTAQUES) */
   const cartaoAudio = $('#audioCartao');
@@ -872,63 +932,130 @@ document.addEventListener('DOMContentLoaded', () => {
     semAudio('Em breve');
   }
 
-  /* Galeria com filtros por nicho */
-  const galeria = $('#galeria');
-  const barraFiltros = $('#filtros');
-  const statusFiltro = $('#filtroStatus');
+  /* ---------- Player: o vídeo toca aqui mesmo, numa janela do site (nada de abrir o YouTube) ---------- */
+  const janelaPlayer = $('#player');
+  const quadroPlayer = $('#playerQuadro');
+  const legendaPlayer = $('#playerLegenda');
+  let quemAbriu = null;
+  const abrirPlayer = (v, origem) => {
+    if (!v || !v.yt || !janelaPlayer || typeof janelaPlayer.showModal !== 'function') return false;
+    const nome = nomeDoVideo(v);
+    const legenda = legendaDoVideo(v);
+    quemAbriu = origem || null;
+    quadroPlayer.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(v.yt)}?autoplay=1&rel=0&playsinline=1&modestbranding=1" title="Vídeo: ${esc(nome)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+    legendaPlayer.textContent = legenda ? `${nome} · ${legenda}` : nome;
+    document.body.classList.add('sem-rolagem');
+    janelaPlayer.showModal();
+    return true;
+  };
+  if (janelaPlayer) {
+    const fecharPlayer = () => { if (janelaPlayer.open) janelaPlayer.close(); };
+    janelaPlayer.addEventListener('close', () => {
+      quadroPlayer.innerHTML = '';                                   /* tira o iframe: o vídeo para de tocar */
+      document.body.classList.remove('sem-rolagem');
+      if (quemAbriu && document.contains(quemAbriu)) quemAbriu.focus();
+      quemAbriu = null;
+    });
+    $('.player-fechar', janelaPlayer).addEventListener('click', fecharPlayer);
+    janelaPlayer.addEventListener('click', (e) => { if (e.target === janelaPlayer) fecharPlayer(); });   /* clique no fundo escuro */
+  }
 
-  const desenharTrabalhos = (lista) => {
-    if (!lista.length) {
-      galeria.innerHTML = '<li class="vazio-site">Em breve, novos trabalhos por aqui.</li>';
-      barraFiltros.innerHTML = '';
-      statusFiltro.textContent = '';
-      return;
-    }
-    const conhecidos = NICHOS.filter((n) => lista.some((t) => t.nicho === n));
-    const outros = Array.from(new Set(lista.map((t) => t.nicho).filter((n) => n && !NICHOS.includes(n))));
-    const nichos = [...conhecidos, ...outros];
-    galeria.innerHTML = lista.map((t) => {
-      const g = Math.max(0, nichos.indexOf(t.nicho)) % 6;
-      const midia = t.imagem
-        ? `<img src="${esc(t.imagem)}" alt="${esc(t.alt || t.titulo)}" loading="lazy">`
-        : '';
-      const legenda = t.imagem ? '' : `<span class="ph-legenda">${esc(t.formato)}</span>`;
-      const abre = t.link ? `<a class="trabalho-link" href="${esc(t.link)}" target="_blank" rel="noopener noreferrer">` : '';
-      const fecha = t.link ? '</a>' : '';
-      return `
-    <li class="trabalho" data-nicho="${esc(t.nicho)}">${abre}
-      <div class="ph foto-45 g${g}" ${t.imagem ? '' : `role="img" aria-label="Espaço para ${esc(t.formato.toLowerCase())} do trabalho ${esc(t.titulo)}"`}>${midia}${legenda}</div>
-      ${t.nicho ? `<p class="trabalho-nicho">${esc(t.nicho)}</p>` : ''}
-      <h3>${esc(t.titulo)}</h3>
-      ${t.marca ? `<p class="trabalho-marca">${esc(t.marca)}</p>` : ''}${fecha}
-    </li>`;
-    }).join('');
-    barraFiltros.innerHTML = nichos.length
-      ? ['Todos', ...nichos].map((n, i) => `<button type="button" class="filtro" data-nicho="${esc(n)}" aria-pressed="${i === 0}">${esc(n)}</button>`).join('')
-      : '';
-    statusFiltro.textContent = lista.length === 1 ? 'Mostrando 1 trabalho' : `Mostrando todos os ${lista.length} trabalhos`;
+  /* ---------- Trabalhos por nicho: uma linha para cada nicho, com setas para passar os vídeos ---------- */
+  const nichosEl = $('#nichos');
+  const chipsEl = $('#filtros');
+  const semAcento = (t) => String(t || '').normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim();
+  const slug = (t) => semAcento(t).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'nicho';
+  const SETA_ESQ = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>';
+  const SETA_DIR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>';
+
+  /* Junta os vídeos por nicho, na ordem da lista de nichos; nicho que só aparece nos vídeos entra no fim */
+  const agruparNichos = (lista) => {
+    const grupos = [];
+    const achar = (nome) => grupos.find((g) => semAcento(g.nome) === semAcento(nome));
+    (nichosSite || []).forEach((n) => {
+      const nome = String((n && n.nome) || '').trim();
+      if (nome && !achar(nome)) grupos.push({ nome, subtitulo: String(n.subtitulo || '').trim(), videos: [] });
+    });
+    lista.forEach((v) => {
+      let g = achar(v.nicho);
+      if (!g) { g = { nome: v.nicho, subtitulo: '', videos: [] }; grupos.push(g); }
+      g.videos.push(v);
+    });
+    return grupos.filter((g) => g.videos.length);
   };
 
-  barraFiltros.addEventListener('click', (e) => {
-    const botao = e.target.closest('.filtro');
-    if (!botao) return;
-    const escolhido = botao.dataset.nicho;
-    $$('.filtro', barraFiltros).forEach((b) => b.setAttribute('aria-pressed', String(b === botao)));
-    let visiveis = 0;
-    $$('.trabalho', galeria).forEach((item) => {
-      const mostrar = escolhido === 'Todos' || item.dataset.nicho === escolhido;
-      item.hidden = !mostrar;
-      item.classList.remove('entrar');
-      if (mostrar) {
-        visiveis++;
-        void item.offsetWidth;            /* reinicia a animação */
-        item.classList.add('entrar');
-      }
-    });
-    statusFiltro.textContent = escolhido === 'Todos'
-      ? `Mostrando todos os ${visiveis} trabalhos`
-      : `Mostrando ${plural(visiveis, 'trabalho', 'trabalhos')} em ${escolhido}`;
+  const emblemaViews = (v) => {
+    if (!/visualiza|views/i.test(v.destaque)) return '';
+    const p = partirDestaque(v.destaque);
+    return p.numero ? `<span class="vcard-views">${esc(p.numero)} views</span>` : '';
+  };
+
+  const cartaoVideo = (v, g, i) => {
+    const nome = nomeDoVideo(v);
+    const titulo = legendaDoVideo(v) || nome;
+    const abre = v.yt
+      ? `<a class="vcard g${i % 6}" href="${esc(v.link)}" data-v="${videosSite.indexOf(v)}"`
+      : `<a class="vcard g${i % 6}" href="${esc(v.link || '#')}" target="_blank" rel="noopener noreferrer"`;
+    return `<li class="vcard-item">${abre} aria-label="Assistir: ${esc(nome)}${legendaDoVideo(v) ? ', ' + esc(legendaDoVideo(v)) : ''}${v.yt ? '' : ' (abre em uma nova aba)'}">
+        ${v.capa ? `<img src="${esc(v.capa)}" alt="" loading="lazy" decoding="async">` : ''}
+        <span class="vcard-topo"><span class="vcard-chip">${esc(nome)}</span>${emblemaViews(v)}</span>
+        <span class="vplay" aria-hidden="true">${ICONES.play}</span>
+        <span class="vcard-info"><strong>${esc(titulo)}</strong><small>${esc(g.nome)}</small></span>
+      </a></li>`;
+  };
+
+  const atualizarSetas = (linha) => {
+    const t = $('.nicho-trilho', linha);
+    const ant = $('.seta-mini.ant', linha);
+    const prox = $('.seta-mini.prox', linha);
+    linha.classList.toggle('sem-setas', t.scrollWidth <= t.clientWidth + 2);
+    ant.disabled = t.scrollLeft <= 2;
+    prox.disabled = t.scrollLeft + t.clientWidth >= t.scrollWidth - 2;
+  };
+
+  const desenharNichos = () => {
+    const grupos = agruparNichos(videosSite.filter((v) => v.nicho));
+    if (!grupos.length) {
+      nichosEl.innerHTML = '<p class="vazio-site">Em breve, novos trabalhos por aqui.</p>';
+      chipsEl.innerHTML = '';
+      return;
+    }
+    chipsEl.innerHTML = grupos.map((g) => `<a class="chip-nicho" href="#nicho-${esc(slug(g.nome))}">${esc(g.nome)}</a>`).join('');
+    nichosEl.innerHTML = grupos.map((g) => `
+    <section class="nicho-linha" id="nicho-${esc(slug(g.nome))}" aria-labelledby="nicho-t-${esc(slug(g.nome))}">
+      <div class="nicho-cab">
+        <div>
+          <h3 class="nicho-titulo" id="nicho-t-${esc(slug(g.nome))}">${esc(g.nome)} <span class="nicho-qtd" aria-label="${plural(g.videos.length, 'vídeo', 'vídeos')}">${String(g.videos.length).padStart(2, '0')}</span></h3>
+          ${g.subtitulo ? `<p class="nicho-sub">${esc(g.subtitulo)}</p>` : ''}
+        </div>
+        <div class="nicho-setas">
+          <button type="button" class="seta-mini ant" data-dir="-1" aria-label="Vídeos anteriores de ${esc(g.nome)}" disabled>${SETA_ESQ}</button>
+          <button type="button" class="seta-mini prox" data-dir="1" aria-label="Próximos vídeos de ${esc(g.nome)}">${SETA_DIR}</button>
+        </div>
+      </div>
+      <ul class="nicho-trilho">${g.videos.map((v, i) => cartaoVideo(v, g, i)).join('')}</ul>
+    </section>`).join('');
+    $$('.vcard img', nichosEl).forEach((img) => img.addEventListener('error', () => img.remove()));   /* capa que não abre: fica o degradê */
+    requestAnimationFrame(() => $$('.nicho-linha', nichosEl).forEach(atualizarSetas));
+  };
+
+  nichosEl.addEventListener('click', (e) => {
+    const seta = e.target.closest('.seta-mini');
+    if (seta) {
+      const t = $('.nicho-trilho', seta.closest('.nicho-linha'));
+      t.scrollBy({ left: Number(seta.dataset.dir) * t.clientWidth * 0.85, behavior: reduzir ? 'auto' : 'smooth' });
+      return;
+    }
+    const c = e.target.closest('.vcard[data-v]');
+    if (!c) return;
+    const v = videosSite[Number(c.dataset.v)];
+    if (v && v.yt && abrirPlayer(v, c)) e.preventDefault();          /* o vídeo toca aqui mesmo, numa janela do site */
   });
+  nichosEl.addEventListener('scroll', (e) => {                        /* o scroll não "sobe" na página: por isso a captura (true) */
+    const linha = e.target.closest && e.target.closest('.nicho-linha');
+    if (linha) atualizarSetas(linha);
+  }, true);
+  window.addEventListener('resize', () => $$('.nicho-linha', nichosEl).forEach(atualizarSetas));
 
   /* Busca os vídeos visíveis na vitrine do banco. Devolve null se o banco não estiver pronto. */
   const carregarVideos = async () => {
@@ -941,18 +1068,11 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   (async () => {
     const linhas = await carregarVideos();
-    if (linhas === null) { desenharTrabalhos(TRABALHOS); return; }   /* banco fora do ar: reserva (os destaques já estão na tela) */
-    const semParametros = (u) => String(u).split(/[?#]/)[0].replace(/\/+$/, '');
-    const jaTem = new Set(DESTAQUES.map((d) => semParametros(d.link)));
-    const doPainel = linhas.filter((v) => String(v.destaque || '').trim()).slice(0, 3).map((v) => {
-      const p = partirDestaque(v.destaque);
-      return { link: seguro(v.link) || '#', capa: '', alt: '', marca: v.marca || '', numero: p.numero, rotulo: p.rotulo, titulo: v.titulo, contexto: v.nicho || '' };
-    }).filter((d) => !jaTem.has(semParametros(d.link)));
-    if (doPainel.length) desenharDestaques([...DESTAQUES, ...doPainel]);
-    desenharTrabalhos(linhas.map((v) => ({
-      titulo: v.titulo, marca: v.marca || '', nicho: v.nicho || '', formato: v.formato || 'Vídeo',
-      imagem: '', alt: '', link: seguro(v.link)
-    })));
+    /* Banco fora do ar, sem vídeos ou ainda sem o videos-site.sql: fica a lista de reserva que já está na tela */
+    if (!linhas || !linhas.length || !linhas.some((v) => 'em_destaques' in v)) return;
+    videosSite = linhas.map(prepararVideo);
+    desenharDestaques(videosSite.filter((v) => v.emDestaques));
+    desenharNichos();
   })();
 
   /* ---------- Conteúdo editável pelo painel (aba "Conteúdo do site") ----------
@@ -1028,6 +1148,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   const aplicarConteudo = (c, animar) => {
     const lista = (v, padrao) => (Array.isArray(v) && v.length ? v : padrao);
+    aplicarSecao('nichos', lista(c.nichos, NICHOS_PADRAO), (n) => { nichosSite = n; desenharNichos(); }, animar);
     aplicarSecao('servicos', lista(c.servicos, SERVICOS), desenharServicos, animar);
     aplicarSecao('metricas', lista(c.metricas, METRICAS), desenharMetricas, animar);
     aplicarSecao('resultados', lista(c.resultados, RESULTADOS), desenharResultados, animar);
@@ -1352,7 +1473,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </section>
 
 <!-- ============================ 3. CONTEÚDOS DE DESTAQUE ============================ -->
-<section class="secao escuro" id="destaques" aria-labelledby="titulo-destaques">
+<section class="secao bg-2" id="destaques" aria-labelledby="titulo-destaques">
   <div class="container destaques-layout">
     <div class="destaques-texto">
       <header class="secao-topo">
@@ -1377,8 +1498,8 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     </div>
 
-    <!-- Os cards do carrossel são criados pela lista DESTAQUES no começo do script.
-         Nela você troca: o LINK DO VÍDEO (campo "link") e a CAPA vertical 9:16 (campo "capa"). -->
+    <!-- Os cards do carrossel são criados pelos vídeos do painel marcados como Destaque (ou pela lista VIDEOS_PADRAO, no começo do script).
+         O vídeo toca numa janela do próprio site. -->
     <div class="carrossel reveal" style="--d:.1s" role="region" aria-roledescription="carrossel" aria-label="Conteúdos de destaque">
       <button type="button" class="carrossel-seta ant" id="destAnt" aria-label="Vídeo anterior" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button>
       <div class="destaques-grid" id="destaquesGrid"></div>
@@ -1393,12 +1514,12 @@ document.addEventListener('DOMContentLoaded', () => {
     <header class="secao-topo">
       <p class="eyebrow reveal"><b>03</b>Portfólio</p>
       <h2 class="titulo reveal" id="titulo-trabalhos" style="--d:.06s">Trabalhos por <em>nicho</em></h2>
-      <p class="lead reveal" style="--d:.12s">Escolha um nicho para ver só os trabalhos daquele universo.</p>
+      <p class="lead reveal" style="--d:.12s">Escolha um nicho e deslize para o lado para ver mais. Toque em um vídeo para assistir aqui mesmo.</p>
     </header>
 
-    <div class="filtros reveal" id="filtros" role="group" aria-label="Filtrar trabalhos por nicho"></div>
-    <p class="filtro-status" id="filtroStatus" role="status" aria-live="polite"></p>
-    <ul class="galeria reveal" id="galeria"></ul>
+    <!-- As linhas dos nichos e os cards são criados pelos vídeos do painel (ou pela lista VIDEOS_PADRAO, no começo do script). -->
+    <nav class="chips-nichos reveal" id="filtros" aria-label="Ir para um nicho"></nav>
+    <div class="nichos" id="nichos"></div>
   </div>
 </section>
 
@@ -1550,6 +1671,17 @@ document.addEventListener('DOMContentLoaded', () => {
       <h3>Pedido <em>recebido</em></h3>
       <p>Obrigada<span data-nome></span>! Você vai receber o mídia kit no e-mail informado.</p>
     </div>
+  </div>
+</dialog>
+
+<!-- Janela do player: os vídeos tocam aqui, sem sair do site -->
+<dialog class="player-dialog" id="player" aria-label="Assistir ao vídeo">
+  <div class="player">
+    <button class="player-fechar" type="button" aria-label="Fechar o vídeo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+    <div class="player-quadro" id="playerQuadro"></div>
+    <p class="player-legenda" id="playerLegenda"></p>
   </div>
 </dialog>
 

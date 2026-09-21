@@ -128,6 +128,7 @@
     var arquivoSql = tabela === 'site_conteudo' ? 'banco-2.sql' : (/^email_/.test(tabela) ? 'disparo.sql' : (tabela === 'mensagens_site' ? 'contato.sql' : 'banco.sql'));
     var col = /find the '([^']+)' column/i.exec(msg) || /column "?([\w]+)"? (?:of relation "?\w+"? )?does not exist/i.exec(msg);
     if (tabela === 'marcas' && col && /^(nicho|favorita|selecionada)$/.test(col[1])) arquivoSql = 'disparo.sql';
+    if (tabela === 'videos' && col && /^(capa|em_destaques)$/.test(col[1])) arquivoSql = 'videos-site.sql';
     if (cod === 'PGRST205' || cod === '42P01' || /could not find the table|relation "[^"]*" does not exist/i.test(msg)) {
       return 'A tabela "' + tabela + '" ainda não existe no seu banco. Cole o arquivo ' + arquivoSql + ' no SQL Editor do Supabase e clique em Run.';
     }
@@ -486,6 +487,68 @@
 
   /* A partir daqui vêm as abas. Todas usam as ferramentas acima. */
 
+  /* ---------------------------------------------------------
+     VÍDEOS DO SITE: campos e formulário
+     Usados na aba Portfólio e no cartão "Vídeos do site" (Conteúdo do site).
+     --------------------------------------------------------- */
+  var NICHOS_DO_SITE = [   /* os mesmos nichos que o site usa quando você ainda não editou a lista */
+    { nome: 'Cabelo', subtitulo: 'Cor, cuidado e rotina para os fios' },
+    { nome: 'Skincare', subtitulo: 'Cuidados com a pele que entram na rotina' },
+    { nome: 'Maquiagem', subtitulo: 'Maquiagem no dia a dia' },
+    { nome: 'Aplicativo', subtitulo: 'Apps e serviços mostrados na prática' }
+  ];
+
+  /* Os campos "capa" e "em_destaques" vêm do videos-site.sql. Sem ele, o formulário some com esses dois campos. */
+  function videosTemCamposNovos() {
+    var v = cache.videos || [];
+    return v.length > 0 && 'em_destaques' in v[0];
+  }
+
+  function camposVideo(videos, novos) {
+    var nichos = [];
+    videos.forEach(function (v) { if (v.nicho && nichos.indexOf(v.nicho) < 0) nichos.push(v.nicho); });
+    NICHOS_DO_SITE.forEach(function (n) { if (nichos.indexOf(n.nome) < 0) nichos.push(n.nome); });
+    var campos = [
+      { nome: 'marca', rotulo: 'Marca', ajuda: 'O nome que aparece no card e acima do vídeo.' },
+      { nome: 'titulo', rotulo: 'O que é o vídeo', obrigatorio: true, ajuda: 'Exemplo: Olheira. Se for igual à marca, o card mostra só a marca.' },
+      { nome: 'link', rotulo: 'Link do vídeo', tipo: 'url', largo: true, placeholder: 'https://youtube.com/shorts/...', ajuda: 'Link do YouTube: o vídeo toca dentro do seu site, sem abrir o YouTube.' },
+      { nome: 'nicho', rotulo: 'Nicho', lista: nichos, ajuda: 'A linha do site onde ele aparece. Vazio: só nos Destaques.' },
+      { nome: 'destaque', rotulo: 'Texto do resultado', placeholder: '190 mil visualizações', ajuda: 'Aparece abaixo do card nos Destaques.' }
+    ];
+    if (novos) {
+      campos.push({ nome: 'capa', rotulo: 'Capa (opcional)', largo: true, placeholder: 'img/capas/nome.webp', ajuda: 'Vazio: usa um momento do próprio vídeo. Para trocar, coloque o caminho de uma imagem vertical 9:16 da pasta img do site, ou um endereço que comece com https.' });
+      campos.push({ nome: 'em_destaques', rotulo: 'Aparece nos Destaques (carrossel)', tipo: 'checkbox', largo: true });
+    }
+    campos.push({ nome: 'formato', rotulo: 'Formato', lista: ['Vídeo 9:16', 'Foto 4:5', 'Vídeo 16:9'] });
+    campos.push({ nome: 'visivel', rotulo: 'Aparece no site', tipo: 'checkbox', largo: true });
+    return campos;
+  }
+
+  /* Abre o formulário de um vídeo (video = null para um novo). aposMudar() roda depois de salvar ou apagar. */
+  function formularioVideo(video, aposMudar) {
+    var videos = cache.videos || [];
+    var editando = !!video;
+    formulario({
+      titulo: editando ? 'Editar vídeo' : 'Adicionar vídeo',
+      campos: camposVideo(videos, videosTemCamposNovos()),
+      valores: video || { visivel: true },
+      textoApagar: 'Apagar este vídeo? Ele some do site e não dá para desfazer.',
+      aoSalvar: async function (v) {
+        if (v.link && !linkSeguro(v.link)) return { ok: false, erro: 'O link precisa começar com http:// ou https://' };
+        if (v.capa && !/^(https:\/\/|img\/)/i.test(v.capa)) return { ok: false, erro: 'A capa precisa começar com img/ (imagem da pasta do site) ou https://' };
+        if (!editando) v.ordem = videos.reduce(function (m, x) { return Math.max(m, x.ordem || 0); }, 0) + 1;
+        var r = await gravar('videos', v, editando ? video.id : null);
+        if (r.ok) { aviso(editando ? 'Vídeo atualizado.' : 'Vídeo adicionado.'); await aposMudar(); }
+        return r;
+      },
+      aoApagar: editando ? async function () {
+        var r = await apagar('videos', video.id);
+        if (r.ok) { aviso('Vídeo apagado.'); await aposMudar(); }
+        return r;
+      } : null
+    });
+  }
+
   /* =========================================================
      ABA 1: PORTFÓLIO
      Números de visita, gráfico, origens e a tabela dos vídeos.
@@ -721,23 +784,8 @@
         : '<p class="vazio">Você ainda não tem vídeos aqui. Clique em "Adicionar vídeo" para começar.</p>';
       return '<div class="cartao"><div class="cartao-cab"><h2>Meus vídeos</h2>' +
         '<button type="button" class="btn principal-btn" id="novoVideo">' + ic('mais') + 'Adicionar vídeo</button></div>' +
-        (lista.length ? '<p class="cartao-corpo" style="padding-bottom:0;color:var(--muted);font-size:.8rem">Arraste pela alça para mudar a ordem. O olhinho mostra ou esconde o vídeo no site. Vídeos com "Destaque" preenchido aparecem nos destaques do site (os 3 primeiros da ordem).</p>' : '') +
+        (lista.length ? '<p class="cartao-corpo" style="padding-bottom:0;color:var(--muted);font-size:.8rem">Arraste pela alça para mudar a ordem. O olhinho mostra ou esconde o vídeo no site. Os destaques do site são os vídeos marcados com "Aparece nos Destaques". Para editar por nicho, capa e ordem, use Conteúdo do site.</p>' : '') +
         corpo + '</div>';
-    }
-
-    function camposVideo(videos) {
-      var nichos = [];
-      videos.forEach(function (v) { if (v.nicho && nichos.indexOf(v.nicho) < 0) nichos.push(v.nicho); });
-      ['Beleza', 'Skincare', 'Moda', 'Casa e decoração', 'Fitness', 'Viagem'].forEach(function (n) { if (nichos.indexOf(n) < 0) nichos.push(n); });
-      return [
-        { nome: 'titulo', rotulo: 'Título', obrigatorio: true, largo: true },
-        { nome: 'link', rotulo: 'Link do vídeo', tipo: 'url', largo: true, placeholder: 'https://', ajuda: 'Onde o vídeo está (YouTube, Instagram, TikTok...).' },
-        { nome: 'nicho', rotulo: 'Nicho', lista: nichos },
-        { nome: 'formato', rotulo: 'Formato', lista: ['Vídeo 9:16', 'Foto 4:5', 'Vídeo 16:9'] },
-        { nome: 'marca', rotulo: 'Marca' },
-        { nome: 'destaque', rotulo: 'Destaque', placeholder: '2,4M views', ajuda: 'Número forte do vídeo. Se preencher, ele aparece nos destaques do site.' },
-        { nome: 'visivel', rotulo: 'Aparece no site', tipo: 'checkbox', largo: true }
-      ];
     }
 
     async function recarregar() {
@@ -746,28 +794,7 @@
       mostrarProblemas(TABELAS);
     }
 
-    function abrirFormularioVideo(video) {
-      var videos = cache.videos || [];
-      var editando = !!video;
-      formulario({
-        titulo: editando ? 'Editar vídeo' : 'Adicionar vídeo',
-        campos: camposVideo(videos),
-        valores: video || { visivel: true },
-        textoApagar: 'Apagar este vídeo? Ele some do site e não dá para desfazer.',
-        aoSalvar: async function (v) {
-          if (v.link && !linkSeguro(v.link)) return { ok: false, erro: 'O link precisa começar com http:// ou https://' };
-          if (!editando) v.ordem = videos.reduce(function (m, x) { return Math.max(m, x.ordem || 0); }, 0) + 1;
-          var r = await gravar('videos', v, editando ? video.id : null);
-          if (r.ok) { aviso(editando ? 'Vídeo atualizado.' : 'Vídeo adicionado.'); await recarregar(); }
-          return r;
-        },
-        aoApagar: editando ? async function () {
-          var r = await apagar('videos', video.id);
-          if (r.ok) { aviso('Vídeo apagado.'); await recarregar(); }
-          return r;
-        } : null
-      });
-    }
+    function abrirFormularioVideo(video) { formularioVideo(video, recarregar); }
 
     function desenharTabela(videos) {
       var alvo = $('#tabelaVideos', secaoAtual);
@@ -4023,7 +4050,7 @@
      Fica guardado na tabela "site_conteudo" (rode o banco-2.sql).
      ========================================================= */
   (function () {
-    var TABELAS = ['site_conteudo'];
+    var TABELAS = ['site_conteudo', 'videos'];
     var secaoAtual = null;
     var conteudo = {};           /* chave -> valor guardado no banco */
 
@@ -4055,6 +4082,16 @@
         paraForm: function (v) { return { abre: v && v.abre, texto: v && v.texto }; },
         deForm: function (f) { return { abre: f.abre, texto: f.texto || '' }; },
         resumo: function (v) { return [cortar(v && v.abre, 110), cortar(v && v.texto, 110)].filter(Boolean); }
+      },
+      {
+        chave: 'nichos', titulo: 'Nichos da galeria', tipo: 'lista', item: 'Nicho',
+        descricao: 'A ordem das linhas da galeria por nicho e a frase pequena de cada uma. O nome precisa ser igual ao nicho escrito nos vídeos.',
+        padrao: NICHOS_DO_SITE,
+        colunas: [
+          { nome: 'nome', rotulo: 'Nome do nicho', obrigatorio: true, placeholder: 'Skincare' },
+          { nome: 'subtitulo', rotulo: 'Frase pequena (opcional)', largo: true, placeholder: 'Cuidados com a pele que entram na rotina' }
+        ],
+        resumo: function (v) { return (Array.isArray(v) ? v : []).map(function (n) { return texto(n.nome) + (n.subtitulo ? ': ' + texto(n.subtitulo) : ''); }); }
       },
       {
         chave: 'metricas', titulo: 'Números do portfólio', tipo: 'lista', item: 'Número',
@@ -4100,6 +4137,156 @@
       }
     ];
 
+    /* ---------- Vídeos do site (a mesma tabela "videos" da aba Portfólio) ---------- */
+    function semAcento(t) { return String(t == null ? '' : t).normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim(); }
+
+    function videosOrdenados() {
+      return (cache.videos || []).filter(function (v) { return !v.exemplo; }).sort(function (a, b) {
+        return (a.ordem || 0) - (b.ordem || 0) || String(a.criado_em || '').localeCompare(String(b.criado_em || ''));
+      });
+    }
+
+    /* Os nichos, na ordem do cartão "Nichos" (ou na ordem padrão) */
+    function nichosDoSite() {
+      var lista = Array.isArray(conteudo.nichos) && conteudo.nichos.length ? conteudo.nichos : NICHOS_DO_SITE;
+      return lista.map(function (n) { return { nome: texto(n && n.nome).trim(), subtitulo: texto(n && n.subtitulo) }; }).filter(function (n) { return n.nome; });
+    }
+
+    /* Grupos que aparecem no cartão: Destaques, um por nicho e os que estão sem nicho */
+    function gruposDeVideos(novos) {
+      var todos = videosOrdenados();
+      var grupos = [];
+      if (novos) {
+        grupos.push({ chave: '@destaques', titulo: 'Destaques (carrossel)', sub: 'Os cards grandes do começo do site, na ordem abaixo.', videos: todos.filter(function (v) { return v.em_destaques; }), sempre: true });
+      }
+      var usados = {};
+      nichosDoSite().forEach(function (n) {
+        if (usados[semAcento(n.nome)]) return;
+        usados[semAcento(n.nome)] = true;
+        grupos.push({ chave: 'n:' + n.nome, titulo: n.nome, sub: n.subtitulo, videos: todos.filter(function (v) { return semAcento(v.nicho) === semAcento(n.nome); }) });
+      });
+      todos.forEach(function (v) {                       /* nichos que só existem nos vídeos */
+        var k = semAcento(v.nicho);
+        if (!k || usados[k]) return;
+        usados[k] = true;
+        grupos.push({ chave: 'n:' + texto(v.nicho).trim(), titulo: texto(v.nicho).trim(), sub: 'Este nicho não está no cartão "Nichos": ele aparece no fim da lista do site.', videos: todos.filter(function (x) { return semAcento(x.nicho) === k; }) });
+      });
+      var soltos = todos.filter(function (v) { return !semAcento(v.nicho) && !(novos && v.em_destaques); });
+      if (soltos.length) grupos.push({ chave: '@sem', titulo: 'Sem nicho', sub: 'Não aparecem em nenhuma linha do site. Escolha um nicho ou marque como Destaque.', videos: soltos });
+      return grupos.filter(function (g) { return g.sempre || g.videos.length; });
+    }
+
+    function capaNoPainel(v) {
+      var c = texto(v.capa).trim();
+      if (/^img\//i.test(c)) return '../' + c;
+      if (/^https:\/\//i.test(c)) return c;
+      var m = texto(v.link).match(/(?:youtube\.com\/(?:shorts\/|embed\/|watch\?(?:[^#\s]*&)?v=)|youtu\.be\/)([\w-]{11})/i);
+      return m ? 'https://i.ytimg.com/vi/' + m[1] + '/mqdefault.jpg' : '';
+    }
+
+    function htmlLinhaVideoSite(v, g, i, total) {
+      var capa = capaNoPainel(v);
+      var nome = texto(v.marca).trim() || texto(v.titulo);
+      var sub = [];
+      if (texto(v.titulo).trim() && texto(v.titulo).trim().toLowerCase() !== texto(v.marca).trim().toLowerCase()) sub.push(texto(v.titulo).trim());
+      if (texto(v.destaque).trim()) sub.push(texto(v.destaque).trim());
+      var link = linkSeguro(v.link);
+      var idv = esc(v.id), grupo = esc(g.chave);
+      function bt(acao, icone, titulo, extra, perigo) {
+        return '<button type="button" class="btn-icone' + (perigo ? ' perigo' : '') + '" data-vacao="' + acao + '" data-id="' + idv + '" data-grupo="' + grupo + '" title="' + titulo +
+          '" aria-label="' + titulo + ': ' + esc(nome) + '"' + (extra || '') + '>' + ic(icone) + '</button>';
+      }
+      return '<div class="vlinha' + (v.visivel ? '' : ' escondida') + '">' +
+        (capa ? '<img class="vthumb" src="' + esc(capa) + '" alt="" loading="lazy">' : '<span class="vthumb"></span>') +
+        '<div class="vinfo"><strong>' + esc(nome || 'Sem nome') +
+          (v.visivel ? '' : ' <span class="etiqueta e-aviso">Escondido</span>') +
+          (g.chave.charAt(0) === 'n' && v.em_destaques ? ' <span class="pilula p-lead">Também nos Destaques</span>' : '') + '</strong>' +
+        '<span>' + esc(sub.join(' · ') || 'Sem descrição') + (link ? '' : ' · sem link') + '</span></div>' +
+        '<div class="acoes">' +
+          bt('subir', 'setaCima', 'Subir', i === 0 ? ' disabled' : '') +
+          bt('descer', 'setaBaixo', 'Descer', i === total - 1 ? ' disabled' : '') +
+          bt('visivel', v.visivel ? 'olho' : 'olhoRiscado', v.visivel ? 'Aparece no site. Clique para esconder' : 'Escondido do site. Clique para mostrar') +
+          bt('editar', 'lapis', 'Editar') +
+          bt('apagar', 'lixo', 'Apagar', '', true) +
+        '</div></div>';
+    }
+
+    function htmlVideosSite() {
+      var novos = videosTemCamposNovos();
+      var corpo;
+      if (problemas.videos) {
+        corpo = '<p class="vazio">' + esc(problemas.videos) + '</p>';
+      } else {
+        corpo = gruposDeVideos(novos).map(function (g) {
+          return '<div class="vgrupo"><div class="vgrupo-cab"><h3>' + esc(g.titulo) + '</h3><small>' + g.videos.length + (g.videos.length === 1 ? ' vídeo' : ' vídeos') +
+            (g.sub ? ' · ' + esc(g.sub) : '') + '</small></div>' +
+            (g.videos.length ? g.videos.map(function (v, i) { return htmlLinhaVideoSite(v, g, i, g.videos.length); }).join('') : '<p class="vazio" style="padding:.6rem 1rem;text-align:left">Nenhum vídeo marcado como destaque ainda.</p>') + '</div>';
+        }).join('') || '<p class="vazio">Você ainda não tem vídeos. Clique em "Adicionar vídeo".</p>';
+      }
+      var nota = !novos && !problemas.videos
+        ? '<p class="cartao-corpo" style="border-top:1px solid var(--line);color:var(--muted);font-size:.8rem">Para editar capa e Destaques por aqui, rode o arquivo videos-site.sql no SQL Editor do Supabase.</p>'
+        : '';
+      return '<div class="cartao" style="margin-bottom:1rem"><div class="cartao-cab"><h2>Vídeos do site</h2>' +
+        '<button type="button" class="btn principal-btn" data-vacao="novo">' + ic('mais') + 'Adicionar vídeo</button></div>' +
+        '<p class="cartao-corpo" style="padding-bottom:.4rem;color:var(--muted);font-size:.84rem">Aqui você edita os vídeos que tocam no seu portfólio: marca, textos, nicho, capa e a ordem. As setas mudam a ordem dentro de cada grupo. O olhinho mostra ou esconde no site. Depois de salvar, recarregue o site para ver.</p>' +
+        corpo + nota + '</div>';
+    }
+
+    function desenharVideosSite() {
+      var alvo = $('#videosSite', secaoAtual);
+      if (alvo) alvo.innerHTML = htmlVideosSite();
+    }
+
+    async function atualizarVideos() {
+      await listar('videos', true);
+      desenharVideosSite();
+      mostrarProblemas(TABELAS);
+    }
+
+    /* Troca a posição do vídeo com o vizinho do mesmo grupo e renumera a ordem geral */
+    async function moverVideo(v, chave, dir) {
+      var g = gruposDeVideos(videosTemCamposNovos()).filter(function (x) { return x.chave === chave; })[0];
+      if (!g) return;
+      var vizinho = g.videos[g.videos.indexOf(v) + dir];
+      if (!vizinho) return;
+      var todos = videosOrdenados();
+      var a = todos.indexOf(v), b = todos.indexOf(vizinho);
+      todos[a] = vizinho; todos[b] = v;
+      var mudou = [];
+      todos.forEach(function (x, k) { if ((x.ordem || 0) !== k + 1) mudou.push({ x: x, ordem: k + 1 }); });
+      var resultados = await Promise.all(mudou.map(function (m) { return gravar('videos', { ordem: m.ordem }, m.x.id); }));
+      var falha = resultados.filter(function (r) { return !r.ok; })[0];
+      if (falha) { aviso(falha.erro, 'erro'); await atualizarVideos(); return; }
+      mudou.forEach(function (m) { m.x.ordem = m.ordem; });
+      desenharVideosSite();
+    }
+
+    async function acaoVideo(botao) {
+      var acao = botao.getAttribute('data-vacao');
+      if (acao === 'novo') { formularioVideo(null, atualizarVideos); return; }
+      var id = botao.getAttribute('data-id');
+      var v = (cache.videos || []).filter(function (x) { return x.id === id; })[0];
+      if (!v) return;
+      if (acao === 'editar') { formularioVideo(v, atualizarVideos); return; }
+      if (acao === 'subir' || acao === 'descer') {
+        botao.disabled = true;
+        await moverVideo(v, botao.getAttribute('data-grupo'), acao === 'subir' ? -1 : 1);
+        return;
+      }
+      if (acao === 'visivel') {
+        botao.disabled = true;
+        var r = await gravar('videos', { visivel: !v.visivel }, v.id);
+        if (r.ok) { aviso(v.visivel ? 'Vídeo escondido do site.' : 'Vídeo aparecendo no site.'); await atualizarVideos(); }
+        else { botao.disabled = false; aviso(r.erro, 'erro'); }
+        return;
+      }
+      if (acao === 'apagar') {
+        if (!(await confirmar('Apagar "' + (texto(v.marca) || texto(v.titulo)) + '"? Ele some do site e não dá para desfazer.'))) return;
+        var r2 = await apagar('videos', v.id);
+        if (r2.ok) { aviso('Vídeo apagado.'); await atualizarVideos(); } else aviso(r2.erro, 'erro');
+      }
+    }
+
     async function guardar(chave, valor) {
       try {
         var r = await banco.from('site_conteudo').upsert({ chave: chave, valor: valor, atualizado_em: new Date().toISOString() });
@@ -4144,7 +4331,7 @@
 
     /* Editor de listas: várias linhas, cada uma com seus campos, com subir, descer e remover */
     function editarLista(sec) {
-      var itens = (Array.isArray(conteudo[sec.chave]) ? conteudo[sec.chave] : []).map(function (x) { return Object.assign({}, x); });
+      var itens = (Array.isArray(conteudo[sec.chave]) ? conteudo[sec.chave] : (sec.padrao || [])).map(function (x) { return Object.assign({}, x); });
 
       function ler() {
         $$('.linha-editor', corpo).forEach(function (fs) {
@@ -4243,15 +4430,17 @@
     }
 
     function desenhar() {
+      var intro = '<p style="color:var(--muted);margin:0 0 1rem;max-width:44rem">Aqui você troca os vídeos, os textos e os números do portfólio. Depois de salvar, é só recarregar o site para ver.</p>' +
+        '<div id="videosSite">' + htmlVideosSite() + '</div>';
       if (problemas.site_conteudo) {
-        secaoAtual.innerHTML = '<div class="cartao"><div class="cartao-cab"><h2>Falta um passo para liberar esta aba</h2></div><div class="cartao-corpo">' +
+        secaoAtual.innerHTML = intro + '<div class="cartao"><div class="cartao-cab"><h2>Falta um passo para liberar os textos do site</h2></div><div class="cartao-corpo">' +
           '<p>Para editar os textos e números do site pelo painel, o banco precisa de mais uma tabela. É rápido:</p>' +
           '<ol class="passos"><li>Abra o Supabase e clique em <strong>SQL Editor</strong>, depois em <strong>New query</strong>.</li>' +
           '<li>Cole o conteúdo do arquivo <strong>banco-2.sql</strong> (está na pasta do seu portfólio) e clique em <strong>Run</strong>.</li>' +
           '<li>Volte aqui e recarregue a página.</li></ol></div></div>';
         return;
       }
-      secaoAtual.innerHTML = '<p style="color:var(--muted);margin:0 0 1rem;max-width:44rem">Aqui você troca os textos e números do portfólio. Depois de salvar, é só recarregar o site para ver. Os vídeos ficam na aba Portfólio.</p>' +
+      secaoAtual.innerHTML = intro +
         '<div class="cards-conteudo">' + SECOES.map(function (sec) {
           var v = conteudo[sec.chave];
           var linhas = v == null ? [] : sec.resumo(v);
@@ -4270,14 +4459,16 @@
       abrir: async function (secao) {
         secaoAtual = secao;
         if (!secao.innerHTML.trim()) secao.innerHTML = '<p class="carregando">Carregando...</p>';
-        var linhas = await listar('site_conteudo', true);
+        var carregados = await Promise.all([listar('site_conteudo', true), listar('videos', true)]);
         conteudo = {};
-        linhas.forEach(function (l) { conteudo[l.chave] = l.valor; });
+        carregados[0].forEach(function (l) { conteudo[l.chave] = l.valor; });
         if (!secao.getAttribute('data-ligada')) {
           secao.setAttribute('data-ligada', '1');
           secao.addEventListener('click', function (e) {
             var b = e.target.closest('button[data-editar]');
-            if (b) abrirEditor(b.getAttribute('data-editar'));
+            if (b) { abrirEditor(b.getAttribute('data-editar')); return; }
+            var v = e.target.closest('button[data-vacao]');
+            if (v && !v.disabled) acaoVideo(v);
           });
         }
         desenhar();
