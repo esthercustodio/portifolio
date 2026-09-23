@@ -383,7 +383,14 @@ button,input,textarea{font:inherit;color:inherit}
 .player-fechar:focus-visible{outline-color:var(--cream)}
 .player-quadro{position:relative;height:min(72vh,720px);max-width:94vw;aspect-ratio:9/16;border-radius:var(--radius-lg);overflow:hidden;background:#000;box-shadow:0 34px 80px -24px rgba(0,0,0,.7)}
 /* o player é montado com 1080 x 1920 por dentro (o YouTube entrega 1080p) e reduzido na tela pelo script */
-.player-quadro iframe{position:absolute;left:0;top:0;display:block;width:1080px;height:1920px;max-width:none;border:0;transform-origin:0 0}
+.player-quadro{cursor:pointer}
+/* os botões do YouTube ficam desligados (pointer-events:none): o painel dele, que aparecia ao passar o mouse, não entra mais */
+.player-quadro iframe{position:absolute;left:0;top:0;display:block;width:1080px;height:1920px;max-width:none;border:0;transform-origin:0 0;pointer-events:none}
+.player-topo{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;gap:.6rem;padding:.9rem 1rem 2.4rem;background:linear-gradient(rgba(0,0,0,.55),transparent);color:#fff;text-decoration:none;font-weight:600;font-size:1.02rem;line-height:1.2;text-shadow:0 1px 3px rgba(0,0,0,.45)}
+.player-topo svg{flex:none;width:30px;height:21px}
+.player-topo span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.player-topo:hover span{text-decoration:underline}
+.player-topo:focus-visible{outline-color:var(--cream);outline-offset:-4px}
 .player-controles{display:flex;align-items:center;gap:.6rem;margin-top:.7rem}
 .player-controles button{flex:none;width:38px;height:38px;border:0;border-radius:50%;background:rgba(243,238,233,.16);color:var(--cream);cursor:pointer;display:grid;place-items:center;transition:background .2s}
 .player-controles button:hover{background:rgba(243,238,233,.3)}
@@ -391,7 +398,7 @@ button,input,textarea{font:inherit;color:inherit}
 .player-controles button svg{width:18px;height:18px}
 .player-busca{flex:1;min-width:0;margin:0;accent-color:var(--marrom-claro);cursor:pointer}
 .player-tempo{flex:none;font-size:.78rem;font-variant-numeric:tabular-nums;color:rgba(243,238,233,.82)}
-.player-legenda{width:0;min-width:100%;margin-top:.7rem;text-align:center;font-family:var(--serif);font-size:1.05rem;color:var(--cream)}
+.player-legenda{width:0;min-width:100%;margin-top:.8rem;text-align:center;font-family:var(--serif);font-size:1.3rem;color:var(--cream)}
 
 .vazio-site{grid-column:1/-1;padding:2rem 0;text-align:center;color:var(--muted)}
 .escuro .vazio-site{color:rgba(243,238,233,.78)}
@@ -764,6 +771,7 @@ document.addEventListener('DOMContentLoaded', () => {
     pausa:  '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4.5" width="4" height="15" rx="1"/><rect x="14" y="4.5" width="4" height="15" rx="1"/></svg>',
     check:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
     som:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>',
+    youtube: '<svg viewBox="0 0 30 21" aria-hidden="true"><rect width="30" height="21" rx="5.5" fill="#ff0000"/><path d="M12 6v9l8-4.5z" fill="#fff"/></svg>',
     mudo:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="m22 9-6 6M16 9l6 6"/></svg>'
   };
 
@@ -985,7 +993,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const tempoPlayer = $('#playerTempo');
   const botaoSom = $('#playerSom');
   const LARGURA_INTERNA = 1080;
-  const estadoPlayer = { tocando: true, mudo: false, duracao: 0, atual: 0, arrastando: false };
+  const estadoPlayer = { tocando: true, mudo: false, duracao: 0, atual: 0, arrastando: false, pediuSom: false };
   let quemAbriu = null;
   let iframePlayer = null;
   let vigiaLegenda = null;
@@ -1012,9 +1020,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const nome = nomeDoVideo(v);
     const legenda = legendaDoVideo(v);
     quemAbriu = origem || null;
-    Object.assign(estadoPlayer, { tocando: true, mudo: false, duracao: 0, atual: 0, arrastando: false });
+    Object.assign(estadoPlayer, { tocando: true, mudo: false, duracao: 0, atual: 0, arrastando: false, pediuSom: false });
     controlesPlayer.hidden = true;                                    /* aparecem quando o YouTube responder */
-    quadroPlayer.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(v.yt)}?autoplay=1&controls=0&rel=0&playsinline=1&modestbranding=1&iv_load_policy=3&cc_load_policy=0&disablekb=1&fs=0&hl=pt-BR&enablejsapi=1" title="Vídeo: ${esc(nome)}" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+    quadroPlayer.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(v.yt)}?autoplay=1&controls=0&rel=0&playsinline=1&modestbranding=1&iv_load_policy=3&cc_load_policy=0&disablekb=1&fs=0&hl=pt-BR&enablejsapi=1" title="Vídeo: ${esc(nome)}" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+      <a class="player-topo" href="https://www.youtube.com/shorts/${encodeURIComponent(v.yt)}" target="_blank" rel="noopener noreferrer" aria-label="Ver ${esc(nome)} no YouTube">${ICONES.youtube}<span>${esc(nome)}</span></a>`;
     iframePlayer = $('iframe', quadroPlayer);
     iframePlayer.addEventListener('load', () => {
       iframePlayer.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }), '*');   /* pede ao YouTube os avisos de tempo e estado */
@@ -1043,6 +1052,7 @@ document.addEventListener('DOMContentLoaded', () => {
     $('.player-fechar', janelaPlayer).addEventListener('click', fecharPlayer);
     janelaPlayer.addEventListener('click', (e) => { if (e.target === janelaPlayer) fecharPlayer(); });   /* clique no fundo escuro */
     window.addEventListener('resize', ajustarEscalaPlayer);
+    quadroPlayer.addEventListener('click', (e) => { if (!e.target.closest('.player-topo')) botaoPlayer.click(); });   /* tocar no vídeo pausa ou continua */
 
     /* Avisos que o YouTube manda: tempo, duração, tocando ou parado, mudo */
     window.addEventListener('message', (e) => {
@@ -1055,6 +1065,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (typeof info.duration === 'number' && info.duration > 0) estadoPlayer.duracao = info.duration;
       if (typeof info.playerState === 'number') estadoPlayer.tocando = info.playerState === 1 || info.playerState === 3;
       if (typeof info.muted === 'boolean') estadoPlayer.mudo = info.muted;
+      if (!estadoPlayer.pediuSom) {                                  /* o YouTube pode começar mudo (e lembra do mudo da vez anterior): pede o som ligado */
+        estadoPlayer.pediuSom = true;
+        falarComPlayer('unMute');
+        falarComPlayer('setVolume', [100]);
+      }
       controlesPlayer.hidden = false;
       pintarControlesPlayer();
     });
@@ -1513,13 +1528,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (!jaViu) {
-      setTimeout(() => {
+      const mostrarCaptura = () => {
         if (dialogo.open) return;
+        const player = document.getElementById('player');
+        if (player && player.open) {                                  /* vídeo aberto: espera ele fechar para não cobrir o vídeo */
+          player.addEventListener('close', () => setTimeout(mostrarCaptura, 1500), { once: true });
+          return;
+        }
         alternarMenu(false);
         try { sessionStorage.setItem(CHAVE, '1'); } catch (erro) { /* segue sem guardar */ }
         dialogo.showModal();
         document.body.classList.add('sem-rolagem');
-      }, 7000);
+      };
+      setTimeout(mostrarCaptura, 7000);
     }
   }
 });
