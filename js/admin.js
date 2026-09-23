@@ -495,7 +495,10 @@
     { nome: 'Cabelo', subtitulo: 'Cor, cuidado e rotina para os fios' },
     { nome: 'Skincare', subtitulo: 'Cuidados com a pele que entram na rotina' },
     { nome: 'Maquiagem', subtitulo: 'Maquiagem no dia a dia' },
-    { nome: 'Aplicativo', subtitulo: 'Apps e serviços mostrados na prática' }
+    { nome: 'Saúde & Fitness', subtitulo: '' },
+    { nome: 'Moda & Acessórios', subtitulo: '' },
+    { nome: 'Aplicativos', subtitulo: 'Apps e serviços mostrados na prática' },
+    { nome: 'Fábrica', subtitulo: '' }
   ];
 
   /* Os campos "capa" e "em_destaques" vêm do videos-site.sql. Sem ele, o formulário some com esses dois campos. */
@@ -4057,6 +4060,29 @@
     function texto(v) { return v == null ? '' : String(v); }
     function cortar(t, n) { t = texto(t); return t.length > n ? t.slice(0, n).trim() + '...' : t; }
 
+    /* Títulos das seções: o texto que já está no site (vale enquanto nada foi salvo). *palavra* fica em itálico. */
+    var TITULOS_PADRAO = {
+      sobre: { rotulo: 'Sobre mim', titulo: 'Prazer, eu sou a *Esther*' },
+      destaques: { rotulo: 'Em evidência', titulo: 'Conteúdos de *destaque*', texto: 'Vídeos que mostram como uma boa ideia, contada com verdade, vira resultado. Toque em um card para assistir.' },
+      trabalhos: { rotulo: 'Portfólio', titulo: 'Trabalhos por *nicho*', texto: 'Escolha um nicho e deslize para o lado para ver mais. Toque em um vídeo para assistir aqui mesmo.' },
+      servicos: { rotulo: 'Serviços', titulo: 'Como eu te *ajudo*', texto: 'Do roteiro à publicação, cada etapa pensada para a sua marca aparecer melhor.' },
+      numeros: { rotulo: 'Resultados', titulo: 'Números e *depoimentos*' },
+      contato: { rotulo: 'Contato', titulo: 'Bora criar *juntos*', texto: 'Conte um pouco sobre a sua marca e o que você quer comunicar. Eu respondo com carinho e com uma proposta pensada para você.' }
+    };
+    var TITULOS_NOMES = { sobre: 'Sobre mim', destaques: 'Destaques', trabalhos: 'Trabalhos por nicho', servicos: 'Serviços', numeros: 'Números', contato: 'Contato' };
+
+    function camposDosTitulos() {
+      var campos = [];
+      Object.keys(TITULOS_PADRAO).forEach(function (id, i) {
+        var nome = TITULOS_NOMES[id];
+        campos.push({ nome: id + '__rotulo', rotulo: nome + ': etiqueta pequena' });
+        campos.push({ nome: id + '__titulo', rotulo: nome + ': título', largo: true,
+          ajuda: i === 0 ? 'A palavra entre asteriscos fica em itálico. Exemplo: Conteúdos de *destaque*' : '' });
+        if ('texto' in TITULOS_PADRAO[id]) campos.push({ nome: id + '__texto', rotulo: nome + ': texto de abertura', tipo: 'textarea', largo: true });
+      });
+      return campos;
+    }
+
     /* As partes editáveis do site */
     var SECOES = [
       {
@@ -4082,6 +4108,33 @@
         paraForm: function (v) { return { abre: v && v.abre, texto: v && v.texto }; },
         deForm: function (f) { return { abre: f.abre, texto: f.texto || '' }; },
         resumo: function (v) { return [cortar(v && v.abre, 110), cortar(v && v.texto, 110)].filter(Boolean); }
+      },
+      {
+        chave: 'titulos', titulo: 'Títulos das seções', tipo: 'objeto',
+        descricao: 'A etiqueta pequena, o título e o texto de abertura de cada seção do site. Campo vazio mantém o texto original.',
+        campos: camposDosTitulos(),
+        paraForm: function (v) {
+          var f = {};
+          Object.keys(TITULOS_PADRAO).forEach(function (id) {
+            var salvo = (v && v[id]) || {};
+            Object.keys(TITULOS_PADRAO[id]).forEach(function (c) { f[id + '__' + c] = texto(salvo[c]).trim() || TITULOS_PADRAO[id][c]; });
+          });
+          return f;
+        },
+        deForm: function (f) {
+          var v = {};
+          Object.keys(TITULOS_PADRAO).forEach(function (id) {
+            v[id] = {};
+            Object.keys(TITULOS_PADRAO[id]).forEach(function (c) { v[id][c] = texto(f[id + '__' + c]).trim(); });
+          });
+          return v;
+        },
+        resumo: function (v) {
+          return Object.keys(TITULOS_PADRAO).map(function (id) {
+            var t = texto(v && v[id] && v[id].titulo).trim() || TITULOS_PADRAO[id].titulo;
+            return TITULOS_NOMES[id] + ': ' + t.replace(/\*/g, '');
+          });
+        }
       },
       {
         chave: 'nichos', titulo: 'Nichos da galeria', tipo: 'lista', item: 'Nicho',
