@@ -495,10 +495,10 @@
     { nome: 'Cabelo', subtitulo: 'Cor, cuidado e rotina para os fios' },
     { nome: 'Skincare', subtitulo: 'Cuidados com a pele que entram na rotina' },
     { nome: 'Maquiagem', subtitulo: 'Maquiagem no dia a dia' },
-    { nome: 'Saúde & Fitness', subtitulo: '' },
-    { nome: 'Moda & Acessórios', subtitulo: '' },
+    { nome: 'Saúde & Fitness', subtitulo: 'Treino, suplementos e bem-estar na rotina' },
+    { nome: 'Moda & Acessórios', subtitulo: 'Looks, calçados e acessórios em uso real' },
     { nome: 'Aplicativos', subtitulo: 'Apps e serviços mostrados na prática' },
-    { nome: 'Fábrica', subtitulo: '' }
+    { nome: 'Fábrica', subtitulo: 'Os bastidores de como os produtos são feitos' }
   ];
 
   /* Os campos "capa" e "em_destaques" vêm do videos-site.sql. Sem ele, o formulário some com esses dois campos. */
@@ -510,7 +510,8 @@
   function camposVideo(videos, novos) {
     var nichos = [];
     videos.forEach(function (v) { if (v.nicho && nichos.indexOf(v.nicho) < 0) nichos.push(v.nicho); });
-    NICHOS_DO_SITE.forEach(function (n) { if (nichos.indexOf(n.nome) < 0) nichos.push(n.nome); });
+    var salvos = (cache.site_conteudo || []).filter(function (l) { return l.chave === 'nichos' && Array.isArray(l.valor); })[0];
+    (salvos ? salvos.valor : NICHOS_DO_SITE).forEach(function (n) { if (n && n.nome && nichos.indexOf(n.nome) < 0) nichos.push(n.nome); });
     var campos = [
       { nome: 'marca', rotulo: 'Marca', ajuda: 'O nome que aparece no card e acima do vídeo.' },
       { nome: 'titulo', rotulo: 'O que é o vídeo', obrigatorio: true, ajuda: 'Exemplo: Olheira. Se for igual à marca, o card mostra só a marca.' },
@@ -4138,11 +4139,11 @@
       },
       {
         chave: 'nichos', titulo: 'Nichos da galeria', tipo: 'lista', item: 'Nicho',
-        descricao: 'A ordem das linhas da galeria por nicho e a frase pequena de cada uma. O nome precisa ser igual ao nicho escrito nos vídeos.',
+        descricao: 'As linhas da galeria: nome, descrição (a frase em itálico abaixo do nome) e a ordem. Use "Adicionar nicho" para criar um novo; depois escolha esse nicho nos vídeos. O nome precisa ser igual ao nicho escrito nos vídeos.',
         padrao: NICHOS_DO_SITE,
         colunas: [
           { nome: 'nome', rotulo: 'Nome do nicho', obrigatorio: true, placeholder: 'Skincare' },
-          { nome: 'subtitulo', rotulo: 'Frase pequena (opcional)', largo: true, placeholder: 'Cuidados com a pele que entram na rotina' }
+          { nome: 'subtitulo', rotulo: 'Descrição (frase em itálico abaixo do nome)', largo: true, placeholder: 'Cuidados com a pele que entram na rotina' }
         ],
         resumo: function (v) { return (Array.isArray(v) ? v : []).map(function (n) { return texto(n.nome) + (n.subtitulo ? ': ' + texto(n.subtitulo) : ''); }); }
       },
@@ -4280,7 +4281,8 @@
         ? '<p class="cartao-corpo" style="border-top:1px solid var(--line);color:var(--muted);font-size:.8rem">Para editar capa e Destaques por aqui, rode o arquivo videos-site.sql no SQL Editor do Supabase.</p>'
         : '';
       return '<div class="cartao" style="margin-bottom:1rem"><div class="cartao-cab"><h2>Vídeos do site</h2>' +
-        '<button type="button" class="btn principal-btn" data-vacao="novo">' + ic('mais') + 'Adicionar vídeo</button></div>' +
+        '<div style="display:flex;gap:.5rem;flex-wrap:wrap"><button type="button" class="btn" data-editar="nichos">' + ic('lapis') + 'Nichos e descrições</button>' +
+        '<button type="button" class="btn principal-btn" data-vacao="novo">' + ic('mais') + 'Adicionar vídeo</button></div></div>' +
         '<p class="cartao-corpo" style="padding-bottom:.4rem;color:var(--muted);font-size:.84rem">Aqui você edita os vídeos que tocam no seu portfólio: marca, textos, nicho, capa e a ordem. As setas mudam a ordem dentro de cada grupo. O olhinho mostra ou esconde no site. Depois de salvar, recarregue o site para ver.</p>' +
         corpo + nota + '</div>';
     }

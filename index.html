@@ -351,7 +351,19 @@ button,input,textarea{font:inherit;color:inherit}
   box-shadow:0 18px 34px -24px rgba(20,17,13,.45);transition:transform .4s cubic-bezier(.2,.7,.2,1),box-shadow .4s;
 }
 .vcard:hover{transform:translateY(-6px);box-shadow:0 26px 40px -22px rgba(20,17,13,.6)}
-.vcard img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
+/* o cursor vira o ícone de play em cima do vídeo */
+.vcard,.destaque-capa{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Ccircle cx='28' cy='28' r='26' fill='%234d301b' stroke='%23fff' stroke-width='2'/%3E%3Cpath d='M23 18.5v19l15-9.5z' fill='%23fff'/%3E%3C/svg%3E") 28 28, pointer}
+.vcard img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-3}
+/* prévia: o vídeo roda sem som dentro do card (o som só vem ao clicar e abrir o vídeo) */
+.vprevia{position:absolute;left:0;top:0;width:100%;height:100%;border:0;z-index:-2;pointer-events:none;opacity:0;transform:scale(1.22);transition:opacity .6s}
+.vprevia.pronta{opacity:1}
+.vcard::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(to top,rgba(20,17,13,.82) 0%,rgba(20,17,13,.25) 30%,transparent 52%)}
+.vplay{position:absolute;top:50%;left:50%;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;background:var(--marrom);color:#fff;display:grid;place-items:center;box-shadow:0 10px 26px rgba(0,0,0,.35);transition:transform .35s cubic-bezier(.2,.7,.2,1),background .25s}
+.vplay svg{width:22px;height:22px;margin-left:3px}
+.vcard:hover .vplay{transform:scale(1.12)}
+.vcard-info{position:absolute;left:.95rem;right:.95rem;bottom:.85rem}
+.vcard-info strong{display:block;font-family:var(--serif);font-weight:700;font-size:1.12rem;line-height:1.15;color:#fff;overflow-wrap:anywhere;text-shadow:0 1px 6px rgba(0,0,0,.35)}
+.vcard-info small{display:block;margin-top:.3rem;font-size:.64rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:rgba(255,255,255,.78)}
 .vcard-topo{position:absolute;top:.8rem;left:.8rem;right:.8rem;display:flex;flex-wrap:wrap;gap:.35rem}
 .vcard-chip,.vcard-views{
   max-width:100%;padding:.26rem .6rem;border-radius:999px;font-size:.64rem;font-weight:700;letter-spacing:.07em;
@@ -689,10 +701,10 @@ const NICHOS_PADRAO = [
   { nome: "Cabelo", subtitulo: "Cor, cuidado e rotina para os fios" },
   { nome: "Skincare", subtitulo: "Cuidados com a pele que entram na rotina" },
   { nome: "Maquiagem", subtitulo: "Maquiagem no dia a dia" },
-  { nome: "Saúde & Fitness", subtitulo: "" },
-  { nome: "Moda & Acessórios", subtitulo: "" },
+  { nome: "Saúde & Fitness", subtitulo: "Treino, suplementos e bem-estar na rotina" },
+  { nome: "Moda & Acessórios", subtitulo: "Looks, calçados e acessórios em uso real" },
   { nome: "Aplicativos", subtitulo: "Apps e serviços mostrados na prática" },
-  { nome: "Fábrica", subtitulo: "" }
+  { nome: "Fábrica", subtitulo: "Os bastidores de como os produtos são feitos" }
 ];
 
 /* ---- SERVIÇOS (seis, na ordem em que aparecem) ---- */
@@ -989,6 +1001,7 @@ document.addEventListener('DOMContentLoaded', () => {
       iframePlayer.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }), '*');   /* pede ao YouTube os avisos do player */
     });
     document.body.classList.add('sem-rolagem');
+    pausarPrevias(true);
     janelaPlayer.showModal();
     return true;
   };
@@ -997,6 +1010,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const fecharPlayer = () => { if (janelaPlayer.open) janelaPlayer.close(); };
     janelaPlayer.addEventListener('close', () => {
       quadroPlayer.innerHTML = '';                                   /* tira o iframe: o vídeo para de tocar */
+      pausarPrevias(false);
       iframePlayer = null;
       document.body.classList.remove('sem-rolagem');
       if (quemAbriu && document.contains(quemAbriu)) quemAbriu.focus();
@@ -1056,7 +1070,56 @@ document.addEventListener('DOMContentLoaded', () => {
     return `<li class="vcard-item">${abre} aria-label="Assistir: ${esc(nome)}${legendaDoVideo(v) ? ', ' + esc(legendaDoVideo(v)) : ''}${v.yt ? '' : ' (abre em uma nova aba)'}">
         ${v.capa ? `<img src="${esc(v.capa)}" alt="" loading="lazy" decoding="async">` : ''}
         <span class="vcard-topo"><span class="vcard-chip">${esc(nome)}</span>${emblemaViews(v)}</span>
+        <span class="vplay" aria-hidden="true">${ICONES.play}</span>
+        <span class="vcard-info"><strong>${esc(legendaDoVideo(v) || nome)}</strong><small>${esc(g.nome)}</small></span>
       </a></li>`;
+  };
+
+  /* Prévia: os cards que estão na tela rodam o vídeo SEM SOM (mute=1). O som só existe ao clicar, na janela do vídeo.
+     Só roda o que aparece na tela (as outras prévias são desligadas) e nunca com "reduzir movimento" ou economia de dados. */
+  const previaPermitida = !reduzir && !(navigator.connection && navigator.connection.saveData);
+  let previasPausadas = false;
+  const ligarPrevia = (card) => {
+    if (previasPausadas || card.querySelector('.vprevia') || card.dataset.previaEspera) return;
+    const v = videosSite[Number(card.dataset.v)];
+    if (!v || !v.yt) return;
+    card.dataset.previaEspera = String(setTimeout(() => {
+      delete card.dataset.previaEspera;
+      if (previasPausadas || card.querySelector('.vprevia')) return;
+      const id = encodeURIComponent(v.yt);
+      const f = document.createElement('iframe');
+      f.className = 'vprevia';
+      f.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id}&playsinline=1&rel=0&modestbranding=1&iv_load_policy=3&cc_load_policy=0&disablekb=1&fs=0&enablejsapi=1`;
+      f.title = '';
+      f.tabIndex = -1;
+      f.setAttribute('aria-hidden', 'true');
+      f.setAttribute('allow', 'autoplay; encrypted-media');
+      f.addEventListener('load', () => {
+        const dizer = (func, args) => f.contentWindow && f.contentWindow.postMessage(JSON.stringify({ event: 'command', func, args: args || [], id: 1, channel: 'widget' }), '*');
+        f.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }), '*');
+        [300, 1200, 3000].forEach((ms) => setTimeout(() => { dizer('mute'); dizer('unloadModule', ['captions']); }, ms));   /* garante sem som e sem legenda */
+        setTimeout(() => f.classList.add('pronta'), 900);           /* aparece quando já está rodando (sem piscar preto) */
+      });
+      card.insertBefore(f, card.firstChild);
+    }, 400));
+  };
+  const desligarPrevia = (card) => {
+    if (card.dataset.previaEspera) { clearTimeout(Number(card.dataset.previaEspera)); delete card.dataset.previaEspera; }
+    const f = card.querySelector('.vprevia');
+    if (f) f.remove();
+  };
+  const vigiaPrevia = previaPermitida && 'IntersectionObserver' in window
+    ? new IntersectionObserver((itens) => itens.forEach((e) => (e.isIntersecting ? ligarPrevia(e.target) : desligarPrevia(e.target))), { threshold: 0.6 })
+    : null;
+  const observarPrevias = () => {
+    if (!vigiaPrevia) return;
+    vigiaPrevia.disconnect();
+    $$('.vcard[data-v]').forEach((c) => vigiaPrevia.observe(c));
+  };
+  const pausarPrevias = (pausar) => {
+    previasPausadas = pausar;
+    if (pausar) $$('.vcard[data-v]').forEach(desligarPrevia);
+    else observarPrevias();                                          /* observar de novo religa as que estão na tela */
   };
 
   const atualizarSetas = (linha) => {
@@ -1092,6 +1155,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </section>`).join('');
     $$('.vcard img', nichosEl).forEach((img) => img.addEventListener('error', () => img.remove()));   /* capa que não abre: fica o degradê */
     requestAnimationFrame(() => $$('.nicho-linha', nichosEl).forEach(atualizarSetas));
+    observarPrevias();
   };
 
   nichosEl.addEventListener('click', (e) => {
