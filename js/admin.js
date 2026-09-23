@@ -4064,7 +4064,7 @@
     var TITULOS_PADRAO = {
       sobre: { rotulo: 'Sobre mim', titulo: 'Prazer, eu sou a *Esther*' },
       destaques: { rotulo: 'Em evidência', titulo: 'Conteúdos de *destaque*', texto: 'Vídeos que mostram como uma boa ideia, contada com verdade, vira resultado. Toque em um card para assistir.' },
-      trabalhos: { rotulo: 'Portfólio', titulo: 'Trabalhos por *nicho*', texto: 'Escolha um nicho e deslize para o lado para ver mais. Toque em um vídeo para assistir aqui mesmo.' },
+      trabalhos: { rotulo: 'Categorias', titulo: 'Que tipo de *conteúdo* você precisa?', texto: 'Navegue pelos nichos. Cada linha é uma especialidade. Deslize para o lado para ver mais.' },
       servicos: { rotulo: 'Serviços', titulo: 'Como eu te *ajudo*', texto: 'Do roteiro à publicação, cada etapa pensada para a sua marca aparecer melhor.' },
       numeros: { rotulo: 'Resultados', titulo: 'Números e *depoimentos*' },
       contato: { rotulo: 'Contato', titulo: 'Bora criar *juntos*', texto: 'Conte um pouco sobre a sua marca e o que você quer comunicar. Eu respondo com carinho e com uma proposta pensada para você.' }

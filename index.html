@@ -347,58 +347,45 @@ button,input,textarea{font:inherit;color:inherit}
 .vcard-item{flex:0 0 var(--vw);min-width:0;scroll-snap-align:start}
 .vcard{
   position:relative;display:block;aspect-ratio:9/16;overflow:hidden;isolation:isolate;
-  border-radius:var(--radius-lg);background:var(--grad);color:#fff;text-decoration:none;
-  box-shadow:0 18px 34px -22px rgba(20,17,13,.55);transition:transform .4s cubic-bezier(.2,.7,.2,1),box-shadow .4s;
+  border-radius:14px;border:1px solid var(--line);background:var(--grad);color:#fff;text-decoration:none;
+  box-shadow:0 18px 34px -24px rgba(20,17,13,.45);transition:transform .4s cubic-bezier(.2,.7,.2,1),box-shadow .4s;
 }
 .vcard:hover{transform:translateY(-6px);box-shadow:0 26px 40px -22px rgba(20,17,13,.6)}
 .vcard img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
-.vcard::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(to top,rgba(20,17,13,.86) 0%,rgba(20,17,13,.32) 30%,transparent 56%),linear-gradient(to bottom,rgba(20,17,13,.28) 0%,transparent 22%)}
-.vcard-topo{position:absolute;top:.7rem;left:.7rem;right:.7rem;display:flex;flex-wrap:wrap;gap:.35rem}
+.vcard-topo{position:absolute;top:.8rem;left:.8rem;right:.8rem;display:flex;flex-wrap:wrap;gap:.35rem}
 .vcard-chip,.vcard-views{
   max-width:100%;padding:.26rem .6rem;border-radius:999px;font-size:.64rem;font-weight:700;letter-spacing:.07em;
   text-transform:uppercase;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
-.vcard-chip{background:rgba(251,249,246,.95);color:var(--ink)}
+.vcard-chip{background:rgba(251,249,246,.96);color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.18)}
 .vcard-views{background:var(--marrom);color:var(--cream)}
-.vplay{
-  position:absolute;top:50%;left:50%;width:58px;height:58px;margin:-29px 0 0 -29px;border-radius:50%;
-  background:var(--ink);color:var(--cream);display:grid;place-items:center;
-  box-shadow:0 10px 26px rgba(0,0,0,.4);transition:transform .35s cubic-bezier(.2,.7,.2,1);
-}
-.vplay svg{width:22px;height:22px;margin-left:3px}
-.vcard:hover .vplay{transform:scale(1.1)}
-.vcard-info{position:absolute;left:.95rem;right:.95rem;bottom:.85rem}
-.vcard-info strong{display:block;font-family:var(--serif);font-weight:700;font-size:1.12rem;line-height:1.15;color:#fff;overflow-wrap:anywhere}
-.vcard-info small{display:block;margin-top:.3rem;font-size:.66rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:rgba(255,255,255,.74)}
 .vcard:focus-visible{outline-offset:4px}
 
 /* Janela do player (o vídeo toca aqui mesmo) */
-.player-dialog{border:0;padding:0;background:transparent;width:fit-content;max-width:94vw;max-height:none;overflow:visible;color:#fff}
-.player-dialog::backdrop{background:rgba(20,17,13,.86);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
-.player{position:relative;padding-top:3rem}
-.player-dialog[open] .player{animation:subir .45s cubic-bezier(.2,.7,.2,1)}
-.player-fechar{position:absolute;top:0;right:0;width:40px;height:40px;border:0;border-radius:50%;background:var(--cream);color:var(--ink);cursor:pointer;display:grid;place-items:center;transition:transform .2s}
+/* Janela do vídeo: tela inteira escura, vídeo grande no centro com os controles do próprio YouTube,
+   e as informações (nicho, título e marca) no canto de cima, à esquerda */
+.player-dialog{border:0;padding:0;margin:0;background:transparent;width:100vw;height:100vh;height:100dvh;max-width:none;max-height:none;overflow:hidden;color:#fff}
+.player-dialog::backdrop{background:rgba(12,10,8,.9);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.player{position:relative;width:100%;height:100%;display:grid;place-items:center;padding:1.25rem}
+.player-dialog[open] .player-quadro{animation:subir .45s cubic-bezier(.2,.7,.2,1)}
+.player-quadro{position:relative;height:min(calc(100vh - 2.5rem),calc((100vw - 2.5rem) * 16 / 9));height:min(calc(100dvh - 2.5rem),calc((100vw - 2.5rem) * 16 / 9));aspect-ratio:9/16;border-radius:14px;overflow:hidden;background:#000;box-shadow:0 34px 80px -24px rgba(0,0,0,.8)}
+.player-quadro iframe{position:absolute;inset:0;display:block;width:100%;height:100%;border:0}
+.player-info{position:absolute;top:1.25rem;left:1.5rem;max-width:min(18rem,calc(50vw - 17rem))}
+.player-nicho{font-size:.7rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(243,238,233,.7)}
+.player-titulo{margin-top:.2rem;font-family:var(--serif);font-weight:700;font-size:1.45rem;line-height:1.15;color:var(--cream);overflow-wrap:anywhere}
+.player-marca{display:inline-block;max-width:100%;margin-top:.55rem;padding:.26rem .65rem;border-radius:999px;background:rgba(243,238,233,.16);font-size:.66rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--cream);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:top}
+.player-fechar{position:absolute;top:1rem;right:1rem;z-index:2;width:44px;height:44px;border:0;border-radius:50%;background:var(--cream);color:var(--ink);cursor:pointer;display:grid;place-items:center;transition:transform .2s}
 .player-fechar:hover{transform:scale(1.08)}
 .player-fechar svg{width:20px;height:20px}
 .player-fechar:focus-visible{outline-color:var(--cream)}
-.player-quadro{position:relative;height:min(72vh,720px);max-width:94vw;aspect-ratio:9/16;border-radius:var(--radius-lg);overflow:hidden;background:#000;box-shadow:0 34px 80px -24px rgba(0,0,0,.7)}
-/* o player é montado com 1080 x 1920 por dentro (o YouTube entrega 1080p) e reduzido na tela pelo script */
-.player-quadro{cursor:pointer}
-/* os botões do YouTube ficam desligados (pointer-events:none): o painel dele, que aparecia ao passar o mouse, não entra mais */
-.player-quadro iframe{position:absolute;left:0;top:0;display:block;width:1080px;height:1920px;max-width:none;border:0;transform-origin:0 0;pointer-events:none}
-.player-topo{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;gap:.6rem;padding:.9rem 1rem 2.4rem;background:linear-gradient(rgba(0,0,0,.55),transparent);color:#fff;text-decoration:none;font-weight:600;font-size:1.02rem;line-height:1.2;text-shadow:0 1px 3px rgba(0,0,0,.45)}
-.player-topo svg{flex:none;width:30px;height:21px}
-.player-topo span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.player-topo:hover span{text-decoration:underline}
-.player-topo:focus-visible{outline-color:var(--cream);outline-offset:-4px}
-.player-controles{display:flex;align-items:center;gap:.6rem;margin-top:.7rem}
-.player-controles button{flex:none;width:38px;height:38px;border:0;border-radius:50%;background:rgba(243,238,233,.16);color:var(--cream);cursor:pointer;display:grid;place-items:center;transition:background .2s}
-.player-controles button:hover{background:rgba(243,238,233,.3)}
-.player-controles button:focus-visible{outline-color:var(--cream)}
-.player-controles button svg{width:18px;height:18px}
-.player-busca{flex:1;min-width:0;margin:0;accent-color:var(--marrom-claro);cursor:pointer}
-.player-tempo{flex:none;font-size:.78rem;font-variant-numeric:tabular-nums;color:rgba(243,238,233,.82)}
-.player-legenda{width:0;min-width:100%;margin-top:.8rem;text-align:center;font-family:var(--serif);font-size:1.3rem;color:var(--cream)}
+/* Tela estreita (celular, tablet em pé): as informações ficam em cima do vídeo, sem cobrir nada */
+@media (max-width:900px){
+  .player{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.8rem;padding:4rem 1rem 1rem}
+  .player-info{position:static;align-self:stretch;max-width:none;padding-right:3rem}
+  .player-titulo{font-size:1.2rem}
+  .player-quadro{height:min(calc(100vh - 11rem),calc((100vw - 2rem) * 16 / 9));height:min(calc(100dvh - 11rem),calc((100vw - 2rem) * 16 / 9))}
+  .player-fechar{top:.75rem;right:.75rem}
+}
 
 .vazio-site{grid-column:1/-1;padding:2rem 0;text-align:center;color:var(--muted)}
 .escuro .vazio-site{color:rgba(243,238,233,.78)}
@@ -545,7 +532,6 @@ button,input,textarea{font:inherit;color:inherit}
 @media (max-width:620px){
   .nicho-trilho{--vw:calc((100% - var(--gap)) / 2.25)}
   .nicho-cab{align-items:flex-start}
-  .vcard-info strong{font-size:1rem}
   .ph{padding:.7rem}
   .ph-legenda{font-size:.66rem}
   .servicos{grid-template-columns:1fr}
@@ -770,9 +756,6 @@ document.addEventListener('DOMContentLoaded', () => {
     play:   '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>',
     pausa:  '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4.5" width="4" height="15" rx="1"/><rect x="14" y="4.5" width="4" height="15" rx="1"/></svg>',
     check:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
-    som:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>',
-    youtube: '<svg viewBox="0 0 30 21" aria-hidden="true"><rect width="30" height="21" rx="5.5" fill="#ff0000"/><path d="M12 6v9l8-4.5z" fill="#fff"/></svg>',
-    mudo:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="m22 9-6 6M16 9l6 6"/></svg>'
   };
 
   /* Contador: mostra "00" quando o valor é null, senão anima até o valor */
@@ -980,61 +963,33 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ---------- Player: o vídeo toca aqui mesmo, numa janela do site (nada de abrir o YouTube) ----------
-     QUALIDADE 1080p: o YouTube escolhe a qualidade pelo tamanho do player e ignora qualquer pedido direto de "1080".
-     Por isso o player é montado por dentro com 1080 x 1920 e reduzido na tela (transform): assim o YouTube entrega 1080p.
-     Como isso deixaria os botões do YouTube minúsculos, eles ficam desligados (controls=0) e o site tem os seus próprios:
-     tocar e pausar, barra de tempo e som. A legenda do YouTube fica desligada (cc_load_policy=0). */
+     O player do YouTube fica no tamanho real, com os controles dele (Shorts, som, curtir, compartilhar e a barra de tempo).
+     O site só conversa com ele para ligar o som e desligar a legenda automática. */
   const janelaPlayer = $('#player');
   const quadroPlayer = $('#playerQuadro');
-  const legendaPlayer = $('#playerLegenda');
-  const controlesPlayer = $('#playerControles');
-  const botaoPlayer = $('#playerPlay');
-  const buscaPlayer = $('#playerBusca');
-  const tempoPlayer = $('#playerTempo');
-  const botaoSom = $('#playerSom');
-  const LARGURA_INTERNA = 1080;
-  const estadoPlayer = { tocando: true, mudo: false, duracao: 0, atual: 0, arrastando: false, pediuSom: false };
   let quemAbriu = null;
   let iframePlayer = null;
-  let vigiaLegenda = null;
+  let pediuSom = false;
 
   const falarComPlayer = (funcao, args) => {
     if (iframePlayer && iframePlayer.contentWindow) iframePlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: funcao, args: args || [], id: 1, channel: 'widget' }), '*');
-  };
-  const desligarLegenda = () => falarComPlayer('unloadModule', ['captions']);   /* o YouTube liga a legenda dele depois de um pulo no vídeo: este comando desliga */
-  const ajustarEscalaPlayer = () => {
-    const largura = quadroPlayer.clientWidth;
-    if (iframePlayer && largura) iframePlayer.style.transform = `scale(${largura / LARGURA_INTERNA})`;
-  };
-  const pintarControlesPlayer = () => {
-    botaoPlayer.innerHTML = estadoPlayer.tocando ? ICONES.pausa : ICONES.play;
-    botaoPlayer.setAttribute('aria-label', estadoPlayer.tocando ? 'Pausar o vídeo' : 'Tocar o vídeo');
-    botaoSom.innerHTML = estadoPlayer.mudo ? ICONES.mudo : ICONES.som;
-    botaoSom.setAttribute('aria-label', estadoPlayer.mudo ? 'Ligar o som' : 'Desligar o som');
-    if (!estadoPlayer.arrastando) buscaPlayer.value = String(estadoPlayer.duracao ? (estadoPlayer.atual / estadoPlayer.duracao) * 100 : 0);
-    tempoPlayer.textContent = `${tempo(estadoPlayer.atual)} / ${tempo(estadoPlayer.duracao)}`;
   };
 
   const abrirPlayer = (v, origem) => {
     if (!v || !v.yt || !janelaPlayer || typeof janelaPlayer.showModal !== 'function') return false;
     const nome = nomeDoVideo(v);
-    const legenda = legendaDoVideo(v);
     quemAbriu = origem || null;
-    Object.assign(estadoPlayer, { tocando: true, mudo: false, duracao: 0, atual: 0, arrastando: false, pediuSom: false });
-    controlesPlayer.hidden = true;                                    /* aparecem quando o YouTube responder */
-    quadroPlayer.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(v.yt)}?autoplay=1&controls=0&rel=0&playsinline=1&modestbranding=1&iv_load_policy=3&cc_load_policy=0&disablekb=1&fs=0&hl=pt-BR&enablejsapi=1" title="Vídeo: ${esc(nome)}" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin"></iframe>
-      <a class="player-topo" href="https://www.youtube.com/shorts/${encodeURIComponent(v.yt)}" target="_blank" rel="noopener noreferrer" aria-label="Ver ${esc(nome)} no YouTube">${ICONES.youtube}<span>${esc(nome)}</span></a>`;
+    pediuSom = false;
+    $('#playerNicho').textContent = v.nicho || 'Destaque';
+    $('#playerTitulo').textContent = legendaDoVideo(v) || nome;
+    $('#playerMarca').textContent = nome;
+    quadroPlayer.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(v.yt)}?autoplay=1&controls=1&rel=0&playsinline=1&modestbranding=1&iv_load_policy=3&cc_load_policy=0&hl=pt-BR&enablejsapi=1" title="Vídeo: ${esc(nome)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
     iframePlayer = $('iframe', quadroPlayer);
     iframePlayer.addEventListener('load', () => {
-      iframePlayer.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }), '*');   /* pede ao YouTube os avisos de tempo e estado */
-      desligarLegenda();
+      iframePlayer.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }), '*');   /* pede ao YouTube os avisos do player */
     });
-    clearInterval(vigiaLegenda);
-    vigiaLegenda = setInterval(desligarLegenda, 1000);                    /* enquanto o vídeo está aberto, a legenda do YouTube fica desligada */
-    legendaPlayer.textContent = legenda ? `${nome} · ${legenda}` : nome;
     document.body.classList.add('sem-rolagem');
     janelaPlayer.showModal();
-    ajustarEscalaPlayer();
     return true;
   };
 
@@ -1042,55 +997,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const fecharPlayer = () => { if (janelaPlayer.open) janelaPlayer.close(); };
     janelaPlayer.addEventListener('close', () => {
       quadroPlayer.innerHTML = '';                                   /* tira o iframe: o vídeo para de tocar */
-      clearInterval(vigiaLegenda);
       iframePlayer = null;
-      controlesPlayer.hidden = true;
       document.body.classList.remove('sem-rolagem');
       if (quemAbriu && document.contains(quemAbriu)) quemAbriu.focus();
       quemAbriu = null;
     });
     $('.player-fechar', janelaPlayer).addEventListener('click', fecharPlayer);
-    janelaPlayer.addEventListener('click', (e) => { if (e.target === janelaPlayer) fecharPlayer(); });   /* clique no fundo escuro */
-    window.addEventListener('resize', ajustarEscalaPlayer);
-    quadroPlayer.addEventListener('click', (e) => { if (!e.target.closest('.player-topo')) botaoPlayer.click(); });   /* tocar no vídeo pausa ou continua */
+    janelaPlayer.addEventListener('click', (e) => { if (e.target === janelaPlayer || e.target.classList.contains('player')) fecharPlayer(); });   /* clique no fundo escuro */
 
-    /* Avisos que o YouTube manda: tempo, duração, tocando ou parado, mudo */
+    /* Na primeira resposta do YouTube: som ligado (ele pode começar mudo e lembra do mudo da vez anterior) e sem legenda automática */
     window.addEventListener('message', (e) => {
-      if (!iframePlayer || e.source !== iframePlayer.contentWindow) return;
+      if (!iframePlayer || e.source !== iframePlayer.contentWindow || pediuSom) return;
       let d = null;
       try { d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data; } catch (erro) { return; }
-      const info = d && d.info;
-      if (!info || typeof info !== 'object') return;
-      if (typeof info.currentTime === 'number') estadoPlayer.atual = info.currentTime;
-      if (typeof info.duration === 'number' && info.duration > 0) estadoPlayer.duracao = info.duration;
-      if (typeof info.playerState === 'number') estadoPlayer.tocando = info.playerState === 1 || info.playerState === 3;
-      if (typeof info.muted === 'boolean') estadoPlayer.mudo = info.muted;
-      if (!estadoPlayer.pediuSom) {                                  /* o YouTube pode começar mudo (e lembra do mudo da vez anterior): pede o som ligado */
-        estadoPlayer.pediuSom = true;
-        falarComPlayer('unMute');
-        falarComPlayer('setVolume', [100]);
-      }
-      controlesPlayer.hidden = false;
-      pintarControlesPlayer();
-    });
-    botaoPlayer.addEventListener('click', () => {
-      falarComPlayer(estadoPlayer.tocando ? 'pauseVideo' : 'playVideo');
-      estadoPlayer.tocando = !estadoPlayer.tocando;
-      pintarControlesPlayer();
-    });
-    botaoSom.addEventListener('click', () => {
-      falarComPlayer(estadoPlayer.mudo ? 'unMute' : 'mute');
-      estadoPlayer.mudo = !estadoPlayer.mudo;
-      pintarControlesPlayer();
-    });
-    buscaPlayer.addEventListener('input', () => {
-      estadoPlayer.arrastando = true;
-      tempoPlayer.textContent = `${tempo((Number(buscaPlayer.value) / 100) * estadoPlayer.duracao)} / ${tempo(estadoPlayer.duracao)}`;
-    });
-    buscaPlayer.addEventListener('change', () => {
-      falarComPlayer('seekTo', [(Number(buscaPlayer.value) / 100) * estadoPlayer.duracao, true]);
-      desligarLegenda();
-      estadoPlayer.arrastando = false;
+      if (!d || !d.info) return;
+      pediuSom = true;
+      falarComPlayer('unMute');
+      falarComPlayer('setVolume', [100]);
+      [0, 800, 2000, 4000, 7000].forEach((ms) => setTimeout(() => falarComPlayer('unloadModule', ['captions']), ms));   /* a legenda do YouTube liga sozinha logo depois de começar; quem quiser liga no botão CC */
     });
   }
 
@@ -1126,15 +1050,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const cartaoVideo = (v, g, i) => {
     const nome = nomeDoVideo(v);
-    const titulo = legendaDoVideo(v) || nome;
     const abre = v.yt
       ? `<a class="vcard g${i % 6}" href="${esc(v.link)}" data-v="${videosSite.indexOf(v)}"`
       : `<a class="vcard g${i % 6}" href="${esc(v.link || '#')}" target="_blank" rel="noopener noreferrer"`;
     return `<li class="vcard-item">${abre} aria-label="Assistir: ${esc(nome)}${legendaDoVideo(v) ? ', ' + esc(legendaDoVideo(v)) : ''}${v.yt ? '' : ' (abre em uma nova aba)'}">
         ${v.capa ? `<img src="${esc(v.capa)}" alt="" loading="lazy" decoding="async">` : ''}
         <span class="vcard-topo"><span class="vcard-chip">${esc(nome)}</span>${emblemaViews(v)}</span>
-        <span class="vplay" aria-hidden="true">${ICONES.play}</span>
-        <span class="vcard-info"><strong>${esc(titulo)}</strong><small>${esc(g.nome)}</small></span>
       </a></li>`;
   };
 
@@ -1677,9 +1598,9 @@ document.addEventListener('DOMContentLoaded', () => {
 <section class="secao" id="trabalhos" aria-labelledby="titulo-trabalhos">
   <div class="container">
     <header class="secao-topo">
-      <p class="eyebrow reveal"><b>03</b>Portfólio</p>
-      <h2 class="titulo reveal" id="titulo-trabalhos" style="--d:.06s">Trabalhos por <em>nicho</em></h2>
-      <p class="lead reveal" style="--d:.12s">Escolha um nicho e deslize para o lado para ver mais. Toque em um vídeo para assistir aqui mesmo.</p>
+      <p class="eyebrow reveal"><b>03</b>Categorias</p>
+      <h2 class="titulo reveal" id="titulo-trabalhos" style="--d:.06s">Que tipo de <em>conteúdo</em> você precisa?</h2>
+      <p class="lead reveal" style="--d:.12s">Navegue pelos nichos. Cada linha é uma especialidade. Deslize para o lado para ver mais.</p>
     </header>
 
     <!-- As linhas dos nichos e os cards são criados pelos vídeos do painel (ou pela lista VIDEOS_PADRAO, no começo do script). -->
@@ -1840,19 +1761,17 @@ document.addEventListener('DOMContentLoaded', () => {
 </dialog>
 
 <!-- Janela do player: os vídeos tocam aqui, sem sair do site -->
-<dialog class="player-dialog" id="player" aria-label="Assistir ao vídeo">
+<dialog class="player-dialog" id="player" aria-labelledby="playerTitulo">
   <div class="player">
+    <div class="player-info">
+      <p class="player-nicho" id="playerNicho"></p>
+      <h2 class="player-titulo" id="playerTitulo">Vídeo</h2>
+      <span class="player-marca" id="playerMarca"></span>
+    </div>
+    <div class="player-quadro" id="playerQuadro"></div>
     <button class="player-fechar" type="button" aria-label="Fechar o vídeo">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
     </button>
-    <div class="player-quadro" id="playerQuadro"></div>
-    <div class="player-controles" id="playerControles" hidden>
-      <button type="button" id="playerPlay" aria-label="Pausar o vídeo"></button>
-      <input class="player-busca" id="playerBusca" type="range" min="0" max="100" step="0.1" value="0" aria-label="Posição do vídeo">
-      <span class="player-tempo" id="playerTempo">0:00 / 0:00</span>
-      <button type="button" id="playerSom" aria-label="Desligar o som"></button>
-    </div>
-    <p class="player-legenda" id="playerLegenda"></p>
   </div>
 </dialog>
 
