@@ -102,6 +102,8 @@
     insta: '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".9" fill="currentColor" stroke="none"/>',
     setaCima: '<path d="M12 19V5M5 12l7-7 7 7"/>',
     setaBaixo: '<path d="M12 5v14M19 12l-7 7-7-7"/>',
+    setaDireita: '<path d="M5 12h14M12 5l7 7-7 7"/>',
+    setaEsquerda: '<path d="M19 12H5M12 19l-7-7 7-7"/>',
     ordenar: '<path d="M8 9l4-4 4 4M8 15l4 4 4-4"/>',
     esq: '<path d="m15 18-6-6 6-6"/>',
     dir: '<path d="m9 18 6-6-6-6"/>',
@@ -283,7 +285,9 @@
     var rotulo = '<label for="' + id + '">' + esc(c.rotulo) + (c.obrigatorio ? ' *' : '') + '</label>';
     var ajuda = c.ajuda ? '<span class="ajuda">' + esc(c.ajuda) + '</span>' : '';
     var entrada;
-    if (c.tipo === 'select') {
+    if (c.tipo === 'arquivo') {
+      entrada = htmlCampoArquivo(c, id, v, 'name="' + c.nome + '"');
+    } else if (c.tipo === 'select') {
       entrada = '<select id="' + id + '" name="' + c.nome + '">' + (c.opcoes || []).map(function (o) {
         var val = typeof o === 'object' ? o.v : o, txt = typeof o === 'object' ? o.t : o;
         return '<option value="' + esc(val) + '"' + (String(val) === String(v) ? ' selected' : '') + '>' + esc(txt) + '</option>';
@@ -298,6 +302,90 @@
     }
     return '<div class="campo' + largo + '">' + rotulo + entrada + ajuda + '</div>';
   }
+
+  /* ---------- Envio de fotos e áudios (Supabase Storage, pasta "midia", liberada pelo midia.sql) ----------
+     Fotos são reduzidas e convertidas para WebP no próprio navegador antes de subir (o site fica leve). */
+  var PASTA_MIDIA = 'midia';
+  function previaDoArquivo(v) {
+    var t = String(v || '').trim();
+    if (/^img\//i.test(t)) return '../' + t;
+    return /^https:\/\//i.test(t) ? t : '';
+  }
+  function htmlCampoArquivo(c, idEntrada, v, atributo) {
+    var imagem = !/^audio/.test(c.aceita || 'image/*');
+    var previa = imagem ? previaDoArquivo(v) : '';
+    return '<div class="campo-arquivo">' +
+      (imagem ? '<img class="arquivo-previa" alt=""' + (previa ? ' src="' + esc(previa) + '"' : ' hidden') + '>' : '') +
+      '<input type="text" id="' + idEntrada + '" ' + atributo + ' value="' + esc(v) + '" placeholder="' + esc(c.placeholder || (imagem ? 'Envie uma foto ou cole um link https://' : 'Envie um áudio ou cole um link https://')) + '" autocomplete="off">' +
+      '<button type="button" class="btn pequeno arquivo-enviar">' + ic('mais') + (imagem ? 'Enviar foto' : 'Enviar áudio') + '</button>' +
+      '<input type="file" class="arquivo-escolher" hidden accept="' + esc(c.aceita || 'image/*') + '" data-pasta="' + esc(c.pasta || 'fotos') + '" data-max="' + (c.maxLado || 1600) + '">' +
+      '</div>';
+  }
+  async function prepararImagem(arquivo, maxLado) {
+    if (!/^image\/(jpeg|png|webp)$/.test(arquivo.type) || !window.createImageBitmap) return null;
+    try {
+      var bmp = await createImageBitmap(arquivo);
+      var escala = Math.min(1, maxLado / Math.max(bmp.width, bmp.height));
+      var tela = document.createElement('canvas');
+      tela.width = Math.max(1, Math.round(bmp.width * escala));
+      tela.height = Math.max(1, Math.round(bmp.height * escala));
+      tela.getContext('2d').drawImage(bmp, 0, 0, tela.width, tela.height);
+      var blob = await new Promise(function (ok) { tela.toBlob(ok, 'image/webp', 0.86); });
+      return blob && blob.type === 'image/webp' ? blob : null;
+    } catch (e) { return null; }
+  }
+  async function enviarArquivo(arquivo, pasta, maxLado) {
+    if (!banco || !banco.storage) return { ok: false, erro: 'O envio de arquivos não está disponível agora. Recarregue a página.' };
+    var ehImagem = /^image\//.test(arquivo.type), ehAudio = /^audio\//.test(arquivo.type);
+    if (!ehImagem && !ehAudio) return { ok: false, erro: 'Envie uma foto (JPG, PNG ou WebP) ou um áudio (MP3 ou M4A).' };
+    if (arquivo.size > 25 * 1024 * 1024) return { ok: false, erro: 'O arquivo passa de 25 MB. Tente um menor.' };
+    var corpo = arquivo, tipo = arquivo.type;
+    var ext = (String(arquivo.name).match(/\.([a-z0-9]{2,4})$/i) || [])[1] || (ehAudio ? 'mp3' : 'jpg');
+    if (ehImagem) {
+      var webp = await prepararImagem(arquivo, maxLado || 1600);
+      if (webp) { corpo = webp; tipo = 'image/webp'; ext = 'webp'; }
+    }
+    var base = String(arquivo.name).replace(/\.[^.]+$/, '').normalize('NFD').replace(/\p{M}/gu, '').toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'arquivo';
+    var caminho = (pasta || 'fotos') + '/' + Date.now() + '-' + base + '.' + ext.toLowerCase();
+    try {
+      var r = await banco.storage.from(PASTA_MIDIA).upload(caminho, corpo, { contentType: tipo, cacheControl: '31536000', upsert: false });
+      if (r.error) {
+        var m = String(r.error.message || r.error.error || '');
+        if (/bucket not found|not found/i.test(m)) return { ok: false, erro: 'Falta liberar o envio de arquivos: rode o arquivo midia.sql no SQL Editor do Supabase (uma vez só).' };
+        if (/row-level|policy|unauthori|403/i.test(m)) return { ok: false, erro: 'O Supabase recusou o envio. Confira se o midia.sql foi rodado e se você está logada.' };
+        if (/size|large|413/i.test(m)) return { ok: false, erro: 'Arquivo grande demais (máximo 25 MB).' };
+        if (/mime|type/i.test(m)) return { ok: false, erro: 'Esse tipo de arquivo não é aceito. Use JPG, PNG, WebP, MP3 ou M4A.' };
+        return { ok: false, erro: 'Não consegui enviar o arquivo: ' + m };
+      }
+      return { ok: true, url: banco.storage.from(PASTA_MIDIA).getPublicUrl(caminho).data.publicUrl };
+    } catch (e) { return { ok: false, erro: 'Não consegui enviar o arquivo agora. Tente de novo.' }; }
+  }
+  document.addEventListener('click', function (e) {
+    var bt = e.target.closest('.arquivo-enviar');
+    if (!bt) return;
+    var escolher = bt.parentNode.querySelector('.arquivo-escolher');
+    if (escolher) escolher.click();
+  });
+  document.addEventListener('change', async function (e) {
+    var escolher = e.target.closest('.arquivo-escolher');
+    if (!escolher || !escolher.files || !escolher.files[0]) return;
+    var caixa = escolher.parentNode;
+    var bt = caixa.querySelector('.arquivo-enviar');
+    var entrada = caixa.querySelector('input[type=text]');
+    var textoBt = bt.innerHTML;
+    bt.disabled = true;
+    bt.textContent = 'Enviando...';
+    var r = await enviarArquivo(escolher.files[0], escolher.getAttribute('data-pasta'), Number(escolher.getAttribute('data-max')) || 1600);
+    bt.disabled = false;
+    bt.innerHTML = textoBt;
+    escolher.value = '';
+    if (!r.ok) { aviso(r.erro, 'erro'); return; }
+    entrada.value = r.url;
+    var previa = caixa.querySelector('.arquivo-previa');
+    if (previa) { previa.src = r.url; previa.hidden = false; }
+    aviso('Arquivo enviado. Agora é só clicar em Salvar.');
+  });
 
   /* Abre um formulário na janela. opc: titulo, campos, valores, aoSalvar(valores), aoApagar() */
   function formulario(opc) {
@@ -520,7 +608,7 @@
       { nome: 'destaque', rotulo: 'Texto do resultado', placeholder: '190 mil visualizações', ajuda: 'Aparece abaixo do card nos Destaques.' }
     ];
     if (novos) {
-      campos.push({ nome: 'capa', rotulo: 'Capa (opcional)', largo: true, placeholder: 'img/capas/nome.webp', ajuda: 'Vazio: usa um momento do próprio vídeo. Para trocar, coloque o caminho de uma imagem vertical 9:16 da pasta img do site, ou um endereço que comece com https.' });
+      campos.push({ nome: 'capa', rotulo: 'Capa (opcional)', tipo: 'arquivo', pasta: 'capas', maxLado: 720, largo: true, placeholder: 'Envie uma foto em pé (9:16) ou cole um link', ajuda: 'Vazio: usa um momento do próprio vídeo.' });
       campos.push({ nome: 'em_destaques', rotulo: 'Aparece nos Destaques (carrossel)', tipo: 'checkbox', largo: true });
     }
     campos.push({ nome: 'formato', rotulo: 'Formato', lista: ['Vídeo 9:16', 'Foto 4:5', 'Vídeo 16:9'] });
@@ -4086,29 +4174,25 @@
 
     /* Case Box Magenta: o mesmo texto original do site (vale enquanto nada foi salvo) */
     var CASE_PADRAO = {
-      mostrar: true, menu: true, rotuloMenu: 'Case', posicao: 'depois-destaques', fundo: 'creme', cor: '#4d301b',
       etiqueta: 'Case Box Magenta',
       titulo: 'Por que essa marca já criou mais de *100 vídeos* comigo?',
       subtitulo: 'Mais do que uma entrega pontual: uma parceria que se tornou recorrente.',
-      contexto: 'A Box Magenta já produziu mais de 100 vídeos comigo. Essa recorrência não nasce de um vídeo que deu certo, e sim de uma relação construída em confiança: entregas consistentes, alinhadas à marca e prontas para performar em cada etapa da jornada de compra.',
-      numero: '+100', numeroRotulo: 'vídeos produzidos para a Box Magenta',
-      videosTitulo: 'Um conteúdo para cada *momento* do funil',
-      motivosTitulo: 'O que faz a parceria *continuar*'
+      contexto: 'A **Box Magenta** já produziu **mais de 100 vídeos** comigo. A recorrência vem da confiança: entregas consistentes, alinhadas à marca e pensadas para cada etapa do funil.',
+      cor: '#4d301b', audio: '', audioLegenda: 'Feedback da Box Magenta'
     };
     var CASE_VIDEOS = [
-      { etapa: 'Topo de funil', nome: 'Desejo', texto: 'Conteúdo que desperta interesse, desejo e identificação com o produto.', link: '', capa: '', marca: 'Box Magenta' },
-      { etapa: 'Meio de funil', nome: 'Conexão', texto: 'O produto apresentado de forma natural, no contexto de uso, criando identificação.', link: '', capa: '', marca: 'Box Magenta' },
-      { etapa: 'Fundo de funil', nome: 'Conversão', texto: 'O produto mostrado de maneira estratégica, direcionado à ação e à decisão de compra.', link: '', capa: '', marca: 'Box Magenta' }
+      { etapa: 'Topo de funil', link: '', rotulo1: 'Objetivo', valor1: 'Desejo', rotulo2: 'Visualizações', valor2: '', capa: '', marca: 'Box Magenta' },
+      { etapa: 'Meio de funil', link: '', rotulo1: 'Objetivo', valor1: 'Conexão', rotulo2: 'Visualizações', valor2: '', capa: '', marca: 'Box Magenta' },
+      { etapa: 'Fundo de funil', link: '', rotulo1: 'Objetivo', valor1: 'Conversão', rotulo2: 'Visualizações', valor2: '', capa: '', marca: 'Box Magenta' }
     ];
     var CASE_MOTIVOS = [
-      { titulo: 'Entregas dentro do prazo', texto: 'Cumprimento dos prazos combinados e organização do começo ao fim do projeto.' },
-      { titulo: 'Fidelidade ao briefing', texto: 'Conteúdos coerentes com o briefing, o roteiro e o direcionamento da marca.' },
-      { titulo: 'Versatilidade criativa', texto: 'Linguagem, formato, estética e narrativa adaptados a cada objetivo e campanha.' },
-      { titulo: 'Linguagem natural', texto: 'Vídeos que soam como recomendação de verdade, e não como anúncio.' },
-      { titulo: 'Facilidade na parceria', texto: 'Comunicação clara, organização e agilidade para atender demandas diferentes.' },
-      { titulo: 'Entendimento de marca', texto: 'Mais do que reproduzir o briefing: entender a identidade da marca e traduzir isso para o meu universo de conteúdo.' }
+      { icone: 'relogio', titulo: 'Entregas no prazo', texto: 'Prazos cumpridos e projeto organizado' },
+      { icone: 'roteiro', titulo: 'Fiel ao briefing', texto: 'Coerente com o roteiro e a marca' },
+      { icone: 'estrela', titulo: 'Versatilidade criativa', texto: 'O formato certo para cada objetivo' },
+      { icone: 'conversa', titulo: 'Linguagem natural', texto: 'Soa como recomendação de verdade' },
+      { icone: 'parceria', titulo: 'Parceria fácil', texto: 'Comunicação clara e organizada' },
+      { icone: 'coracao', titulo: 'Entende a marca', texto: 'Traduz a marca para o meu universo' }
     ];
-    var CASE_FEEDBACK = { titulo: 'Uma parceria que *fala por si*.', texto: 'O retorno da Box Magenta, na voz de quem acompanha as entregas de perto.', audio: '', autor: 'Box Magenta' };
     var CORES_PADRAO = { destaque: '#808080', marrom: '#4d301b', fundo: '#f3eee9', fundo2: '#ebe4dc', texto: '#14110d' };
     var CONTATO_PADRAO = {
       whatsapp: '19983169592', whatsappMensagem: 'Oi Esther, vim pelo seu portfólio e quero conversar sobre um projeto.',
@@ -4116,6 +4200,21 @@
       rodapeFrase: 'UGC Creator em Hortolândia. Conteúdo que inspira.', rodapeCidade: 'Hortolândia'
     };
     var AJUDA_ASTERISCO = 'A palavra entre asteriscos fica em itálico. Exemplo: mais de *100 vídeos*';
+    var AJUDA_ASTERISCO_CAPA = 'A palavra entre asteriscos fica em itálico e marrom. Exemplo: que *conecta.*';
+    var CAPA_PADRAO = { titulo1: 'Inspiração', titulo2: 'que *conecta.*', botao: 'Quero criar com a Esther', link: 'Ver os trabalhos', foto: '', fotoAlt: 'Esther Custódio olhando por cima do ombro e sorrindo, com cabelo cacheado e brinco dourado' };
+    var FAIXA_PADRAO = { mostrar: true, titulo: 'Marcas com quem já trabalhei' };
+    var SOBRE_PADRAO = {
+      foto: '', fotoAlt: 'Esther Custódio sorrindo, gravando um vídeo em casa',
+      abre: 'Eu gosto de mostrar produtos do jeito que as pessoas realmente usam: na rotina, com luz natural e com opinião de verdade.',
+      texto: 'Sou criadora de conteúdo UGC em Hortolândia e já entreguei 250 vídeos para marcas de beleza, skincare, moda, casa e decoração, fitness e viagem. Cada projeto começa com uma conversa para entender o que a sua marca quer dizer e termina com um conteúdo que você vai ter orgulho de postar.', promessasTitulo: 'Minhas três promessas',
+      promessa1: 'Roteiro aprovado antes de gravar', promessa2: 'Uma rodada de ajuste inclusa', promessa3: 'Entrega em até 72 horas úteis',
+      assinaturaPequena: 'Com carinho,', assinatura: 'Esther Custódio'
+    };
+    var CAPTURA_PADRAO = { mostrar: true, titulo: 'Quer meu mídia kit *completo?*', sub: 'Deixe o seu nome e o seu e-mail que eu envio para você.', botao: 'Quero receber' };
+    var LOGOS_PADRAO = [{"imagem": "img/marcas/mac.webp", "nome": "M·A·C"}, {"imagem": "img/marcas/natura.webp", "nome": "Natura"}, {"imagem": "img/marcas/truss.webp", "nome": "Truss Professional"}, {"imagem": "img/marcas/canva.webp", "nome": "Canva"}, {"imagem": "img/marcas/creamy.webp", "nome": "Creamy"}, {"imagem": "img/marcas/beleza-na-web.webp", "nome": "Beleza na Web"}, {"imagem": "img/marcas/mascavo.webp", "nome": "Mascavo"}, {"imagem": "img/marcas/loreal.webp", "nome": "L'Oréal Groupe"}, {"imagem": "img/marcas/fini.webp", "nome": "Fini"}, {"imagem": "img/marcas/lola-from-rio.webp", "nome": "Lola from Rio"}, {"imagem": "img/marcas/ifood.webp", "nome": "iFood"}, {"imagem": "img/marcas/pantene.webp", "nome": "Pantene"}, {"imagem": "img/marcas/ca.webp", "nome": "C&A"}, {"imagem": "img/marcas/sallve.webp", "nome": "Sallve"}, {"imagem": "img/marcas/marca-simbolo.webp", "nome": "com um símbolo preto em um círculo rosa"}, {"imagem": "img/marcas/rohto.webp", "nome": "Rohto"}, {"imagem": "img/marcas/marca-m-rosa.webp", "nome": "com a letra m em um círculo rosa"}, {"imagem": "img/marcas/dabelle.webp", "nome": "DaBelle"}, {"imagem": "img/marcas/amazon.webp", "nome": "Amazon"}, {"imagem": "img/marcas/hiven.webp", "nome": "Hiven"}, {"imagem": "img/marcas/matrix.webp", "nome": "Matrix Professional"}, {"imagem": "img/marcas/marca-p-roxo.webp", "nome": "com a letra p roxa em um círculo lilás"}, {"imagem": "img/marcas/dafiti.webp", "nome": "Dafiti"}, {"imagem": "img/marcas/epile.webp", "nome": "Épilé"}, {"imagem": "img/marcas/99food.webp", "nome": "99Food"}, {"imagem": "img/marcas/nina-makeup.webp", "nome": "Nina Makeup"}, {"imagem": "img/marcas/salton.webp", "nome": "Salton"}, {"imagem": "img/marcas/abela.webp", "nome": "Abela Cosmetics"}, {"imagem": "img/marcas/color-wow.webp", "nome": "Color Wow"}, {"imagem": "img/marcas/oceane.webp", "nome": "Oceane"}, {"imagem": "img/marcas/vizcaya.webp", "nome": "Vizcaya"}, {"imagem": "img/marcas/rildy.webp", "nome": "Rildy"}, {"imagem": "img/marcas/inoar.webp", "nome": "Inoar"}, {"imagem": "img/marcas/marca-p-preto.webp", "nome": "com a letra P branca em um círculo preto"}, {"imagem": "img/marcas/bioderma.webp", "nome": "Bioderma"}, {"imagem": "img/marcas/fenzza.webp", "nome": "Fenzza"}, {"imagem": "img/marcas/petrizi.webp", "nome": "Petrizi"}, {"imagem": "img/marcas/ruby-kisses.webp", "nome": "Ruby Kisses"}, {"imagem": "img/marcas/garnier.webp", "nome": "Garnier"}, {"imagem": "img/marcas/kiss-new-york.webp", "nome": "Kiss New York"}, {"imagem": "img/marcas/authentic-feet.webp", "nome": "Authentic Feet"}];
+    var PAGINAS_SITE = ['sobre', 'destaques', 'case', 'trabalhos', 'servicos', 'numeros', 'contato'];
+    var NOMES_PAGINAS = { sobre: 'Sobre mim', destaques: 'Conteúdos em destaque', case: 'Por que essa marca fechou 100 conteúdos comigo', trabalhos: 'Que tipo de conteúdo você precisa', servicos: 'Como eu te ajudo', numeros: 'Números e depoimentos', contato: 'Bora criar juntos' };
+    var MENU_PADRAO = { sobre: 'Sobre', destaques: 'Destaques', case: 'Case', trabalhos: 'Trabalhos', servicos: 'Serviços', numeros: 'Números', contato: 'Contato' };
 
     /* Formulário de objeto que começa com o texto original: o que não foi salvo aparece preenchido com o padrão */
     function comPadrao(padrao) {
@@ -4128,117 +4227,111 @@
 
     /* As partes editáveis do site */
     var SECOES = [
-      {
+      Object.assign({
         chave: 'capa', titulo: 'Capa', tipo: 'objeto',
-        descricao: 'O texto do selo, a frase e os dois números que aparecem logo abaixo do título da capa.',
+        descricao: 'O selo, o título grande, a frase, os dois números, os botões e a foto da capa.',
         campos: [
           { nome: 'chip', rotulo: 'Texto do selo (ao lado do ícone)', obrigatorio: true, largo: true },
+          { nome: 'titulo1', rotulo: 'Título: primeira linha', placeholder: 'Inspiração', ajuda: AJUDA_ASTERISCO_CAPA },
+          { nome: 'titulo2', rotulo: 'Título: segunda linha', placeholder: 'que *conecta.*' },
           { nome: 'frase', rotulo: 'Frase abaixo do título', tipo: 'textarea', largo: true },
           { nome: 'numero1', rotulo: 'Primeiro número', placeholder: '+500 vídeos' },
-          { nome: 'numero2', rotulo: 'Segundo número', placeholder: '+200 marcas' }
+          { nome: 'numero2', rotulo: 'Segundo número', placeholder: '+200 marcas' },
+          { nome: 'botao', rotulo: 'Texto do botão', placeholder: 'Quero criar com a Esther' },
+          { nome: 'link', rotulo: 'Texto do link ao lado', placeholder: 'Ver os trabalhos' },
+          { nome: 'foto', rotulo: 'Foto da capa (de preferência sem fundo, PNG ou WebP)', tipo: 'arquivo', pasta: 'capa', maxLado: 1400, largo: true },
+          { nome: 'fotoAlt', rotulo: 'Descrição da foto (para quem usa leitor de tela)', largo: true }
         ],
-        paraForm: function (v) { var n = (v && v.numeros) || []; return { chip: v && v.chip, frase: v && v.frase, numero1: n[0], numero2: n[1] }; },
-        deForm: function (f) { return { chip: f.chip, frase: f.frase || '', numeros: [f.numero1, f.numero2].filter(Boolean) }; },
-        resumo: function (v) { var n = (v && v.numeros) || []; return [texto(v && v.chip), cortar(v && v.frase, 90), n.join('  |  ')].filter(Boolean); }
-      },
-      {
-        chave: 'sobre', titulo: 'Sobre mim', tipo: 'objeto',
-        descricao: 'Os dois textos da seção "Sobre mim": a frase de abertura em destaque e o parágrafo seguinte.',
-        campos: [
-          { nome: 'abre', rotulo: 'Frase de abertura (em destaque)', tipo: 'textarea', largo: true, obrigatorio: true },
-          { nome: 'texto', rotulo: 'Parágrafo', tipo: 'textarea', largo: true }
-        ],
-        paraForm: function (v) { return { abre: v && v.abre, texto: v && v.texto }; },
-        deForm: function (f) { return { abre: f.abre, texto: f.texto || '' }; },
-        resumo: function (v) { return [cortar(v && v.abre, 110), cortar(v && v.texto, 110)].filter(Boolean); }
-      },
-      {
-        chave: 'titulos', titulo: 'Títulos das seções', tipo: 'objeto',
-        descricao: 'A etiqueta pequena, o título e o texto de abertura de cada seção do site. Campo vazio mantém o texto original.',
-        campos: camposDosTitulos(),
         paraForm: function (v) {
-          var f = {};
-          Object.keys(TITULOS_PADRAO).forEach(function (id) {
-            var salvo = (v && v[id]) || {};
-            Object.keys(TITULOS_PADRAO[id]).forEach(function (c) { f[id + '__' + c] = texto(salvo[c]).trim() || TITULOS_PADRAO[id][c]; });
-          });
+          var n = (v && v.numeros) || [];
+          var f = comPadrao(CAPA_PADRAO).paraForm(v);
+          f.chip = v && v.chip != null ? v.chip : 'Creator & Modelo';
+          f.frase = v && v.frase != null ? v.frase : 'Conteúdo que transforma a rotina em desejo, conexão e identificação com a sua marca.';
+          f.numero1 = n.length ? n[0] : '+500 vídeos';
+          f.numero2 = n.length ? n[1] : '+200 marcas';
           return f;
         },
         deForm: function (f) {
-          var v = {};
-          Object.keys(TITULOS_PADRAO).forEach(function (id) {
-            v[id] = {};
-            Object.keys(TITULOS_PADRAO[id]).forEach(function (c) { v[id][c] = texto(f[id + '__' + c]).trim(); });
-          });
+          var v = comPadrao(CAPA_PADRAO).deForm(f);
+          v.chip = f.chip; v.frase = f.frase || ''; v.numeros = [f.numero1, f.numero2].filter(Boolean);
           return v;
         },
-        resumo: function (v) {
-          return Object.keys(TITULOS_PADRAO).map(function (id) {
-            var t = texto(v && v[id] && v[id].titulo).trim() || TITULOS_PADRAO[id].titulo;
-            return TITULOS_NOMES[id] + ': ' + t.replace(/\*/g, '');
-          });
-        }
+        resumo: function (v) { var n = (v && v.numeros) || []; return [texto(v && v.chip), textoOuPadrao(v, CAPA_PADRAO, 'titulo1') + ' ' + textoOuPadrao(v, CAPA_PADRAO, 'titulo2'), n.join('  |  '), texto(v && v.foto) ? 'Foto trocada pelo painel' : 'Foto original']; }
+      }),
+      Object.assign({
+        chave: 'marcas_faixa', titulo: 'Faixa de marcas', tipo: 'objeto',
+        descricao: 'O título pequeno acima dos logos e se a faixa aparece no site.',
+        campos: [
+          { nome: 'mostrar', rotulo: 'Mostrar a faixa de marcas', tipo: 'checkbox' },
+          { nome: 'titulo', rotulo: 'Título da faixa', largo: true }
+        ],
+        resumo: function (v) { return [v && v.mostrar === false ? 'Escondida' : 'Aparece no site', textoOuPadrao(v, FAIXA_PADRAO, 'titulo')]; }
+      }, comPadrao(FAIXA_PADRAO)),
+      {
+        chave: 'logos', titulo: 'Logos das marcas', tipo: 'lista', item: 'Logo', padrao: LOGOS_PADRAO,
+        descricao: 'Os logos da faixa, na ordem em que passam. Envie o logo (fica redondo e leve sozinho), escreva o nome e use as setas para mudar a ordem.',
+        colunas: [
+          { nome: 'imagem', rotulo: 'Logo', tipo: 'arquivo', pasta: 'logos', maxLado: 256, largo: true },
+          { nome: 'nome', rotulo: 'Nome da marca', obrigatorio: true }
+        ],
+        resumo: function (v) { var l = Array.isArray(v) ? v : []; return [l.length + ' logos', l.slice(0, 6).map(function (x) { return texto(x.nome); }).join(', ')]; }
       },
       Object.assign({
-        chave: 'case', titulo: 'Case Box Magenta: textos e aparência', tipo: 'objeto',
-        descricao: 'A página de recorrência e prova social: se aparece no site e no menu, onde fica, o fundo, a cor de destaque e os textos principais.',
+        chave: 'sobre', titulo: 'Textos e foto do Sobre mim', tipo: 'objeto',
+        descricao: 'A foto, a frase de abertura, o parágrafo, as três promessas e a assinatura.',
         campos: [
-          { nome: 'mostrar', rotulo: 'Mostrar esta página no site', tipo: 'checkbox' },
-          { nome: 'menu', rotulo: 'Mostrar o link no menu do topo', tipo: 'checkbox' },
-          { nome: 'rotuloMenu', rotulo: 'Nome no menu', placeholder: 'Case' },
-          { nome: 'posicao', rotulo: 'Onde fica no site', tipo: 'select', opcoes: [
-            { v: 'depois-destaques', t: 'Depois dos Destaques' }, { v: 'depois-trabalhos', t: 'Depois dos Trabalhos por nicho' },
-            { v: 'depois-servicos', t: 'Depois dos Serviços' }, { v: 'depois-numeros', t: 'Depois dos Números (antes do Contato)' }] },
-          { nome: 'fundo', rotulo: 'Fundo da página', tipo: 'select', opcoes: [
-            { v: 'creme', t: 'Creme (como o Sobre)' }, { v: 'bege', t: 'Bege (como os Destaques)' }, { v: 'escuro', t: 'Escuro' }] },
-          { nome: 'cor', rotulo: 'Cor de destaque (número grande e fases)', tipo: 'color', ajuda: 'Original: #4d301b (marrom). No fundo escuro, o marrom vira o bege claro automaticamente.' },
+          { nome: 'foto', rotulo: 'Foto (formato em pé, 4:5)', tipo: 'arquivo', pasta: 'sobre', maxLado: 1400, largo: true },
+          { nome: 'fotoAlt', rotulo: 'Descrição da foto (para quem usa leitor de tela)', largo: true },
+          { nome: 'abre', rotulo: 'Frase de abertura (em destaque)', tipo: 'textarea', largo: true, obrigatorio: true },
+          { nome: 'texto', rotulo: 'Parágrafo', tipo: 'textarea', largo: true },
+          { nome: 'promessasTitulo', rotulo: 'Título das promessas', largo: true },
+          { nome: 'promessa1', rotulo: 'Promessa 1', largo: true },
+          { nome: 'promessa2', rotulo: 'Promessa 2', largo: true },
+          { nome: 'promessa3', rotulo: 'Promessa 3', largo: true },
+          { nome: 'assinaturaPequena', rotulo: 'Antes da assinatura', placeholder: 'Com carinho,' },
+          { nome: 'assinatura', rotulo: 'Assinatura', placeholder: 'Esther Custódio' }
+        ],
+        resumo: function (v) { return [cortar(textoOuPadrao(v, SOBRE_PADRAO, 'abre'), 110), texto(v && v.foto) ? 'Com foto' : 'Sem foto (mostra o espaço reservado)']; }
+      }, comPadrao(SOBRE_PADRAO)),
+      Object.assign({
+        chave: 'case', titulo: 'Textos, cor e áudio', tipo: 'objeto',
+        descricao: 'A etiqueta, o título, o subtítulo, o texto curto, a cor dos ícones e o áudio de feedback. No texto, **palavra** fica em negrito.',
+        campos: [
           { nome: 'etiqueta', rotulo: 'Etiqueta pequena (acima do título)', largo: true },
           { nome: 'titulo', rotulo: 'Título', largo: true, obrigatorio: true, ajuda: AJUDA_ASTERISCO },
           { nome: 'subtitulo', rotulo: 'Subtítulo', largo: true },
-          { nome: 'contexto', rotulo: 'Texto do case (contexto)', tipo: 'textarea', largo: true },
-          { nome: 'numero', rotulo: 'Número em destaque', placeholder: '+100' },
-          { nome: 'numeroRotulo', rotulo: 'Texto abaixo do número', placeholder: 'vídeos produzidos para a Box Magenta' },
-          { nome: 'videosTitulo', rotulo: 'Título da parte dos vídeos', largo: true, ajuda: AJUDA_ASTERISCO },
-          { nome: 'motivosTitulo', rotulo: 'Título da parte dos motivos', largo: true, ajuda: AJUDA_ASTERISCO }
+          { nome: 'contexto', rotulo: 'Texto curto', tipo: 'textarea', largo: true, ajuda: 'Palavra entre dois asteriscos fica em negrito. Exemplo: **mais de 100 vídeos**' },
+          { nome: 'cor', rotulo: 'Cor dos ícones e dos valores', tipo: 'color', ajuda: 'Original: #4d301b (marrom). No fundo escuro, o marrom vira bege claro sozinho.' },
+          { nome: 'audio', rotulo: 'Áudio de feedback da marca', tipo: 'arquivo', aceita: 'audio/*', pasta: 'audios', largo: true },
+          { nome: 'audioLegenda', rotulo: 'Texto abaixo do áudio', largo: true }
         ],
-        resumo: function (v) {
-          var mostrar = !(v && v.mostrar === false);
-          return [(mostrar ? 'Aparece no site' : 'Escondida do site'), textoOuPadrao(v, CASE_PADRAO, 'titulo'), textoOuPadrao(v, CASE_PADRAO, 'subtitulo')];
-        }
+        resumo: function (v) { return [textoOuPadrao(v, CASE_PADRAO, 'titulo'), texto(v && v.audio) ? 'Com áudio' : 'Sem áudio (mostra "Em breve")']; }
       }, comPadrao(CASE_PADRAO)),
       {
-        chave: 'case_videos', titulo: 'Case Box Magenta: vídeos do funil', tipo: 'lista', item: 'Vídeo', padrao: CASE_VIDEOS,
-        descricao: 'Os vídeos do case (topo, meio e fundo de funil). Cole o link do YouTube; sem link, o card mostra "Vídeo em breve". A capa é opcional (vazio usa um momento do vídeo).',
+        chave: 'case_videos', titulo: 'Vídeos do case', tipo: 'lista', item: 'Vídeo', padrao: CASE_VIDEOS,
+        descricao: 'Os vídeos do carrossel (topo, meio e fundo de funil). Sem link, o card mostra "Vídeo em breve". Abaixo do vídeo aparecem até duas linhas; linha sem valor não aparece.',
         colunas: [
-          { nome: 'etapa', rotulo: 'Etapa (acima do vídeo)', placeholder: 'Topo de funil' },
-          { nome: 'nome', rotulo: 'Nome da fase (abaixo do vídeo)', placeholder: 'Desejo' },
-          { nome: 'texto', rotulo: 'Descrição', tipo: 'textarea', largo: true },
-          { nome: 'link', rotulo: 'Link do vídeo (YouTube)', largo: true, placeholder: 'https://youtube.com/shorts/...' },
-          { nome: 'capa', rotulo: 'Capa (opcional)', largo: true, placeholder: 'img/capas/nome.webp ou https://...' },
+          { nome: 'etapa', rotulo: 'Nome acima do vídeo', placeholder: 'Topo de funil' },
+          { nome: 'link', rotulo: 'Link do vídeo (YouTube)', placeholder: 'https://youtube.com/shorts/...' },
+          { nome: 'rotulo1', rotulo: 'Linha 1: rótulo', placeholder: 'Objetivo' },
+          { nome: 'valor1', rotulo: 'Linha 1: valor', placeholder: 'Desejo' },
+          { nome: 'rotulo2', rotulo: 'Linha 2: rótulo', placeholder: 'Visualizações' },
+          { nome: 'valor2', rotulo: 'Linha 2: valor', placeholder: '1,2M' },
+          { nome: 'capa', rotulo: 'Capa (opcional; vazio usa um momento do vídeo)', tipo: 'arquivo', pasta: 'capas', maxLado: 720, largo: true },
           { nome: 'marca', rotulo: 'Marca (aparece na janela do vídeo)', placeholder: 'Box Magenta' }
         ],
-        resumo: function (v) { return (Array.isArray(v) ? v : []).map(function (x) { return texto(x.etapa) + ': ' + texto(x.nome) + (texto(x.link) ? '' : ' (sem vídeo)'); }); }
+        resumo: function (v) { return (Array.isArray(v) ? v : []).map(function (x) { return texto(x.etapa) + ': ' + texto(x.valor1) + (texto(x.link) ? '' : ' (sem vídeo)'); }); }
       },
       {
-        chave: 'case_motivos', titulo: 'Case Box Magenta: motivos da parceria', tipo: 'lista', item: 'Motivo', padrao: CASE_MOTIVOS,
-        descricao: 'Os cartões numerados que explicam por que a marca continua. Adicione, tire ou mude a ordem.',
+        chave: 'case_motivos', titulo: 'Os porquês (selos com ícone)', tipo: 'lista', item: 'Selo', padrao: CASE_MOTIVOS,
+        descricao: 'Os selos com ícone que explicam por que a marca continua. Adicione, tire ou mude a ordem.',
         colunas: [
+          { nome: 'icone', rotulo: 'Ícone', tipo: 'select', opcoes: [{ v: 'check', t: 'Certo (check)' }, { v: 'relogio', t: 'Relógio (prazo)' }, { v: 'roteiro', t: 'Roteiro (briefing)' }, { v: 'estrela', t: 'Estrela (criatividade)' }, { v: 'conversa', t: 'Balão de conversa' }, { v: 'parceria', t: 'Aperto de mãos (parceria)' }, { v: 'coracao', t: 'Coração (marca)' }, { v: 'alvo', t: 'Alvo (objetivo)' }] },
           { nome: 'titulo', rotulo: 'Título', obrigatorio: true },
-          { nome: 'texto', rotulo: 'Texto', tipo: 'textarea', largo: true }
+          { nome: 'texto', rotulo: 'Texto curto', largo: true }
         ],
         resumo: function (v) { return (Array.isArray(v) ? v : []).map(function (x) { return texto(x.titulo); }); }
       },
-      Object.assign({
-        chave: 'case_feedback', titulo: 'Case Box Magenta: feedback em áudio', tipo: 'objeto',
-        descricao: 'A área escura com o áudio da marca. O áudio precisa ser um link de arquivo mp3 ou m4a (https://...) ou um arquivo na pasta audio do site (audio/nome.mp3). Vazio mostra "Em breve".',
-        campos: [
-          { nome: 'titulo', rotulo: 'Título', largo: true, obrigatorio: true, ajuda: AJUDA_ASTERISCO },
-          { nome: 'texto', rotulo: 'Texto', tipo: 'textarea', largo: true },
-          { nome: 'audio', rotulo: 'Link do áudio', largo: true, placeholder: 'audio/feedback-box-magenta.mp3' },
-          { nome: 'autor', rotulo: 'Nome abaixo do player', placeholder: 'Box Magenta' }
-        ],
-        resumo: function (v) { return [textoOuPadrao(v, CASE_FEEDBACK, 'titulo'), texto(v && v.audio) ? 'Com áudio' : 'Sem áudio (mostra "Em breve")']; }
-      }, comPadrao(CASE_FEEDBACK)),
       {
         chave: 'nichos', titulo: 'Nichos da galeria', tipo: 'lista', item: 'Nicho',
         descricao: 'As linhas da galeria: nome, descrição (a frase em itálico abaixo do nome) e a ordem. Use "Adicionar nicho" para criar um novo; depois escolha esse nicho nos vídeos. O nome precisa ser igual ao nicho escrito nos vídeos.',
@@ -4294,7 +4387,7 @@
       Object.assign({
         chave: 'destaques_audio', titulo: 'Áudio dos Destaques', tipo: 'objeto',
         descricao: 'O player ao lado dos vídeos de Destaque. Link de um arquivo mp3 ou m4a (https://...) ou audio/nome.mp3. Vazio mostra "Em breve".',
-        campos: [{ nome: 'audio', rotulo: 'Link do áudio', largo: true, placeholder: 'audio/recado.mp3' }],
+        campos: [{ nome: 'audio', rotulo: 'Áudio', tipo: 'arquivo', aceita: 'audio/*', pasta: 'audios', largo: true }],
         resumo: function (v) { return [texto(v && v.audio) ? texto(v.audio) : 'Sem áudio (mostra "Em breve")']; }
       }, comPadrao({ audio: '' })),
       Object.assign({
@@ -4322,7 +4415,55 @@
           { nome: 'texto', rotulo: 'Cor do texto', tipo: 'color' }
         ],
         resumo: function (v) { return Object.keys(CORES_PADRAO).map(function (k) { return k + ': ' + textoOuPadrao(v, CORES_PADRAO, k); }); }
-      }, comPadrao(CORES_PADRAO))
+      }, comPadrao(CORES_PADRAO)),
+      Object.assign({
+        chave: 'captura', titulo: 'Card do mídia kit', tipo: 'objeto',
+        descricao: 'O card que aparece uma vez por visita pedindo nome e e-mail para enviar o mídia kit.',
+        campos: [
+          { nome: 'mostrar', rotulo: 'Mostrar o card no site', tipo: 'checkbox' },
+          { nome: 'titulo', rotulo: 'Título', largo: true, ajuda: AJUDA_ASTERISCO },
+          { nome: 'sub', rotulo: 'Texto abaixo do título', largo: true },
+          { nome: 'botao', rotulo: 'Texto do botão' }
+        ],
+        resumo: function (v) { return [v && v.mostrar === false ? 'Desligado' : 'Ligado', textoOuPadrao(v, CAPTURA_PADRAO, 'titulo')]; }
+      }, comPadrao(CAPTURA_PADRAO))
+    ];
+    /* Títulos de cada página (etiqueta, título e texto de abertura): todos ficam na chave "titulos" */
+    Object.keys(TITULOS_PADRAO).forEach(function (pid) {
+      var campos = [
+        { nome: 'rotulo', rotulo: 'Etiqueta pequena (acima do título)' },
+        { nome: 'titulo', rotulo: 'Título', largo: true, ajuda: AJUDA_ASTERISCO }
+      ];
+      if ('texto' in TITULOS_PADRAO[pid]) campos.push({ nome: 'texto', rotulo: 'Texto de abertura', tipo: 'textarea', largo: true });
+      SECOES.push({
+        id: 'titulos_' + pid, chave: 'titulos', titulo: 'Título da página', tipo: 'objeto',
+        descricao: 'A etiqueta pequena, o título e o texto de abertura. Campo vazio mantém o texto original.',
+        campos: campos,
+        paraForm: function (v) { var salvo = (v && v[pid]) || {}; var f = {}; Object.keys(TITULOS_PADRAO[pid]).forEach(function (c) { f[c] = texto(salvo[c]).trim() || TITULOS_PADRAO[pid][c]; }); return f; },
+        deForm: function (f) {
+          var tudo = Object.assign({}, conteudo.titulos || {});
+          var parte = {};
+          Object.keys(TITULOS_PADRAO[pid]).forEach(function (c) { parte[c] = texto(f[c]).trim(); });
+          tudo[pid] = parte;
+          return tudo;
+        },
+        resumo: function (v) { var salvo = (v && v[pid]) || {}; return [texto(salvo.rotulo).trim() || TITULOS_PADRAO[pid].rotulo, (texto(salvo.titulo).trim() || TITULOS_PADRAO[pid].titulo).replace(/\*/g, '')]; }
+      });
+    });
+    SECOES.forEach(function (s) { if (!s.id) s.id = s.chave; });
+
+    /* As páginas do site: cada uma abre só os seus cartões */
+    var PAGINAS_CONTEUDO = [
+      { id: 'capa', titulo: 'Capa', desc: 'Selo, título, frase, números, botões e a foto da capa.', secoes: ['capa'] },
+      { id: 'marcas', titulo: 'Marcas trabalhadas', desc: 'A faixa de logos logo abaixo da capa: título, logos e ordem.', secoes: ['marcas_faixa', 'logos'] },
+      { id: 'sobre', titulo: 'Sobre mim', desc: 'Título, foto, textos, promessas e assinatura.', secoes: ['titulos_sobre', 'sobre'] },
+      { id: 'destaques', titulo: 'Conteúdos em destaque', desc: 'Título, áudio e os vídeos do carrossel de Destaques.', secoes: ['titulos_destaques', 'destaques_audio'], videos: true },
+      { id: 'case', titulo: 'Por que essa marca fechou 100 conteúdos comigo', desc: 'O case da Box Magenta: textos, selos com ícone, vídeos e áudio de feedback.', secoes: ['case', 'case_motivos', 'case_videos'] },
+      { id: 'trabalhos', titulo: 'Que tipo de conteúdo você precisa', desc: 'Título, nichos (nome, descrição e ordem) e os vídeos de cada nicho.', secoes: ['titulos_trabalhos', 'nichos'], videos: true },
+      { id: 'servicos', titulo: 'Como eu te ajudo', desc: 'Título e os serviços.', secoes: ['titulos_servicos', 'servicos'] },
+      { id: 'numeros', titulo: 'Números e depoimentos', desc: 'Título, números com contador, resultados de campanha e depoimentos.', secoes: ['titulos_numeros', 'metricas', 'resultados', 'depoimentos'] },
+      { id: 'contato', titulo: 'Bora criar juntos', desc: 'Título, WhatsApp, e-mail, Instagram, rodapé e o card do mídia kit.', secoes: ['titulos_contato', 'contato', 'captura'] },
+      { id: 'aparencia', titulo: 'Cores, ordem e menu', desc: 'As cores do site e a ordem, o fundo e o nome no menu de cada página.', secoes: ['cores'], layout: true }
     ];
 
     /* ---------- Vídeos do site (a mesma tabela "videos" da aba Portfólio) ---------- */
@@ -4519,6 +4660,18 @@
     }
 
     /* Editor de listas: várias linhas, cada uma com seus campos, com subir, descer e remover */
+    function entradaDeLista(c, id, val) {
+      if (c.tipo === 'textarea') return '<textarea id="' + id + '" data-nome="' + c.nome + '">' + esc(val) + '</textarea>';
+      if (c.tipo === 'arquivo') return htmlCampoArquivo(c, id, val, 'data-nome="' + c.nome + '"');
+      if (c.tipo === 'select') {
+        return '<select id="' + id + '" data-nome="' + c.nome + '">' + (c.opcoes || []).map(function (o) {
+          return '<option value="' + esc(o.v) + '"' + (String(o.v) === String(val) ? ' selected' : '') + '>' + esc(o.t) + '</option>';
+        }).join('') + '</select>';
+      }
+      return '<input id="' + id + '" data-nome="' + c.nome + '" type="' + (c.tipo === 'number' ? 'number' : 'text') + '"' + (c.tipo === 'number' ? ' step="any"' : '') +
+        ' value="' + esc(val) + '" placeholder="' + esc(c.placeholder || '') + '" autocomplete="off">';
+    }
+
     function editarLista(sec) {
       var itens = (Array.isArray(conteudo[sec.chave]) ? conteudo[sec.chave] : (sec.padrao || [])).map(function (x) { return Object.assign({}, x); });
 
@@ -4539,9 +4692,7 @@
           var campos = sec.colunas.map(function (c) {
             var id = 'ed_' + i + '_' + c.nome;
             var val = it[c.nome] == null ? '' : it[c.nome];
-            var entrada = c.tipo === 'textarea'
-              ? '<textarea id="' + id + '" data-nome="' + c.nome + '">' + esc(val) + '</textarea>'
-              : '<input id="' + id + '" data-nome="' + c.nome + '" type="' + (c.tipo === 'number' ? 'number' : 'text') + '"' + (c.tipo === 'number' ? ' step="any"' : '') + ' value="' + esc(val) + '" placeholder="' + esc(c.placeholder || '') + '" autocomplete="off">';
+            var entrada = entradaDeLista(c, id, val);
             return '<div class="campo' + (c.largo ? ' largo' : '') + '"><label for="' + id + '">' + esc(c.rotulo) + (c.obrigatorio ? ' *' : '') + '</label>' + entrada + '</div>';
           }).join('');
           return '<fieldset class="linha-editor" data-i="' + i + '"><legend>' + esc(sec.item) + ' ' + (i + 1) + '</legend><div class="grade-campos">' + campos + '</div>' +
@@ -4610,36 +4761,145 @@
       });
     }
 
-    function abrirEditor(chave) {
-      var sec = SECOES.filter(function (s) { return s.chave === chave; })[0];
+    function abrirEditor(id) {
+      var sec = SECOES.filter(function (s) { return s.id === id; })[0];
       if (!sec) return;
       if (sec.tipo === 'objeto') editarObjeto(sec);
       else if (sec.tipo === 'linhas') editarLinhas(sec);
       else editarLista(sec);
     }
 
+    var paginaAtual = null;
+    try { paginaAtual = sessionStorage.getItem('conteudoPagina'); } catch (e) { paginaAtual = null; }
+    function abrirPagina(id) {
+      paginaAtual = id;
+      try { if (id) sessionStorage.setItem('conteudoPagina', id); else sessionStorage.removeItem('conteudoPagina'); } catch (e) { /* segue */ }
+      desenhar();
+      window.scrollTo(0, 0);
+    }
+
+    function htmlCartaoSecao(sec) {
+      var v = conteudo[sec.chave];
+      var linhas = v == null ? [] : sec.resumo(v);
+      var previa = linhas.length
+        ? '<ul class="previa">' + linhas.slice(0, 4).map(function (l) { return '<li>' + esc(cortar(l, 120)) + '</li>'; }).join('') + (linhas.length > 4 ? '<li class="mais">e mais ' + (linhas.length - 4) + '</li>' : '') + '</ul>'
+        : '<p class="vazio" style="padding:.5rem 0;text-align:left">Ainda sem conteúdo salvo. O site mostra o texto original.</p>';
+      return '<div class="cartao"><div class="cartao-cab"><h2>' + esc(sec.titulo) + '</h2>' +
+        '<button type="button" class="btn pequeno" data-editar="' + esc(sec.id) + '">' + ic('lapis') + 'Editar</button></div>' +
+        '<div class="cartao-corpo"><p style="color:var(--muted);font-size:.84rem;margin-bottom:.6rem">' + esc(sec.descricao) + '</p>' + previa + '</div></div>';
+    }
+
+    /* ---------- Ordem, fundo e menu das páginas (chave "layout") ---------- */
+    function layoutAtual() {
+      var l = conteudo.layout && typeof conteudo.layout === 'object' ? conteudo.layout : {};
+      var ordem = [];
+      (Array.isArray(l.ordem) ? l.ordem : []).forEach(function (id) { if (PAGINAS_SITE.indexOf(id) >= 0 && ordem.indexOf(id) < 0) ordem.push(id); });
+      PAGINAS_SITE.forEach(function (id, i) {
+        if (ordem.indexOf(id) >= 0) return;
+        var antes = PAGINAS_SITE.slice(0, i).reverse().filter(function (x) { return ordem.indexOf(x) >= 0; })[0];
+        ordem.splice(antes ? ordem.indexOf(antes) + 1 : 0, 0, id);
+      });
+      var paginas = {};
+      ordem.forEach(function (id) {
+        var p = (l.paginas && l.paginas[id]) || {};
+        paginas[id] = { mostrar: p.mostrar !== false, fundo: p.fundo || 'padrao', menu: typeof p.menu === 'string' ? p.menu : MENU_PADRAO[id] };
+      });
+      return { ordem: ordem, paginas: paginas };
+    }
+    function htmlLayout() {
+      var l = layoutAtual();
+      var FUNDOS = { padrao: 'fundo original', creme: 'creme', bege: 'bege', escuro: 'escuro' };
+      return '<div class="cartao" style="margin-bottom:1rem"><div class="cartao-cab"><h2>Ordem, fundo e menu das páginas</h2>' +
+        '<button type="button" class="btn pequeno" data-layout="1">' + ic('lapis') + 'Editar</button></div>' +
+        '<div class="cartao-corpo"><p style="color:var(--muted);font-size:.84rem;margin-bottom:.6rem">A ordem das páginas no site (a capa e a faixa de marcas ficam sempre no começo), quais aparecem, o fundo de cada uma e o nome no menu do topo.</p>' +
+        '<ol class="previa">' + l.ordem.map(function (id) {
+          var p = l.paginas[id];
+          return '<li>' + esc(NOMES_PAGINAS[id]) + ': ' + (p.mostrar ? 'aparece' : 'escondida') + ', ' + FUNDOS[p.fundo] + (p.menu ? ', menu "' + esc(p.menu) + '"' : ', fora do menu') + '</li>';
+        }).join('') + '</ol></div></div>';
+    }
+    function editarLayout() {
+      var l = layoutAtual();
+      var corpo = document.createElement('div');
+      function linhaHTML(id, i) {
+        var p = l.paginas[id];
+        return '<div class="layout-linha" data-id="' + id + '">' +
+          '<div class="layout-nome"><strong>' + esc(NOMES_PAGINAS[id]) + '</strong>' +
+          '<span><button type="button" class="btn-icone" data-mover="-1" aria-label="Subir" title="Subir"' + (i === 0 ? ' disabled' : '') + '>' + ic('setaCima') + '</button>' +
+          '<button type="button" class="btn-icone" data-mover="1" aria-label="Descer" title="Descer"' + (i === l.ordem.length - 1 ? ' disabled' : '') + '>' + ic('setaBaixo') + '</button></span></div>' +
+          '<div class="grade-campos">' +
+          '<div class="campo marcar"><input type="checkbox" id="lay_m_' + id + '" data-l="mostrar"' + (p.mostrar ? ' checked' : '') + '><label for="lay_m_' + id + '">Aparece no site</label></div>' +
+          '<div class="campo"><label for="lay_f_' + id + '">Fundo</label><select id="lay_f_' + id + '" data-l="fundo">' +
+            [['padrao', 'Original'], ['creme', 'Creme'], ['bege', 'Bege'], ['escuro', 'Escuro']].map(function (o) { return '<option value="' + o[0] + '"' + (p.fundo === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') +
+          '</select></div>' +
+          '<div class="campo largo"><label for="lay_n_' + id + '">Nome no menu do topo (vazio: não aparece no menu)</label><input type="text" id="lay_n_' + id + '" data-l="menu" value="' + esc(p.menu) + '" autocomplete="off"></div>' +
+          '</div></div>';
+      }
+      function ler() {
+        $$('.layout-linha', corpo).forEach(function (el) {
+          var id = el.getAttribute('data-id');
+          l.paginas[id] = { mostrar: el.querySelector('[data-l=mostrar]').checked, fundo: el.querySelector('[data-l=fundo]').value, menu: el.querySelector('[data-l=menu]').value.trim() };
+        });
+      }
+      function redesenhar() { corpo.innerHTML = l.ordem.map(linhaHTML).join(''); }
+      redesenhar();
+      corpo.addEventListener('click', function (e) {
+        var bt = e.target.closest('[data-mover]');
+        if (!bt || bt.disabled) return;
+        ler();
+        var id = bt.closest('.layout-linha').getAttribute('data-id');
+        var i = l.ordem.indexOf(id), j = i + Number(bt.getAttribute('data-mover'));
+        if (j < 0 || j >= l.ordem.length) return;
+        l.ordem[i] = l.ordem[j]; l.ordem[j] = id;
+        redesenhar();
+      });
+      abrirModal({
+        titulo: 'Ordem, fundo e menu das páginas', largo: true, corpo: corpo,
+        botoes: [
+          { rotulo: 'Voltar ao original', esquerda: true, aoClicar: async function () {
+            if (!(await confirmar('Voltar a ordem, os fundos e o menu ao original?', 'Voltar ao original'))) return;
+            var r = await guardar('layout', {});
+            if (!r.ok) { aviso(r.erro, 'erro'); return; }
+            fecharModal(); depoisDeSalvar();
+          } },
+          { rotulo: 'Cancelar', aoClicar: fecharModal },
+          { rotulo: 'Salvar', classe: 'principal-btn', aoClicar: async function (bt) {
+            ler();
+            bt.disabled = true;
+            var r = await guardar('layout', { ordem: l.ordem.slice(), paginas: l.paginas });
+            bt.disabled = false;
+            if (!r.ok) { aviso(r.erro, 'erro'); return; }
+            fecharModal(); depoisDeSalvar();
+          } }
+        ]
+      });
+    }
+
     function desenhar() {
-      var intro = '<p style="color:var(--muted);margin:0 0 1rem;max-width:44rem">Aqui você troca os vídeos, os textos e os números do portfólio. Depois de salvar, é só recarregar o site para ver.</p>' +
-        '<div id="videosSite">' + htmlVideosSite() + '</div>';
       if (problemas.site_conteudo) {
-        secaoAtual.innerHTML = intro + '<div class="cartao"><div class="cartao-cab"><h2>Falta um passo para liberar os textos do site</h2></div><div class="cartao-corpo">' +
+        secaoAtual.innerHTML = '<div class="cartao"><div class="cartao-cab"><h2>Falta um passo para liberar os textos do site</h2></div><div class="cartao-corpo">' +
           '<p>Para editar os textos e números do site pelo painel, o banco precisa de mais uma tabela. É rápido:</p>' +
           '<ol class="passos"><li>Abra o Supabase e clique em <strong>SQL Editor</strong>, depois em <strong>New query</strong>.</li>' +
           '<li>Cole o conteúdo do arquivo <strong>banco-2.sql</strong> (está na pasta do seu portfólio) e clique em <strong>Run</strong>.</li>' +
           '<li>Volte aqui e recarregue a página.</li></ol></div></div>';
         return;
       }
-      secaoAtual.innerHTML = intro +
-        '<div class="cards-conteudo">' + SECOES.map(function (sec) {
-          var v = conteudo[sec.chave];
-          var linhas = v == null ? [] : sec.resumo(v);
-          var previa = linhas.length
-            ? '<ul class="previa">' + linhas.slice(0, 4).map(function (l) { return '<li>' + esc(cortar(l, 120)) + '</li>'; }).join('') + (linhas.length > 4 ? '<li class="mais">e mais ' + (linhas.length - 4) + '</li>' : '') + '</ul>'
-            : '<p class="vazio" style="padding:.5rem 0;text-align:left">Ainda sem conteúdo salvo. O site mostra o texto original.</p>';
-          return '<div class="cartao"><div class="cartao-cab"><h2>' + esc(sec.titulo) + '</h2>' +
-            '<button type="button" class="btn pequeno" data-editar="' + sec.chave + '">' + ic('lapis') + 'Editar</button></div>' +
-            '<div class="cartao-corpo"><p style="color:var(--muted);font-size:.84rem;margin-bottom:.6rem">' + esc(sec.descricao) + '</p>' + previa + '</div></div>';
-        }).join('') + '</div>';
+      var pag = PAGINAS_CONTEUDO.filter(function (p) { return p.id === paginaAtual; })[0];
+      if (!pag) {
+        secaoAtual.innerHTML = '<p style="color:var(--muted);margin:0 0 1rem;max-width:44rem">Escolha a página do site que você quer editar. Depois de salvar, é só recarregar o site para ver.</p>' +
+          '<div class="paginas-grid">' + PAGINAS_CONTEUDO.map(function (p, i) {
+            var n = p.secoes.length + (p.videos ? 1 : 0) + (p.layout ? 1 : 0);
+            return '<button type="button" class="pagina-cartao" data-pagina="' + p.id + '">' +
+              '<span class="pagina-num">' + String(i + 1).padStart(2, '0') + '</span>' +
+              '<strong>' + esc(p.titulo) + '</strong><span class="pagina-desc">' + esc(p.desc) + '</span>' +
+              '<span class="pagina-abrir">' + n + (n === 1 ? ' parte para editar' : ' partes para editar') + ' ' + ic('setaDireita') + '</span></button>';
+          }).join('') + '</div>';
+        return;
+      }
+      secaoAtual.innerHTML = '<div class="pagina-topo"><button type="button" class="btn pequeno" data-voltar="1">' + ic('setaEsquerda') + 'Todas as páginas</button>' +
+        '<div><h2 class="pagina-titulo">' + esc(pag.titulo) + '</h2><p class="pagina-desc">' + esc(pag.desc) + '</p></div></div>' +
+        (pag.layout ? htmlLayout() : '') +
+        (pag.videos ? '<div id="videosSite">' + htmlVideosSite() + '</div>' : '') +
+        '<div class="cards-conteudo">' + pag.secoes.map(function (id) { return SECOES.filter(function (s) { return s.id === id; })[0]; }).filter(Boolean).map(htmlCartaoSecao).join('') + '</div>';
     }
 
     Abas.conteudo = {
@@ -4656,6 +4916,10 @@
           secao.addEventListener('click', function (e) {
             var b = e.target.closest('button[data-editar]');
             if (b) { abrirEditor(b.getAttribute('data-editar')); return; }
+            var pg = e.target.closest('button[data-pagina]');
+            if (pg) { abrirPagina(pg.getAttribute('data-pagina')); return; }
+            if (e.target.closest('button[data-voltar]')) { abrirPagina(null); return; }
+            if (e.target.closest('button[data-layout]')) { editarLayout(); return; }
             var v = e.target.closest('button[data-vacao]');
             if (v && !v.disabled) acaoVideo(v);
           });

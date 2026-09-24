@@ -315,51 +315,28 @@ button,input,textarea{font:inherit;color:inherit}
    ========================================================= */
 .case{--case-cor:var(--marrom)}
 .case.escuro{--case-cor:var(--marrom-claro)}
-.case-topo{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,4fr);gap:clamp(2rem,5vw,4.5rem);align-items:end}
-.case-topo .secao-topo{margin-bottom:0}
-.case-topo .titulo{font-size:clamp(2.3rem,4.4vw,3.4rem)}
-.case-contexto{margin-top:1.4rem;max-width:38rem;font-size:1.02rem;line-height:1.7}
-.case-numero{border-top:1px solid currentColor;padding-top:1.2rem}
-.case-numero strong{display:block;font-family:var(--serif);font-weight:700;font-size:clamp(4rem,9vw,6.5rem);line-height:.9;letter-spacing:-.04em;color:var(--case-cor)}
-.case-numero span{display:block;margin-top:.8rem;font-size:.76rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-.case-bloco{margin-top:clamp(3.5rem,8vw,6rem)}
-.case-subtitulo{font-family:var(--serif);font-weight:400;font-size:clamp(1.6rem,3vw,2.2rem);line-height:1.15;letter-spacing:-.015em;margin-bottom:clamp(1.5rem,4vw,2.5rem)}
-.case-subtitulo em,.case-feedback-titulo em{font-style:italic;font-weight:300;color:var(--accent)}
-.case-funil{display:grid;grid-template-columns:repeat(3,minmax(0,290px));justify-content:center;gap:clamp(1.25rem,5vw,4.5rem);list-style:none;margin:0;padding:0}
-.case-etapa{margin-bottom:.9rem;text-align:center;font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
-.case-capa{display:flex;aspect-ratio:9/16;text-decoration:none;box-shadow:0 24px 50px -26px rgba(20,17,13,.55);transition:transform .5s cubic-bezier(.2,.7,.2,1)}
-a.case-capa:hover{transform:translateY(-8px)}
-a.case-capa:hover .play{transform:scale(1.1)}
-a.case-capa{cursor:inherit}
+.case-contexto{margin-top:1.1rem;max-width:34rem;color:var(--muted)}
+.case-contexto strong{font-weight:700;color:var(--ink)}
+/* os "porquês": selos com ícone, como notificações */
+.selos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem;max-width:34rem;margin:0 0 1.8rem;padding:0;list-style:none}
+.selo{display:flex;align-items:center;gap:.75rem;padding:.75rem .9rem;border-radius:14px;background:var(--paper);color:var(--ink);box-shadow:0 12px 28px -18px rgba(20,17,13,.45),0 0 0 1px var(--line)}
+.selo-ico{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--case-cor);color:#fff}
+.selo-ico svg{width:17px;height:17px}
+.selo-txt{min-width:0}
+.selo-txt strong{display:block;font-size:.86rem;font-weight:700;line-height:1.25}
+.selo-sub{display:block;margin-top:.1rem;font-size:.78rem;line-height:1.3;color:var(--muted)}
+.case-audio-legenda{margin-top:.6rem;font-size:.7rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+/* abaixo de cada vídeo do case: linhas de informação (rótulo à esquerda, valor à direita) */
+.destaque-linhas{margin-top:1.1rem;border-top:1px solid var(--line);text-align:left}
+.destaque-linha{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;padding:.7rem 0;border-bottom:1px solid var(--line)}
+.destaque-linha span{font-size:.66rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.destaque-linha strong{font-family:var(--serif);font-weight:700;font-size:1.08rem;line-height:1.2;text-align:right;color:var(--case-cor)}
 .case-embreve{position:relative;z-index:1;margin:auto;padding:.4rem .85rem;border-radius:999px;background:rgba(243,238,233,.92);color:var(--ink);font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
-.case-fase{margin-top:1.1rem;text-align:center;font-family:var(--serif);font-weight:700;font-size:clamp(1.5rem,2.4vw,1.9rem);line-height:1.15;color:var(--case-cor)}
-.case-desc{margin:.35rem auto 0;max-width:18rem;text-align:center;font-size:.95rem;color:var(--muted)}
-.case-motivos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:clamp(1.5rem,4vw,3.5rem);row-gap:1rem;list-style:none;margin:0;padding:0}
-.case-motivo{border-top:1px solid currentColor;padding:1.4rem 0 2rem;transition:border-color .3s}
-.case-motivo:hover{border-top-color:var(--case-cor)}
-.case-motivo-num{font-family:var(--serif);font-style:italic;font-weight:300;font-size:2.4rem;line-height:1;color:var(--accent)}
-.case-motivo h4{font-family:var(--serif);font-weight:500;font-size:1.4rem;line-height:1.15;margin-top:.9rem}
-.case-motivo p{margin-top:.55rem;color:var(--muted)}
-.case-feedback{margin-top:clamp(3.5rem,8vw,6rem);display:grid;grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:clamp(1.5rem,4vw,3.5rem);align-items:center;padding:clamp(1.8rem,4vw,3.2rem);border-radius:var(--radius-lg);background:var(--ink);color:var(--cream);box-shadow:var(--shadow)}
-.case-feedback .eyebrow{color:var(--marrom-claro)}
-.case-feedback .eyebrow i{background:var(--marrom-claro)}
-.case-feedback-titulo{font-family:var(--serif);font-weight:400;font-size:clamp(1.9rem,3.6vw,2.8rem);line-height:1.1;letter-spacing:-.02em;margin-top:.9rem}
-.case-feedback-titulo em{color:var(--marrom-claro)}
-.case-feedback-texto{margin-top:.9rem;max-width:30rem;color:rgba(243,238,233,.78)}
-.case-autor{margin-top:.9rem;text-align:center;font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:rgba(243,238,233,.7)}
-.case-audio .audio{max-width:none}
-.case.escuro .case-numero span,.case.escuro .case-etapa,.case.escuro .case-desc,.case.escuro .case-motivo p,.case.escuro .case-contexto{color:rgba(243,238,233,.78)}
-.case.escuro .case-subtitulo em,.case.escuro .case-motivo-num{color:var(--marrom-claro)}
-.case.escuro .case-feedback{background:rgba(243,238,233,.06);box-shadow:0 0 0 1px rgba(243,238,233,.14)}
-@media (max-width:900px){
-  .case-topo,.case-feedback{grid-template-columns:1fr}
-  .case-motivos{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .case-funil{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:72%;justify-content:start;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:.5rem}
-  .case-funil::-webkit-scrollbar{display:none}
-  .case-video{scroll-snap-align:start}
-}
+.case.escuro .case-contexto,.case.escuro .destaque-linha span,.case.escuro .case-audio-legenda{color:rgba(243,238,233,.74)}
+.case.escuro .case-contexto strong{color:var(--cream)}
+.case.escuro .destaque-linhas,.case.escuro .destaque-linha{border-color:rgba(243,238,233,.18)}
 @media (max-width:620px){
-  .case-motivos{grid-template-columns:1fr}
+  .selos{grid-template-columns:1fr}
 }
 
 /* =========================================================
@@ -747,44 +724,34 @@ const VIDEOS_PADRAO = [
    por exemplo "audio/recado.mp3". Enquanto estiver "", o player aparece parado, com o aviso "Em breve". */
 const AUDIO_DESTAQUES = "";
 
-/* ---- CASE (recorrência e prova social) ----
-   Tudo aqui é o texto original: o painel (Conteúdo do site, cartões "Case") sobrescreve.
-   No título, a palavra entre asteriscos (*assim*) fica em itálico. */
+/* ---- CASE: POR QUE A MARCA JÁ CRIOU MAIS DE 100 VÍDEOS COMIGO ----
+   Texto original: o painel (página "Por que essa marca fechou 100 conteúdos comigo") sobrescreve.
+   No título, *palavra* fica em itálico; no texto, **palavra** fica em negrito. */
 const CASE_PADRAO = {
-  mostrar: true, menu: true, rotuloMenu: "Case",
-  posicao: "depois-destaques",          /* depois-destaques, depois-trabalhos, depois-servicos ou depois-numeros */
-  fundo: "creme",                       /* creme, bege ou escuro */
-  cor: "#4d301b",                       /* cor do número grande e das fases do funil */
   etiqueta: "Case Box Magenta",
   titulo: "Por que essa marca já criou mais de *100 vídeos* comigo?",
   subtitulo: "Mais do que uma entrega pontual: uma parceria que se tornou recorrente.",
-  contexto: "A Box Magenta já produziu mais de 100 vídeos comigo. Essa recorrência não nasce de um vídeo que deu certo, e sim de uma relação construída em confiança: entregas consistentes, alinhadas à marca e prontas para performar em cada etapa da jornada de compra.",
-  numero: "+100",
-  numeroRotulo: "vídeos produzidos para a Box Magenta",
-  videosTitulo: "Um conteúdo para cada *momento* do funil",
-  motivosTitulo: "O que faz a parceria *continuar*"
+  contexto: "A **Box Magenta** já produziu **mais de 100 vídeos** comigo. A recorrência vem da confiança: entregas consistentes, alinhadas à marca e pensadas para cada etapa do funil.",
+  cor: "#4d301b",                       /* cor dos ícones e dos valores abaixo dos vídeos */
+  audio: "",                            /* ONDE ENTRA O ÁUDIO DO FEEDBACK (link mp3 ou m4a). Vazio: "Em breve" */
+  audioLegenda: "Feedback da Box Magenta"
 };
-/* ONDE ENTRAM OS 3 VÍDEOS: link do YouTube e capa (opcional). Sem link, o card mostra "Vídeo em breve". */
+/* ONDE ENTRAM OS 3 VÍDEOS: link do YouTube e capa (opcional). Sem link, o card mostra "Vídeo em breve".
+   Abaixo do vídeo aparecem até duas linhas (rótulo e valor); linha sem valor não aparece. */
 const CASE_VIDEOS = [
-  { etapa: "Topo de funil", nome: "Desejo", texto: "Conteúdo que desperta interesse, desejo e identificação com o produto.", link: "", capa: "", marca: "Box Magenta" },
-  { etapa: "Meio de funil", nome: "Conexão", texto: "O produto apresentado de forma natural, no contexto de uso, criando identificação.", link: "", capa: "", marca: "Box Magenta" },
-  { etapa: "Fundo de funil", nome: "Conversão", texto: "O produto mostrado de maneira estratégica, direcionado à ação e à decisão de compra.", link: "", capa: "", marca: "Box Magenta" }
+  { etapa: "Topo de funil", rotulo1: "Objetivo", valor1: "Desejo", rotulo2: "Visualizações", valor2: "", link: "", capa: "", marca: "Box Magenta" },
+  { etapa: "Meio de funil", rotulo1: "Objetivo", valor1: "Conexão", rotulo2: "Visualizações", valor2: "", link: "", capa: "", marca: "Box Magenta" },
+  { etapa: "Fundo de funil", rotulo1: "Objetivo", valor1: "Conversão", rotulo2: "Visualizações", valor2: "", link: "", capa: "", marca: "Box Magenta" }
 ];
+/* Os "porquês", em selos com ícone. Ícones: check, relogio, roteiro, estrela, conversa, parceria, coracao, alvo */
 const CASE_MOTIVOS = [
-  { titulo: "Entregas dentro do prazo", texto: "Cumprimento dos prazos combinados e organização do começo ao fim do projeto." },
-  { titulo: "Fidelidade ao briefing", texto: "Conteúdos coerentes com o briefing, o roteiro e o direcionamento da marca." },
-  { titulo: "Versatilidade criativa", texto: "Linguagem, formato, estética e narrativa adaptados a cada objetivo e campanha." },
-  { titulo: "Linguagem natural", texto: "Vídeos que soam como recomendação de verdade, e não como anúncio." },
-  { titulo: "Facilidade na parceria", texto: "Comunicação clara, organização e agilidade para atender demandas diferentes." },
-  { titulo: "Entendimento de marca", texto: "Mais do que reproduzir o briefing: entender a identidade da marca e traduzir isso para o meu universo de conteúdo." }
+  { icone: "relogio", titulo: "Entregas no prazo", texto: "Prazos cumpridos e projeto organizado" },
+  { icone: "roteiro", titulo: "Fiel ao briefing", texto: "Coerente com o roteiro e a marca" },
+  { icone: "estrela", titulo: "Versatilidade criativa", texto: "O formato certo para cada objetivo" },
+  { icone: "conversa", titulo: "Linguagem natural", texto: "Soa como recomendação de verdade" },
+  { icone: "parceria", titulo: "Parceria fácil", texto: "Comunicação clara e organizada" },
+  { icone: "coracao", titulo: "Entende a marca", texto: "Traduz a marca para o meu universo" }
 ];
-/* ONDE ENTRA O ÁUDIO DO FEEDBACK: link do arquivo (mp3 ou m4a). Vazio mostra o player parado com "Em breve". */
-const CASE_FEEDBACK = {
-  titulo: "Uma parceria que *fala por si*.",
-  texto: "O retorno da Box Magenta, na voz de quem acompanha as entregas de perto.",
-  audio: "",
-  autor: "Box Magenta"
-};
 
 /* ---- NICHOS (as linhas da galeria, na ordem em que aparecem) ----
    nome:      precisa ser igual ao "nicho" dos vídeos.
@@ -891,15 +858,14 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ---------- Renderização das listas ---------- */
   /* Carrossel de logos: três listas iguais em fila fazem o movimento ser contínuo, sem pulo e sem lacuna.
      Só a primeira lista tem texto alternativo; as outras duas são cópias visuais, escondidas de leitores de tela. */
-  const desenharMarcas = () => {
-    const lista = (leitor, principal) => `<ul class="marcas-lista"${leitor ? '' : ' aria-hidden="true"'}>${LOGOS_MARCAS.map((m, i) =>
-      `<li class="logo-marca"><img src="img/marcas/${esc(m.arquivo)}.webp" width="96" height="96" alt="${leitor ? esc(m.alt) : ''}"${principal && i < 14 ? '' : ' loading="lazy"'} decoding="async"></li>`
+  const desenharMarcas = (itens) => {
+    const lista = (leitor, principal) => `<ul class="marcas-lista"${leitor ? '' : ' aria-hidden="true"'}>${itens.map((m, i) =>
+      `<li class="logo-marca"><img src="${esc(m.src)}" width="96" height="96" alt="${leitor ? esc(m.alt) : ''}"${principal && i < 14 ? '' : ' loading="lazy"'} decoding="async"></li>`
     ).join('')}</ul>`;
     const alvo = $('#marcasTrack');
-    alvo.style.setProperty('--dur', `${(LOGOS_MARCAS.length * 2.8).toFixed(0)}s`);   /* mais logos, mais tempo: a velocidade fica calma e dá para ler */
+    alvo.style.setProperty('--dur', `${(Math.max(itens.length, 8) * 2.8).toFixed(0)}s`);   /* mais logos, mais tempo: a velocidade fica calma e dá para ler */
     alvo.innerHTML = lista(true, false) + lista(false, true) + lista(false, false);   /* a do meio é a que aparece quando a página abre */
   };
-  desenharMarcas();
 
   /* ---------- Vídeos: vêm do painel (tabela "videos") ----------
      Se o banco ainda não estiver pronto, usa a lista de reserva lá de cima. */
@@ -937,47 +903,52 @@ document.addEventListener('DOMContentLoaded', () => {
   let videosSite = VIDEOS_PADRAO.map(prepararVideo);      /* trocada pela lista do painel quando o banco responde */
   let nichosSite = NICHOS_PADRAO;
 
-  /* Carrossel dos destaques: o card que está no meio ganha a classe "ativo" (nítido); os vizinhos ficam desfocados.
-     Clicar em um vizinho só o traz para o meio; clicar no card do meio abre o vídeo. */
-  const trilho = $('#destaquesGrid');
-  const setaAnt = $('#destAnt');
-  const setaProx = $('#destProx');
-  let ativo = 0;
-  const cartoes = () => $$('.destaque', trilho);
-  const marcarAtivo = () => {
-    const lista = cartoes();
-    const centro = trilho.scrollLeft + trilho.clientWidth / 2;
-    let menor = Infinity;
-    lista.forEach((c, i) => {
-      const distancia = Math.abs(c.offsetLeft + c.offsetWidth / 2 - centro);
-      if (distancia < menor) { menor = distancia; ativo = i; }
+  /* Carrossel (Destaques e case): o card que está no meio ganha a classe "ativo" (nítido); os vizinhos ficam desfocados.
+     Clicar em um vizinho só o traz para o meio; clicar no card do meio chama aoAbrir. */
+  const criarCarrossel = (trilhoC, ant, prox, aoAbrir) => {
+    let atual = 0;
+    const cartoes = () => $$('.destaque', trilhoC);
+    const marcar = () => {
+      const lista = cartoes();
+      const centro = trilhoC.scrollLeft + trilhoC.clientWidth / 2;
+      let menor = Infinity;
+      lista.forEach((c, i) => {
+        const distancia = Math.abs(c.offsetLeft + c.offsetWidth / 2 - centro);
+        if (distancia < menor) { menor = distancia; atual = i; }
+      });
+      lista.forEach((c, i) => c.classList.toggle('ativo', i === atual));
+      ant.disabled = atual <= 0;
+      prox.disabled = atual >= lista.length - 1;
+    };
+    const ir = (i, instantaneo) => {
+      const c = cartoes()[i];
+      if (!c) return;
+      trilhoC.scrollTo({ left: c.offsetLeft + c.offsetWidth / 2 - trilhoC.clientWidth / 2, behavior: reduzir || instantaneo ? 'auto' : 'smooth' });
+    };
+    let quadroC = 0;
+    trilhoC.addEventListener('scroll', () => { cancelAnimationFrame(quadroC); quadroC = requestAnimationFrame(marcar); }, { passive: true });
+    window.addEventListener('resize', marcar);
+    ant.addEventListener('click', () => ir(atual - 1));
+    prox.addEventListener('click', () => ir(atual + 1));
+    trilhoC.addEventListener('click', (e) => {
+      const c = e.target.closest('.destaque');
+      if (!c) return;
+      const i = cartoes().indexOf(c);
+      if (!c.classList.contains('ativo')) { e.preventDefault(); ir(i); return; }
+      aoAbrir(i, c, e);
     });
-    lista.forEach((c, i) => c.classList.toggle('ativo', i === ativo));
-    setaAnt.disabled = ativo <= 0;
-    setaProx.disabled = ativo >= lista.length - 1;
+    trilhoC.addEventListener('focusin', (e) => {          /* teclado: o card que recebe o foco vai para o meio */
+      const c = e.target.closest('.destaque');
+      if (c && !c.classList.contains('ativo') && e.target.matches(':focus-visible')) ir(cartoes().indexOf(c));
+    });
+    return { marcar, ir };
   };
-  const irPara = (i) => {
-    const c = cartoes()[i];
-    if (!c) return;
-    trilho.scrollTo({ left: c.offsetLeft + c.offsetWidth / 2 - trilho.clientWidth / 2, behavior: reduzir ? 'auto' : 'smooth' });
-  };
-  let quadro = 0;
-  trilho.addEventListener('scroll', () => { cancelAnimationFrame(quadro); quadro = requestAnimationFrame(marcarAtivo); }, { passive: true });
-  window.addEventListener('resize', marcarAtivo);
-  setaAnt.addEventListener('click', () => irPara(ativo - 1));
-  setaProx.addEventListener('click', () => irPara(ativo + 1));
-  trilho.addEventListener('click', (e) => {
-    const c = e.target.closest('.destaque');
-    if (!c) return;
-    const i = cartoes().indexOf(c);
-    if (!c.classList.contains('ativo')) { e.preventDefault(); irPara(i); return; }
+  const trilho = $('#destaquesGrid');
+  const carrosselDestaques = criarCarrossel(trilho, $('#destAnt'), $('#destProx'), (i, c, e) => {
     const v = destaquesAtuais[i];
     if (v && v.yt && abrirPlayer(v, c)) e.preventDefault();      /* o vídeo toca aqui mesmo, numa janela do site */
   });
-  trilho.addEventListener('focusin', (e) => {          /* teclado: o card que recebe o foco vai para o meio */
-    const c = e.target.closest('.destaque');
-    if (c && !c.classList.contains('ativo') && e.target.matches(':focus-visible')) irPara(cartoes().indexOf(c));
-  });
+  const marcarAtivo = carrosselDestaques.marcar;
 
   let destaquesAtuais = [];
   const desenharDestaques = (lista) => {
@@ -1415,101 +1386,172 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
-  /* ---------- Case (recorrência e prova social) ---------- */
+  /* ---------- Case: por que a marca já criou mais de 100 vídeos comigo ---------- */
   const secaoCase = $('#case');
-  const LUGARES_CASE = { 'depois-destaques': 'destaques', 'depois-trabalhos': 'trabalhos', 'depois-servicos': 'servicos', 'depois-numeros': 'numeros' };
+  const traco = (d) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const ICONES_SELO = {
+    check: traco('<path d="m5 12.5 4.5 4.5L19 7.5"/>'),
+    relogio: traco('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>'),
+    roteiro: traco('<path d="M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10A.5.5 0 0 1 7 20z"/><path d="M13.5 3.5V8H18M9.5 12.5h5M9.5 16h5"/>'),
+    estrela: traco('<path d="m12 3.5 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/>'),
+    conversa: traco('<path d="M20 11.5a7.5 7.5 0 0 1-11 6.6L4.5 19.5l1.4-4.2A7.5 7.5 0 1 1 20 11.5z"/>'),
+    parceria: traco('<path d="M3.5 12.5 7 9l3 1.5L13 8l3.5 1 4 3.5M7 9l-3.5 3.5 5 5 1.5-1.5M20.5 12.5l-5 5-2.5-2.5M11 15l2 2M13 13l2 2"/>'),
+    coracao: traco('<path d="M12 19.5s-7.5-4.4-7.5-10A4.3 4.3 0 0 1 12 7a4.3 4.3 0 0 1 7.5 2.5c0 5.6-7.5 10-7.5 10z"/>'),
+    alvo: traco('<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/>')
+  };
+  const comNegrito = (t) => esc(t).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   let videosCase = [];
   const valorCase = (obj, padrao, chave) => (obj && Object.prototype.hasOwnProperty.call(obj, chave) ? obj[chave] : padrao[chave]);
+  /* cor do case: no fundo escuro, o marrom original vira o bege claro (senão some no escuro) */
+  const corDoCase = () => {
+    const cor = String(secaoCase.dataset.cor || '').trim();
+    if (/^#[0-9a-f]{6}$/i.test(cor) && !(secaoCase.classList.contains('escuro') && cor.toLowerCase() === CASE_PADRAO.cor)) secaoCase.style.setProperty('--case-cor', cor);
+    else secaoCase.style.removeProperty('--case-cor');
+  };
   const desenharCase = (dados, animar) => {
     if (!secaoCase) return;
     const k = (chave) => valorCase(dados.c, CASE_PADRAO, chave);
-    const f = (chave) => valorCase(dados.f, CASE_FEEDBACK, chave);
     const texto = (v) => String(v == null ? '' : v).trim();
-    const mostrar = k('mostrar') !== false;
-    /* lugar na página e link no menu */
-    const lugar = document.getElementById(LUGARES_CASE[k('posicao')] || 'destaques');
-    if (lugar && lugar.nextElementSibling !== secaoCase) lugar.after(secaoCase);
-    $$('.nav-links a[href="#case"]').forEach((a) => a.remove());
-    if (mostrar && k('menu') !== false && lugar) {
-      const a = document.createElement('a');
-      a.href = '#case';
-      a.textContent = texto(k('rotuloMenu')) || 'Case';
-      a.addEventListener('click', () => alternarMenu(false));
-      const depois = $(`.nav-links a[href="#${lugar.id}"]`);
-      if (depois) depois.after(a); else $('.nav-links').append(a);
-    }
-    secaoCase.hidden = !mostrar;
-    if (!mostrar) return;
-    /* fundo e cor */
-    secaoCase.classList.toggle('bg-2', k('fundo') === 'bege');
-    secaoCase.classList.toggle('escuro', k('fundo') === 'escuro');
-    const cor = texto(k('cor'));
-    if (/^#[0-9a-f]{6}$/i.test(cor) && !(k('fundo') === 'escuro' && cor.toLowerCase() === CASE_PADRAO.cor)) secaoCase.style.setProperty('--case-cor', cor);
-    else secaoCase.style.removeProperty('--case-cor');
-    /* vídeos do funil */
-    videosCase = (dados.v || []).map((v) => prepararVideo({ marca: texto(v.marca) || 'Box Magenta', titulo: texto(v.nome), nicho: texto(v.etapa), link: v.link, capa: v.capa }));
-    const cartaoFunil = (v, i) => {
-      const bruto = dados.v[i] || {};
-      const capa = `<div class="case-capa ph g${[2, 0, 4][i % 3]}">`;
-      const dentro = `${v.capa ? `<img src="${esc(v.capa)}" alt="" loading="lazy" decoding="async">` : ''}`;
-      const cartao = v.yt
-        ? `<a class="case-capa ph g${[2, 0, 4][i % 3]}" href="${esc(v.link)}" data-case="${i}" aria-label="Assistir: ${esc(texto(bruto.nome) || 'vídeo')}">${dentro}<span class="play" aria-hidden="true">${ICONES.play}</span></a>`
-        : `${capa}${dentro}<span class="case-embreve">Vídeo em breve</span></div>`;
-      return `<li class="case-video reveal" style="--d:${(0.08 * i).toFixed(2)}s">
-          ${texto(bruto.etapa) ? `<p class="case-etapa">${esc(texto(bruto.etapa))}</p>` : ''}
-          ${cartao}
-          ${texto(bruto.nome) ? `<p class="case-fase">${esc(texto(bruto.nome))}</p>` : ''}
-          ${texto(bruto.texto) ? `<p class="case-desc">${esc(texto(bruto.texto))}</p>` : ''}
-        </li>`;
+    secaoCase.dataset.cor = texto(k('cor'));
+    corDoCase();
+    const brutos = dados.v || [];
+    videosCase = brutos.map((v) => prepararVideo({ marca: texto(v.marca) || 'Box Magenta', titulo: texto(v.valor1) || texto(v.etapa), nicho: texto(v.etapa), link: v.link, capa: v.capa }));
+    const cartao = (v, i) => {
+      const b = brutos[i] || {};
+      const linhas = [[b.rotulo1, b.valor1], [b.rotulo2, b.valor2]].filter((l) => texto(l[1]));
+      const capa = `${v.capa ? `<img src="${esc(v.capa)}" alt="" loading="lazy" decoding="async">` : ''}`;
+      const miolo = `<p class="destaque-marca">${esc(texto(b.etapa))}</p>
+        <div class="destaque-capa ph g${[2, 0, 4][i % 3]}">${capa}${v.yt ? `<span class="play" aria-hidden="true">${ICONES.play}</span>` : '<span class="case-embreve">Vídeo em breve</span>'}</div>
+        ${linhas.length ? `<div class="destaque-linhas">${linhas.map((l) => `<p class="destaque-linha"><span>${esc(texto(l[0]))}</span><strong>${esc(texto(l[1]))}</strong></p>`).join('')}</div>` : ''}`;
+      return v.yt
+        ? `<a class="destaque" href="${esc(v.link)}" target="_blank" rel="noopener noreferrer" aria-label="Assistir: ${esc(texto(b.etapa))}${texto(b.valor1) ? ', ' + esc(texto(b.valor1)) : ''}">${miolo}</a>`
+        : `<div class="destaque" tabindex="0" aria-label="${esc(texto(b.etapa))}: vídeo em breve">${miolo}</div>`;
     };
     const motivos = (dados.m || []).filter((m) => m && (texto(m.titulo) || texto(m.texto)));
-    secaoCase.innerHTML = `<div class="container">
-      <div class="case-topo">
+    secaoCase.innerHTML = `<div class="container destaques-layout">
+      <div class="destaques-texto">
         <header class="secao-topo">
-          ${texto(k('etiqueta')) ? `<p class="eyebrow reveal"><i></i>${esc(texto(k('etiqueta')))}</p>` : ''}
+          <p class="eyebrow reveal"><b></b>${esc(texto(k('etiqueta')))}</p>
           <h2 class="titulo reveal" id="titulo-case" style="--d:.06s">${comEnfase(texto(k('titulo')))}</h2>
           ${texto(k('subtitulo')) ? `<p class="lead reveal" style="--d:.12s">${esc(texto(k('subtitulo')))}</p>` : ''}
-          ${texto(k('contexto')) ? `<p class="case-contexto reveal" style="--d:.16s">${esc(texto(k('contexto')))}</p>` : ''}
+          ${texto(k('contexto')) ? `<p class="case-contexto reveal" style="--d:.16s">${comNegrito(texto(k('contexto')))}</p>` : ''}
         </header>
-        ${texto(k('numero')) ? `<div class="case-numero reveal" style="--d:.2s"><strong>${esc(texto(k('numero')))}</strong>${texto(k('numeroRotulo')) ? `<span>${esc(texto(k('numeroRotulo')))}</span>` : ''}</div>` : ''}
-      </div>
-      ${videosCase.length ? `<div class="case-bloco">
-        ${texto(k('videosTitulo')) ? `<h3 class="case-subtitulo reveal">${comEnfase(texto(k('videosTitulo')))}</h3>` : ''}
-        <ul class="case-funil">${videosCase.map(cartaoFunil).join('')}</ul>
-      </div>` : ''}
-      ${motivos.length ? `<div class="case-bloco">
-        ${texto(k('motivosTitulo')) ? `<h3 class="case-subtitulo reveal">${comEnfase(texto(k('motivosTitulo')))}</h3>` : ''}
-        <ol class="case-motivos">${motivos.map((m, i) => `<li class="case-motivo reveal" style="--d:${(0.06 * (i % 3)).toFixed(2)}s">
-          <p class="case-motivo-num" aria-hidden="true">${String(i + 1).padStart(2, '0')}</p>
-          ${texto(m.titulo) ? `<h4>${esc(texto(m.titulo))}</h4>` : ''}
-          ${texto(m.texto) ? `<p>${esc(texto(m.texto))}</p>` : ''}
-        </li>`).join('')}</ol>
-      </div>` : ''}
-      <div class="case-feedback reveal">
-        <div>
-          <p class="eyebrow"><i></i>Feedback</p>
-          <h3 class="case-feedback-titulo">${comEnfase(texto(f('titulo')))}</h3>
-          ${texto(f('texto')) ? `<p class="case-feedback-texto">${esc(texto(f('texto')))}</p>` : ''}
-        </div>
-        <div>
+        ${motivos.length ? `<ul class="selos">${motivos.map((m, i) => `<li class="selo reveal" style="--d:${(0.05 * i).toFixed(2)}s">
+          <span class="selo-ico">${ICONES_SELO[m.icone] || ICONES_SELO.check}</span>
+          <span class="selo-txt">${texto(m.titulo) ? `<strong>${esc(texto(m.titulo))}</strong>` : ''}${texto(m.texto) ? `<span class="selo-sub">${esc(texto(m.texto))}</span>` : ''}</span>
+        </li>`).join('')}</ul>` : ''}
+        <div class="reveal" style="--d:.2s">
           <div class="case-audio"></div>
-          ${texto(f('autor')) ? `<p class="case-autor">${esc(texto(f('autor')))}</p>` : ''}
+          ${texto(k('audioLegenda')) ? `<p class="case-audio-legenda">${esc(texto(k('audioLegenda')))}</p>` : ''}
         </div>
       </div>
+      ${videosCase.length ? `<div class="carrossel reveal" style="--d:.1s" role="region" aria-roledescription="carrossel" aria-label="Vídeos do case">
+        <button type="button" class="carrossel-seta ant" aria-label="Vídeo anterior" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button>
+        <div class="destaques-grid">${videosCase.map(cartao).join('')}</div>
+        <button type="button" class="carrossel-seta prox" aria-label="Próximo vídeo" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
+      </div>` : ''}
     </div>`;
-    montarAudio($('.case-audio', secaoCase), f('audio'));
-    $$('.case-capa img', secaoCase).forEach((img) => img.addEventListener('error', () => img.remove()));
+    montarAudio($('.case-audio', secaoCase), texto(k('audio')) || texto(dados.f && dados.f.audio));
+    $$('.destaque-capa img', secaoCase).forEach((img) => img.addEventListener('error', () => img.remove()));
+    const grade = $('.destaques-grid', secaoCase);
+    if (grade) {
+      const car = criarCarrossel(grade, $('.carrossel-seta.ant', secaoCase), $('.carrossel-seta.prox', secaoCase), (i, c, e) => {
+        const v = videosCase[i];
+        if (v && v.yt && abrirPlayer(v, c)) e.preventDefault();
+      });
+      requestAnimationFrame(() => { car.ir(Math.min(1, videosCase.length - 1), true); car.marcar(); });   /* começa com o do meio em destaque */
+    }
     animarNovos(secaoCase, animar);
+    renumerar();
   };
-  if (secaoCase) {
-    secaoCase.addEventListener('click', (e) => {
-      const a = e.target.closest('a[data-case]');
-      if (!a) return;
-      if (abrirPlayer(videosCase[Number(a.dataset.case)], a)) e.preventDefault();
-    });
-  }
 
-  /* ---------- Cores do site (painel, cartão "Cores do site") ---------- */
+  /* ---------- Ordem, fundo e menu das páginas (painel, página "Cores, ordem e menu") ---------- */
+  const PAGINAS_SITE = ['sobre', 'destaques', 'case', 'trabalhos', 'servicos', 'numeros', 'contato'];
+  const MENU_PADRAO = { sobre: 'Sobre', destaques: 'Destaques', case: 'Case', trabalhos: 'Trabalhos', servicos: 'Serviços', numeros: 'Números', contato: 'Contato' };
+  const FUNDO_ORIGINAL = {};
+  PAGINAS_SITE.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) FUNDO_ORIGINAL[id] = el.classList.contains('bg-2') ? 'bege' : (el.classList.contains('escuro') ? 'escuro' : 'creme');
+  });
+  const renumerar = () => {
+    let n = 0;
+    $$('#conteudo > section.secao[id]').forEach((sec) => {
+      if (sec.hidden) return;
+      const b = $('.eyebrow b', sec);
+      if (b) b.textContent = String(++n).padStart(2, '0');
+    });
+  };
+  const desenharLayout = (l) => {
+    const pag = (id) => (l.paginas && typeof l.paginas[id] === 'object' && l.paginas[id]) || {};
+    const ordem = [];
+    (Array.isArray(l.ordem) ? l.ordem : []).forEach((id) => { if (PAGINAS_SITE.includes(id) && !ordem.includes(id)) ordem.push(id); });
+    PAGINAS_SITE.forEach((id, i) => {                               /* página que não está na lista entra no lugar de sempre */
+      if (ordem.includes(id)) return;
+      const antes = PAGINAS_SITE.slice(0, i).reverse().find((x) => ordem.includes(x));
+      ordem.splice(antes ? ordem.indexOf(antes) + 1 : 0, 0, id);
+    });
+    const principal = $('#conteudo');
+    const menu = $('#menu');
+    menu.innerHTML = '';
+    ordem.forEach((id) => {
+      const sec = document.getElementById(id);
+      if (!sec) return;
+      principal.appendChild(sec);
+      sec.hidden = pag(id).mostrar === false;
+      const fundo = ['creme', 'bege', 'escuro'].includes(pag(id).fundo) ? pag(id).fundo : FUNDO_ORIGINAL[id];
+      sec.classList.toggle('bg-2', fundo === 'bege');
+      sec.classList.toggle('escuro', fundo === 'escuro');
+      if (sec.hidden) return;
+      const nome = typeof pag(id).menu === 'string' ? pag(id).menu.trim() : MENU_PADRAO[id];
+      if (!nome) return;
+      const a = document.createElement('a');
+      a.href = `#${id}`;
+      a.textContent = nome;
+      a.addEventListener('click', () => alternarMenu(false));
+      menu.appendChild(a);
+    });
+    if (secaoCase) corDoCase();
+    renumerar();
+  };
+
+  /* ---------- Capa, sobre, faixa de marcas e card do mídia kit (partes que o painel também edita) ---------- */
+  const imagemSegura = (u) => { const t = String(u || '').trim(); return /^(https:\/\/|img\/)/i.test(t) ? t : ''; };
+  const desenharCapaExtra = (c) => {
+    const t = (v) => String(v == null ? '' : v).trim();
+    if (t(c.titulo1) || t(c.titulo2)) $('#titulo-capa').innerHTML = `<span>${comEnfase(t(c.titulo1))}</span><span>${comEnfase(t(c.titulo2))}</span>`;
+    if (t(c.botao)) $('.hero-botoes .btn-primario').textContent = t(c.botao);
+    if (t(c.link)) $('.hero-botoes .btn-link').innerHTML = `${esc(t(c.link))} <span aria-hidden="true">→</span>`;
+    const foto = imagemSegura(c.foto);
+    if (foto) $('.hero-recorte').src = foto;
+    if (t(c.fotoAlt)) $('.hero-recorte').alt = t(c.fotoAlt);
+  };
+  const desenharSobreExtra = (c) => {
+    const t = (v) => String(v == null ? '' : v).trim();
+    const foto = imagemSegura(c.foto);
+    if (foto) $('.sobre-foto').innerHTML = `<div class="ph g3 foto-45"><img src="${esc(foto)}" alt="${esc(t(c.fotoAlt) || 'Esther Custódio')}" loading="lazy"></div>`;
+    if (c.promessasTitulo != null) $('.promessas-titulo').textContent = t(c.promessasTitulo);
+    const promessas = [c.promessa1, c.promessa2, c.promessa3].map(t);
+    if ([c.promessa1, c.promessa2, c.promessa3].some((x) => x != null)) {
+      $('.promessas').innerHTML = promessas.filter(Boolean).map((x, i) => `<li class="reveal in" style="--d:${(0.22 + 0.06 * i).toFixed(2)}s"><span class="check">${ICONES.check}</span>${esc(x)}</li>`).join('');
+    }
+    if (t(c.assinaturaPequena)) $('.assinatura small').textContent = t(c.assinaturaPequena);
+    if (t(c.assinatura)) $('.assinatura strong').textContent = t(c.assinatura);
+  };
+  const logosDoPainel = (lista) => lista.map((m) => ({ src: imagemSegura(m.imagem), alt: `Logo ${String(m.nome || '').trim()}`.trim() })).filter((m) => m.src);
+  const desenharFaixa = (c) => {
+    if (typeof c.titulo === 'string') $('.marcas-titulo').textContent = c.titulo.trim();
+    $('.marcas').hidden = c.mostrar === false;
+  };
+  let capturaLigada = true;
+  const desenharCaptura = (c) => {
+    const t = (v) => String(v == null ? '' : v).trim();
+    capturaLigada = c.mostrar !== false;
+    if (t(c.titulo)) $('#titulo-captura').innerHTML = comEnfase(t(c.titulo));
+    if (t(c.sub)) $('.captura .sub').textContent = t(c.sub);
+    if (t(c.botao)) $('#formCaptura button[type="submit"]').textContent = t(c.botao);
+  };
+
+  /* ---------- Cores do site  /* ---------- Cores do site (painel, cartão "Cores do site") ---------- */
   const CORES_SITE = { destaque: '--accent', marrom: '--marrom', fundo: '--cream', fundo2: '--cream-2', texto: '--ink' };
   const desenharCores = (c) => {
     Object.keys(CORES_SITE).forEach((k) => {
@@ -1561,11 +1603,16 @@ document.addEventListener('DOMContentLoaded', () => {
     aplicarSecao('metricas', lista(c.metricas, METRICAS), desenharMetricas, animar);
     aplicarSecao('resultados', lista(c.resultados, RESULTADOS), desenharResultados, animar);
     aplicarSecao('depoimentos', lista(c.depoimentos, DEPOIMENTOS), desenharDepoimentos, animar);
-    if (c.capa && typeof c.capa === 'object') aplicarSecao('capa', c.capa, desenharCapa, animar);
-    if (c.sobre && typeof c.sobre === 'object') aplicarSecao('sobre', c.sobre, desenharSobre, animar);
+    if (c.capa && typeof c.capa === 'object') aplicarSecao('capa', c.capa, (v) => { desenharCapa(v); desenharCapaExtra(v); }, animar);
+    if (c.sobre && typeof c.sobre === 'object') aplicarSecao('sobre', c.sobre, (v) => { desenharSobre(v); desenharSobreExtra(v); }, animar);
     if (c.titulos && typeof c.titulos === 'object') aplicarSecao('titulos', c.titulos, desenharTitulos, animar);
     const objeto = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
     aplicarSecao('case', { c: objeto(c.case), v: lista(c.case_videos, CASE_VIDEOS), m: lista(c.case_motivos, CASE_MOTIVOS), f: objeto(c.case_feedback) }, desenharCase, animar);
+    aplicarSecao('layout', objeto(c.layout), desenharLayout, animar);
+    const logos = Array.isArray(c.logos) && c.logos.length ? logosDoPainel(c.logos) : [];
+    aplicarSecao('logos', logos.length ? logos : LOGOS_MARCAS.map((m) => ({ src: `img/marcas/${m.arquivo}.webp`, alt: m.alt })), desenharMarcas, animar);
+    aplicarSecao('marcas_faixa', objeto(c.marcas_faixa), desenharFaixa, animar);
+    aplicarSecao('captura', objeto(c.captura), desenharCaptura, animar);
     aplicarSecao('destaques_audio', (objeto(c.destaques_audio).audio || AUDIO_DESTAQUES), (link) => montarAudio($('#audioDestaques'), link), animar);
     aplicarSecao('cores', objeto(c.cores), desenharCores, animar);
     aplicarSecao('contato', objeto(c.contato), desenharContato, animar);
@@ -1783,7 +1830,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!jaViu) {
       const mostrarCaptura = () => {
-        if (dialogo.open) return;
+        if (dialogo.open || !capturaLigada) return;
         const player = document.getElementById('player');
         if (player && player.open) {                                  /* vídeo aberto: espera ele fechar para não cobrir o vídeo */
           player.addEventListener('close', () => setTimeout(mostrarCaptura, 1500), { once: true });

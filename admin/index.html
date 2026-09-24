@@ -551,6 +551,30 @@ li.v-erro .v-ico{background:var(--vermelho-fundo);color:var(--vermelho-texto)}
   .blocos-tempo li{grid-template-columns:1fr;gap:.1rem}
   .refs{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+/* Conteúdo do site: uma página por vez */
+.paginas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1rem}
+.pagina-cartao{display:flex;flex-direction:column;align-items:flex-start;gap:.35rem;padding:1.1rem 1.15rem;border:1px solid var(--line);border-radius:var(--radius-lg);background:var(--paper);box-shadow:var(--shadow);text-align:left;font:inherit;color:var(--ink);cursor:pointer;transition:transform .2s,border-color .2s}
+.pagina-cartao:hover{transform:translateY(-2px);border-color:var(--accent-text)}
+.pagina-cartao:focus-visible{outline:3px solid var(--accent-text);outline-offset:2px}
+.pagina-num{font-size:.72rem;font-weight:700;letter-spacing:.12em;color:var(--accent-text)}
+.pagina-cartao strong{font-size:1rem;line-height:1.3}
+.pagina-cartao .pagina-desc{font-size:.84rem;color:var(--muted)}
+.pagina-abrir{display:inline-flex;align-items:center;gap:.35rem;margin-top:auto;padding-top:.5rem;font-size:.8rem;font-weight:600;color:var(--accent-text)}
+.pagina-abrir svg{width:15px;height:15px}
+.pagina-topo{display:flex;flex-wrap:wrap;align-items:flex-start;gap:.8rem 1.2rem;margin-bottom:1.2rem}
+.pagina-titulo{font-size:1.25rem;font-weight:700;line-height:1.25}
+.pagina-topo .pagina-desc{margin-top:.2rem;font-size:.86rem;color:var(--muted)}
+/* campo de foto ou áudio: link + botão de enviar + miniatura */
+.campo-arquivo{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem}
+.campo-arquivo input[type=text]{flex:1;min-width:12rem}
+.arquivo-previa{flex:none;width:44px;height:44px;border-radius:8px;object-fit:cover;background:var(--cream-2);border:1px solid var(--line)}
+/* editor de ordem, fundo e menu */
+.layout-linha{padding:.8rem 0;border-bottom:1px solid var(--line)}
+.layout-linha:last-child{border-bottom:0}
+.layout-nome{display:flex;align-items:center;justify-content:space-between;gap:.6rem;margin-bottom:.5rem}
+.layout-nome strong{font-size:.92rem}
+@media (max-width:640px){.paginas-grid{grid-template-columns:1fr}}
 </style>
 </head>
 
