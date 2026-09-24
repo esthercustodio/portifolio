@@ -355,7 +355,9 @@ button,input,textarea{font:inherit;color:inherit}
 .vcard,.destaque-capa{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Ccircle cx='15' cy='15' r='14' fill='%23808080' stroke='%23fff' stroke-width='1.5'/%3E%3Cpath d='M12.3 9.8v10.4l8.2-5.2z' fill='%23fff'/%3E%3C/svg%3E") 15 15, pointer}
 .vcard img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-3}
 /* prévia: o vídeo roda sem som dentro do card (o som só vem ao clicar e abrir o vídeo) */
-.vprevia{position:absolute;left:0;top:0;width:100%;height:100%;border:0;z-index:-2;pointer-events:none;opacity:0;transform:scale(1.22);transition:opacity .6s}
+/* o player da prévia é bem mais largo que o card (16:9 na mesma altura): o YouTube põe nome do canal, logo e botões
+   nas bordas do player, e o card mostra só a faixa do meio, onde está o vídeo */
+.vprevia{position:absolute;left:50%;top:0;width:auto;height:100%;aspect-ratio:16/9;max-width:none;border:0;z-index:-2;pointer-events:none;opacity:0;transform:translateX(-50%) scale(1.02);transition:opacity .6s}
 .vprevia.pronta{opacity:1}
 .vcard::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(to top,rgba(20,17,13,.82) 0%,rgba(20,17,13,.25) 30%,transparent 52%)}
 .vplay{position:absolute;top:50%;left:50%;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;box-shadow:0 10px 26px rgba(0,0,0,.35);transition:transform .35s cubic-bezier(.2,.7,.2,1),background .25s}
@@ -1098,11 +1100,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const dizer = (func, args) => f.contentWindow && f.contentWindow.postMessage(JSON.stringify({ event: 'command', func, args: args || [], id: 1, channel: 'widget' }), '*');
         f.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }), '*');
         [300, 1200, 3000].forEach((ms) => setTimeout(() => { dizer('mute'); dizer('unloadModule', ['captions']); }, ms));   /* garante sem som e sem legenda */
-        setTimeout(() => f.classList.add('pronta'), 900);           /* aparece quando já está rodando (sem piscar preto) */
+        setTimeout(() => f.classList.add('pronta'), 8000);          /* garantia, caso o YouTube não avise que começou */
       });
       card.insertBefore(f, card.firstChild);
     }, 400));
   };
+  /* A prévia só aparece uns segundos depois de começar a tocar: é quando o YouTube já tirou os controles
+     que ele mostra no começo (setas e barra). Até lá o card fica com a capa. */
+  window.addEventListener('message', (e) => {
+    const f = $$('.vprevia').find((x) => x.contentWindow === e.source);
+    if (!f || f.dataset.tocou) return;
+    let d = null;
+    try { d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data; } catch (erro) { return; }
+    if (!d || !d.info || d.info.playerState !== 1) return;
+    f.dataset.tocou = '1';
+    setTimeout(() => f.classList.add('pronta'), 3000);
+  });
   const desligarPrevia = (card) => {
     if (card.dataset.previaEspera) { clearTimeout(Number(card.dataset.previaEspera)); delete card.dataset.previaEspera; }
     const f = card.querySelector('.vprevia');

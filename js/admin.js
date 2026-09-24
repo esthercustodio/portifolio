@@ -513,8 +513,8 @@
     var salvos = (cache.site_conteudo || []).filter(function (l) { return l.chave === 'nichos' && Array.isArray(l.valor); })[0];
     (salvos ? salvos.valor : NICHOS_DO_SITE).forEach(function (n) { if (n && n.nome && nichos.indexOf(n.nome) < 0) nichos.push(n.nome); });
     var campos = [
-      { nome: 'marca', rotulo: 'Marca', ajuda: 'O nome que aparece no card e acima do vídeo.' },
-      { nome: 'titulo', rotulo: 'O que é o vídeo', obrigatorio: true, ajuda: 'Exemplo: Olheira. Se for igual à marca, o card mostra só a marca.' },
+      { nome: 'marca', rotulo: 'Marca', ajuda: 'A etiqueta branca no canto do card e na janela do vídeo.' },
+      { nome: 'titulo', rotulo: 'Título do vídeo', obrigatorio: true, ajuda: 'O nome grande no card (embaixo) e na janela do vídeo. Exemplo: Olheira. Se for igual à marca, aparece só a marca.' },
       { nome: 'link', rotulo: 'Link do vídeo', tipo: 'url', largo: true, placeholder: 'https://youtube.com/shorts/...', ajuda: 'Link do YouTube: o vídeo toca dentro do seu site, sem abrir o YouTube.' },
       { nome: 'nicho', rotulo: 'Nicho', lista: nichos, ajuda: 'A linha do site onde ele aparece. Vazio: só nos Destaques.' },
       { nome: 'destaque', rotulo: 'Texto do resultado', placeholder: '190 mil visualizações', ajuda: 'Aparece abaixo do card nos Destaques.' }
