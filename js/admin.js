@@ -4182,7 +4182,7 @@
     };
     var CASE_VIDEOS = [
       { etapa: 'Topo de funil', link: 'https://youtube.com/shorts/wA2zUnK1D-c', resultado: 'Desejo', detalhe: 'Desperta interesse e identificação', capa: 'img/capas/box-magenta-desejo.webp', marca: 'Box Magenta' },
-      { etapa: 'Meio de funil', link: 'https://youtube.com/shorts/wI1U8XUVzB0', resultado: 'Conexão', detalhe: 'O produto no uso de verdade', capa: 'img/capas/box-magenta-conexao.webp', marca: 'Box Magenta' },
+      { etapa: 'Meio de funil', link: 'https://youtube.com/shorts/wI1U8XUVzB0', resultado: 'Conexão', detalhe: 'O produto no uso de verdade', capa: 'img/capas/box-magenta-conexao-capa.webp', marca: 'Box Magenta' },
       { etapa: 'Fundo de funil', link: 'https://youtube.com/shorts/RW_Ve8hzwjs', resultado: 'Conversão', detalhe: 'Direciona para a compra', capa: 'img/capas/box-magenta-conversao.webp', marca: 'Box Magenta' }
     ];
     var CASE_MOTIVOS = [
