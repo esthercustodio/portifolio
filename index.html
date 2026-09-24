@@ -311,6 +311,58 @@ button,input,textarea{font:inherit;color:inherit}
 .audio.sem-audio .audio-onda{opacity:.6}
 
 /* =========================================================
+   CASE (página de recorrência e prova social, editável no painel)
+   ========================================================= */
+.case{--case-cor:var(--marrom)}
+.case.escuro{--case-cor:var(--marrom-claro)}
+.case-topo{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,4fr);gap:clamp(2rem,5vw,4.5rem);align-items:end}
+.case-topo .secao-topo{margin-bottom:0}
+.case-topo .titulo{font-size:clamp(2.3rem,4.4vw,3.4rem)}
+.case-contexto{margin-top:1.4rem;max-width:38rem;font-size:1.02rem;line-height:1.7}
+.case-numero{border-top:1px solid currentColor;padding-top:1.2rem}
+.case-numero strong{display:block;font-family:var(--serif);font-weight:700;font-size:clamp(4rem,9vw,6.5rem);line-height:.9;letter-spacing:-.04em;color:var(--case-cor)}
+.case-numero span{display:block;margin-top:.8rem;font-size:.76rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.case-bloco{margin-top:clamp(3.5rem,8vw,6rem)}
+.case-subtitulo{font-family:var(--serif);font-weight:400;font-size:clamp(1.6rem,3vw,2.2rem);line-height:1.15;letter-spacing:-.015em;margin-bottom:clamp(1.5rem,4vw,2.5rem)}
+.case-subtitulo em,.case-feedback-titulo em{font-style:italic;font-weight:300;color:var(--accent)}
+.case-funil{display:grid;grid-template-columns:repeat(3,minmax(0,290px));justify-content:center;gap:clamp(1.25rem,5vw,4.5rem);list-style:none;margin:0;padding:0}
+.case-etapa{margin-bottom:.9rem;text-align:center;font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.case-capa{display:flex;aspect-ratio:9/16;text-decoration:none;box-shadow:0 24px 50px -26px rgba(20,17,13,.55);transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+a.case-capa:hover{transform:translateY(-8px)}
+a.case-capa:hover .play{transform:scale(1.1)}
+a.case-capa{cursor:inherit}
+.case-embreve{position:relative;z-index:1;margin:auto;padding:.4rem .85rem;border-radius:999px;background:rgba(243,238,233,.92);color:var(--ink);font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.case-fase{margin-top:1.1rem;text-align:center;font-family:var(--serif);font-weight:700;font-size:clamp(1.5rem,2.4vw,1.9rem);line-height:1.15;color:var(--case-cor)}
+.case-desc{margin:.35rem auto 0;max-width:18rem;text-align:center;font-size:.95rem;color:var(--muted)}
+.case-motivos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:clamp(1.5rem,4vw,3.5rem);row-gap:1rem;list-style:none;margin:0;padding:0}
+.case-motivo{border-top:1px solid currentColor;padding:1.4rem 0 2rem;transition:border-color .3s}
+.case-motivo:hover{border-top-color:var(--case-cor)}
+.case-motivo-num{font-family:var(--serif);font-style:italic;font-weight:300;font-size:2.4rem;line-height:1;color:var(--accent)}
+.case-motivo h4{font-family:var(--serif);font-weight:500;font-size:1.4rem;line-height:1.15;margin-top:.9rem}
+.case-motivo p{margin-top:.55rem;color:var(--muted)}
+.case-feedback{margin-top:clamp(3.5rem,8vw,6rem);display:grid;grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:clamp(1.5rem,4vw,3.5rem);align-items:center;padding:clamp(1.8rem,4vw,3.2rem);border-radius:var(--radius-lg);background:var(--ink);color:var(--cream);box-shadow:var(--shadow)}
+.case-feedback .eyebrow{color:var(--marrom-claro)}
+.case-feedback .eyebrow i{background:var(--marrom-claro)}
+.case-feedback-titulo{font-family:var(--serif);font-weight:400;font-size:clamp(1.9rem,3.6vw,2.8rem);line-height:1.1;letter-spacing:-.02em;margin-top:.9rem}
+.case-feedback-titulo em{color:var(--marrom-claro)}
+.case-feedback-texto{margin-top:.9rem;max-width:30rem;color:rgba(243,238,233,.78)}
+.case-autor{margin-top:.9rem;text-align:center;font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:rgba(243,238,233,.7)}
+.case-audio .audio{max-width:none}
+.case.escuro .case-numero span,.case.escuro .case-etapa,.case.escuro .case-desc,.case.escuro .case-motivo p,.case.escuro .case-contexto{color:rgba(243,238,233,.78)}
+.case.escuro .case-subtitulo em,.case.escuro .case-motivo-num{color:var(--marrom-claro)}
+.case.escuro .case-feedback{background:rgba(243,238,233,.06);box-shadow:0 0 0 1px rgba(243,238,233,.14)}
+@media (max-width:900px){
+  .case-topo,.case-feedback{grid-template-columns:1fr}
+  .case-motivos{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .case-funil{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:72%;justify-content:start;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:.5rem}
+  .case-funil::-webkit-scrollbar{display:none}
+  .case-video{scroll-snap-align:start}
+}
+@media (max-width:620px){
+  .case-motivos{grid-template-columns:1fr}
+}
+
+/* =========================================================
    4. TRABALHOS
    ========================================================= */
 /* Chips que levam até a linha de cada nicho */
@@ -695,6 +747,45 @@ const VIDEOS_PADRAO = [
    por exemplo "audio/recado.mp3". Enquanto estiver "", o player aparece parado, com o aviso "Em breve". */
 const AUDIO_DESTAQUES = "";
 
+/* ---- CASE (recorrência e prova social) ----
+   Tudo aqui é o texto original: o painel (Conteúdo do site, cartões "Case") sobrescreve.
+   No título, a palavra entre asteriscos (*assim*) fica em itálico. */
+const CASE_PADRAO = {
+  mostrar: true, menu: true, rotuloMenu: "Case",
+  posicao: "depois-destaques",          /* depois-destaques, depois-trabalhos, depois-servicos ou depois-numeros */
+  fundo: "creme",                       /* creme, bege ou escuro */
+  cor: "#4d301b",                       /* cor do número grande e das fases do funil */
+  etiqueta: "Case Box Magenta",
+  titulo: "Por que essa marca já criou mais de *100 vídeos* comigo?",
+  subtitulo: "Mais do que uma entrega pontual: uma parceria que se tornou recorrente.",
+  contexto: "A Box Magenta já produziu mais de 100 vídeos comigo. Essa recorrência não nasce de um vídeo que deu certo, e sim de uma relação construída em confiança: entregas consistentes, alinhadas à marca e prontas para performar em cada etapa da jornada de compra.",
+  numero: "+100",
+  numeroRotulo: "vídeos produzidos para a Box Magenta",
+  videosTitulo: "Um conteúdo para cada *momento* do funil",
+  motivosTitulo: "O que faz a parceria *continuar*"
+};
+/* ONDE ENTRAM OS 3 VÍDEOS: link do YouTube e capa (opcional). Sem link, o card mostra "Vídeo em breve". */
+const CASE_VIDEOS = [
+  { etapa: "Topo de funil", nome: "Desejo", texto: "Conteúdo que desperta interesse, desejo e identificação com o produto.", link: "", capa: "", marca: "Box Magenta" },
+  { etapa: "Meio de funil", nome: "Conexão", texto: "O produto apresentado de forma natural, no contexto de uso, criando identificação.", link: "", capa: "", marca: "Box Magenta" },
+  { etapa: "Fundo de funil", nome: "Conversão", texto: "O produto mostrado de maneira estratégica, direcionado à ação e à decisão de compra.", link: "", capa: "", marca: "Box Magenta" }
+];
+const CASE_MOTIVOS = [
+  { titulo: "Entregas dentro do prazo", texto: "Cumprimento dos prazos combinados e organização do começo ao fim do projeto." },
+  { titulo: "Fidelidade ao briefing", texto: "Conteúdos coerentes com o briefing, o roteiro e o direcionamento da marca." },
+  { titulo: "Versatilidade criativa", texto: "Linguagem, formato, estética e narrativa adaptados a cada objetivo e campanha." },
+  { titulo: "Linguagem natural", texto: "Vídeos que soam como recomendação de verdade, e não como anúncio." },
+  { titulo: "Facilidade na parceria", texto: "Comunicação clara, organização e agilidade para atender demandas diferentes." },
+  { titulo: "Entendimento de marca", texto: "Mais do que reproduzir o briefing: entender a identidade da marca e traduzir isso para o meu universo de conteúdo." }
+];
+/* ONDE ENTRA O ÁUDIO DO FEEDBACK: link do arquivo (mp3 ou m4a). Vazio mostra o player parado com "Em breve". */
+const CASE_FEEDBACK = {
+  titulo: "Uma parceria que *fala por si*.",
+  texto: "O retorno da Box Magenta, na voz de quem acompanha as entregas de perto.",
+  audio: "",
+  autor: "Box Magenta"
+};
+
 /* ---- NICHOS (as linhas da galeria, na ordem em que aparecem) ----
    nome:      precisa ser igual ao "nicho" dos vídeos.
    subtitulo: frase pequena, em itálico, abaixo do nome.
@@ -918,63 +1009,74 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   desenharDestaques(videosSite.filter((v) => v.emDestaques));   /* aparece já ao abrir; os vídeos do painel entram depois, se houver */
 
-  /* Player de áudio da seção Destaques (o arquivo vem de AUDIO_DESTAQUES) */
-  const cartaoAudio = $('#audioCartao');
-  const audio = $('#audioEl');
-  const botaoAudio = $('#audioPlay');
-  const ondaAudio = $('#audioOnda');
-  const buscaAudio = $('#audioBusca');
-  const atualAudio = $('#audioAtual');
-  const totalAudio = $('#audioTotal');
-  const velAudio = $('#audioVel');
+  /* Player de áudio (Destaques e feedback do case): montarAudio(espaço, link) desenha o player e liga os botões */
   const VELOCIDADES = [1, 1.5, 2];
   const NUM_BARRAS = 44;
-  ondaAudio.innerHTML = Array.from({ length: NUM_BARRAS }, (_, i) =>
-    `<span style="height:${Math.round(22 + 70 * Math.abs(Math.sin(i * 1.3) * Math.cos(i * 0.55)))}%"></span>`).join('');
-  const barras = $$('span', ondaAudio);
   const tempo = (s) => (Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '0:00');
-  const semAudio = (aviso) => {
-    cartaoAudio.classList.add('sem-audio');
-    [botaoAudio, buscaAudio, velAudio].forEach((el) => { el.disabled = true; });
-    totalAudio.textContent = aviso;
-  };
-  const mostrarProgresso = () => {
-    const p = Number.isFinite(audio.duration) && audio.duration > 0 ? audio.currentTime / audio.duration : 0;
-    barras.forEach((b, i) => b.classList.toggle('tocado', i < Math.round(p * NUM_BARRAS)));
-    buscaAudio.value = String(p * 100);
-    atualAudio.textContent = tempo(audio.currentTime);
-  };
-  const atualizarBotao = () => {
-    const tocando = !audio.paused;
-    botaoAudio.classList.toggle('tocando', tocando);
-    botaoAudio.innerHTML = tocando ? ICONES.pausa : ICONES.play;
-    botaoAudio.setAttribute('aria-label', tocando ? 'Pausar o áudio' : 'Ouvir o áudio');
-  };
-  if (AUDIO_DESTAQUES) {
-    audio.src = AUDIO_DESTAQUES;
+  const ICONE_MICROFONE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';
+  const audioSeguro = (u) => { const t = String(u || '').trim(); return /^(https:\/\/|audio\/)/i.test(t) ? t : ''; };
+  const montarAudio = (espaco, link) => {
+    if (!espaco) return;
+    espaco.innerHTML = `<div class="audio" role="group" aria-label="Player de áudio">
+        <audio preload="none"></audio>
+        <button type="button" class="audio-play" aria-label="Ouvir o áudio">${ICONES.play}</button>
+        <div class="audio-meio">
+          <div class="audio-onda" aria-hidden="true">${Array.from({ length: NUM_BARRAS }, (_, i) =>
+            `<span style="height:${Math.round(22 + 70 * Math.abs(Math.sin(i * 1.3) * Math.cos(i * 0.55)))}%"></span>`).join('')}</div>
+          <input class="audio-busca" type="range" min="0" max="100" step="0.1" value="0" aria-label="Posição do áudio">
+          <div class="audio-tempos"><span class="audio-atual">0:00</span><span class="audio-total">0:00</span></div>
+        </div>
+        <div class="audio-lado"><button type="button" class="audio-vel" aria-label="Velocidade do áudio: 1x">1x</button>${ICONE_MICROFONE}</div>
+      </div>`;
+    const cartao = $('.audio', espaco);
+    const audio = $('audio', cartao);
+    const botao = $('.audio-play', cartao);
+    const busca = $('.audio-busca', cartao);
+    const atual = $('.audio-atual', cartao);
+    const total = $('.audio-total', cartao);
+    const vel = $('.audio-vel', cartao);
+    const barras = $$('.audio-onda span', cartao);
+    const semAudio = (aviso) => {
+      cartao.classList.add('sem-audio');
+      [botao, busca, vel].forEach((el) => { el.disabled = true; });
+      total.textContent = aviso;
+    };
+    const src = audioSeguro(link);
+    if (!src) { semAudio('Em breve'); return; }
+    const mostrarProgresso = () => {
+      const p = Number.isFinite(audio.duration) && audio.duration > 0 ? audio.currentTime / audio.duration : 0;
+      barras.forEach((b, i) => b.classList.toggle('tocado', i < Math.round(p * NUM_BARRAS)));
+      busca.value = String(p * 100);
+      atual.textContent = tempo(audio.currentTime);
+    };
+    const atualizarBotao = () => {
+      const tocando = !audio.paused;
+      botao.classList.toggle('tocando', tocando);
+      botao.innerHTML = tocando ? ICONES.pausa : ICONES.play;
+      botao.setAttribute('aria-label', tocando ? 'Pausar o áudio' : 'Ouvir o áudio');
+    };
+    audio.src = src;
     audio.preload = 'metadata';
-    audio.addEventListener('loadedmetadata', () => { totalAudio.textContent = tempo(audio.duration); });
+    audio.addEventListener('loadedmetadata', () => { total.textContent = tempo(audio.duration); });
     audio.addEventListener('timeupdate', mostrarProgresso);
-    audio.addEventListener('play', atualizarBotao);
+    audio.addEventListener('play', () => { $$('audio').forEach((o) => { if (o !== audio) o.pause(); }); atualizarBotao(); });   /* um áudio de cada vez */
     audio.addEventListener('pause', atualizarBotao);
     audio.addEventListener('ended', () => { audio.currentTime = 0; mostrarProgresso(); });
     audio.addEventListener('error', () => semAudio('Indisponível'));
-    botaoAudio.addEventListener('click', () => { if (audio.paused) audio.play().catch(() => {}); else audio.pause(); });
-    buscaAudio.addEventListener('input', () => {
+    botao.addEventListener('click', () => { if (audio.paused) audio.play().catch(() => {}); else audio.pause(); });
+    busca.addEventListener('input', () => {
       if (!Number.isFinite(audio.duration)) return;
-      audio.currentTime = (Number(buscaAudio.value) / 100) * audio.duration;
+      audio.currentTime = (Number(busca.value) / 100) * audio.duration;
       mostrarProgresso();
     });
-    velAudio.addEventListener('click', () => {
+    vel.addEventListener('click', () => {
       const proxima = VELOCIDADES[(VELOCIDADES.indexOf(audio.playbackRate) + 1) % VELOCIDADES.length];
       const texto = `${String(proxima).replace('.', ',')}x`;
       audio.playbackRate = proxima;
-      velAudio.textContent = texto;
-      velAudio.setAttribute('aria-label', `Velocidade do áudio: ${texto}`);
+      vel.textContent = texto;
+      vel.setAttribute('aria-label', `Velocidade do áudio: ${texto}`);
     });
-  } else {
-    semAudio('Em breve');
-  }
+  };
 
   /* ---------- Player: o vídeo toca aqui mesmo, numa janela do site (nada de abrir o YouTube) ----------
      O player do YouTube fica no tamanho real, com os controles dele (Shorts, som, curtir, compartilhar e a barra de tempo).
@@ -1313,6 +1415,137 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
+  /* ---------- Case (recorrência e prova social) ---------- */
+  const secaoCase = $('#case');
+  const LUGARES_CASE = { 'depois-destaques': 'destaques', 'depois-trabalhos': 'trabalhos', 'depois-servicos': 'servicos', 'depois-numeros': 'numeros' };
+  let videosCase = [];
+  const valorCase = (obj, padrao, chave) => (obj && Object.prototype.hasOwnProperty.call(obj, chave) ? obj[chave] : padrao[chave]);
+  const desenharCase = (dados, animar) => {
+    if (!secaoCase) return;
+    const k = (chave) => valorCase(dados.c, CASE_PADRAO, chave);
+    const f = (chave) => valorCase(dados.f, CASE_FEEDBACK, chave);
+    const texto = (v) => String(v == null ? '' : v).trim();
+    const mostrar = k('mostrar') !== false;
+    /* lugar na página e link no menu */
+    const lugar = document.getElementById(LUGARES_CASE[k('posicao')] || 'destaques');
+    if (lugar && lugar.nextElementSibling !== secaoCase) lugar.after(secaoCase);
+    $$('.nav-links a[href="#case"]').forEach((a) => a.remove());
+    if (mostrar && k('menu') !== false && lugar) {
+      const a = document.createElement('a');
+      a.href = '#case';
+      a.textContent = texto(k('rotuloMenu')) || 'Case';
+      a.addEventListener('click', () => alternarMenu(false));
+      const depois = $(`.nav-links a[href="#${lugar.id}"]`);
+      if (depois) depois.after(a); else $('.nav-links').append(a);
+    }
+    secaoCase.hidden = !mostrar;
+    if (!mostrar) return;
+    /* fundo e cor */
+    secaoCase.classList.toggle('bg-2', k('fundo') === 'bege');
+    secaoCase.classList.toggle('escuro', k('fundo') === 'escuro');
+    const cor = texto(k('cor'));
+    if (/^#[0-9a-f]{6}$/i.test(cor) && !(k('fundo') === 'escuro' && cor.toLowerCase() === CASE_PADRAO.cor)) secaoCase.style.setProperty('--case-cor', cor);
+    else secaoCase.style.removeProperty('--case-cor');
+    /* vídeos do funil */
+    videosCase = (dados.v || []).map((v) => prepararVideo({ marca: texto(v.marca) || 'Box Magenta', titulo: texto(v.nome), nicho: texto(v.etapa), link: v.link, capa: v.capa }));
+    const cartaoFunil = (v, i) => {
+      const bruto = dados.v[i] || {};
+      const capa = `<div class="case-capa ph g${[2, 0, 4][i % 3]}">`;
+      const dentro = `${v.capa ? `<img src="${esc(v.capa)}" alt="" loading="lazy" decoding="async">` : ''}`;
+      const cartao = v.yt
+        ? `<a class="case-capa ph g${[2, 0, 4][i % 3]}" href="${esc(v.link)}" data-case="${i}" aria-label="Assistir: ${esc(texto(bruto.nome) || 'vídeo')}">${dentro}<span class="play" aria-hidden="true">${ICONES.play}</span></a>`
+        : `${capa}${dentro}<span class="case-embreve">Vídeo em breve</span></div>`;
+      return `<li class="case-video reveal" style="--d:${(0.08 * i).toFixed(2)}s">
+          ${texto(bruto.etapa) ? `<p class="case-etapa">${esc(texto(bruto.etapa))}</p>` : ''}
+          ${cartao}
+          ${texto(bruto.nome) ? `<p class="case-fase">${esc(texto(bruto.nome))}</p>` : ''}
+          ${texto(bruto.texto) ? `<p class="case-desc">${esc(texto(bruto.texto))}</p>` : ''}
+        </li>`;
+    };
+    const motivos = (dados.m || []).filter((m) => m && (texto(m.titulo) || texto(m.texto)));
+    secaoCase.innerHTML = `<div class="container">
+      <div class="case-topo">
+        <header class="secao-topo">
+          ${texto(k('etiqueta')) ? `<p class="eyebrow reveal"><i></i>${esc(texto(k('etiqueta')))}</p>` : ''}
+          <h2 class="titulo reveal" id="titulo-case" style="--d:.06s">${comEnfase(texto(k('titulo')))}</h2>
+          ${texto(k('subtitulo')) ? `<p class="lead reveal" style="--d:.12s">${esc(texto(k('subtitulo')))}</p>` : ''}
+          ${texto(k('contexto')) ? `<p class="case-contexto reveal" style="--d:.16s">${esc(texto(k('contexto')))}</p>` : ''}
+        </header>
+        ${texto(k('numero')) ? `<div class="case-numero reveal" style="--d:.2s"><strong>${esc(texto(k('numero')))}</strong>${texto(k('numeroRotulo')) ? `<span>${esc(texto(k('numeroRotulo')))}</span>` : ''}</div>` : ''}
+      </div>
+      ${videosCase.length ? `<div class="case-bloco">
+        ${texto(k('videosTitulo')) ? `<h3 class="case-subtitulo reveal">${comEnfase(texto(k('videosTitulo')))}</h3>` : ''}
+        <ul class="case-funil">${videosCase.map(cartaoFunil).join('')}</ul>
+      </div>` : ''}
+      ${motivos.length ? `<div class="case-bloco">
+        ${texto(k('motivosTitulo')) ? `<h3 class="case-subtitulo reveal">${comEnfase(texto(k('motivosTitulo')))}</h3>` : ''}
+        <ol class="case-motivos">${motivos.map((m, i) => `<li class="case-motivo reveal" style="--d:${(0.06 * (i % 3)).toFixed(2)}s">
+          <p class="case-motivo-num" aria-hidden="true">${String(i + 1).padStart(2, '0')}</p>
+          ${texto(m.titulo) ? `<h4>${esc(texto(m.titulo))}</h4>` : ''}
+          ${texto(m.texto) ? `<p>${esc(texto(m.texto))}</p>` : ''}
+        </li>`).join('')}</ol>
+      </div>` : ''}
+      <div class="case-feedback reveal">
+        <div>
+          <p class="eyebrow"><i></i>Feedback</p>
+          <h3 class="case-feedback-titulo">${comEnfase(texto(f('titulo')))}</h3>
+          ${texto(f('texto')) ? `<p class="case-feedback-texto">${esc(texto(f('texto')))}</p>` : ''}
+        </div>
+        <div>
+          <div class="case-audio"></div>
+          ${texto(f('autor')) ? `<p class="case-autor">${esc(texto(f('autor')))}</p>` : ''}
+        </div>
+      </div>
+    </div>`;
+    montarAudio($('.case-audio', secaoCase), f('audio'));
+    $$('.case-capa img', secaoCase).forEach((img) => img.addEventListener('error', () => img.remove()));
+    animarNovos(secaoCase, animar);
+  };
+  if (secaoCase) {
+    secaoCase.addEventListener('click', (e) => {
+      const a = e.target.closest('a[data-case]');
+      if (!a) return;
+      if (abrirPlayer(videosCase[Number(a.dataset.case)], a)) e.preventDefault();
+    });
+  }
+
+  /* ---------- Cores do site (painel, cartão "Cores do site") ---------- */
+  const CORES_SITE = { destaque: '--accent', marrom: '--marrom', fundo: '--cream', fundo2: '--cream-2', texto: '--ink' };
+  const desenharCores = (c) => {
+    Object.keys(CORES_SITE).forEach((k) => {
+      const v = String(c[k] || '').trim();
+      if (/^#[0-9a-f]{6}$/i.test(v)) document.documentElement.style.setProperty(CORES_SITE[k], v);
+      else document.documentElement.style.removeProperty(CORES_SITE[k]);
+    });
+  };
+
+  /* ---------- Contatos e rodapé (painel, cartão "Contatos e rodapé") ---------- */
+  const desenharContato = (c) => {
+    const t = (v) => String(v == null ? '' : v).trim();
+    let num = t(c.whatsapp).replace(/\D/g, '');
+    if (num.length === 10 || num.length === 11) num = '55' + num;
+    if (num.length >= 12) {
+      const local = num.slice(2);
+      const mensagem = t(c.whatsappMensagem);
+      $$('[data-contato="whatsapp"]').forEach((a) => { a.href = `https://wa.me/${num}`; });
+      $$('[data-contato="whatsapp-msg"]').forEach((a) => { a.href = `https://wa.me/${num}${mensagem ? `?text=${encodeURIComponent(mensagem)}` : ''}`; });
+      $$('[data-contato-texto="whatsapp"]').forEach((el) => { el.textContent = `(${local.slice(0, 2)}) ${local.slice(2, -4)}-${local.slice(-4)}`; });
+    }
+    const email = t(c.email);
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      $$('[data-contato="email"]').forEach((a) => { a.href = `mailto:${email}`; });
+      $$('[data-contato-texto="email"]').forEach((el) => { el.textContent = email; });
+    }
+    const insta = t(c.instagram).replace(/^https?:\/\/(www\.)?instagram\.com\//i, '').replace(/^@/, '').replace(/\/.*$/, '');
+    if (/^[\w.]{1,30}$/.test(insta)) {
+      $$('[data-contato="instagram"]').forEach((a) => { a.href = `https://instagram.com/${insta}`; });
+      $$('[data-contato-texto="instagram"]').forEach((el) => { el.textContent = `@${insta}`; });
+    }
+    if (t(c.cidade)) $('#contatoCidade').textContent = t(c.cidade);
+    if (t(c.rodapeFrase)) $('#rodapeFrase').textContent = t(c.rodapeFrase);
+    if (t(c.rodapeCidade)) $('#rodapeCidade').textContent = t(c.rodapeCidade);
+  };
+
   /* Só redesenha a seção se o conteúdo mudou (evita piscar o que já está na tela) */
   const desenhado = {};
   const aplicarSecao = (chave, valor, desenhar, animar) => {
@@ -1331,6 +1564,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (c.capa && typeof c.capa === 'object') aplicarSecao('capa', c.capa, desenharCapa, animar);
     if (c.sobre && typeof c.sobre === 'object') aplicarSecao('sobre', c.sobre, desenharSobre, animar);
     if (c.titulos && typeof c.titulos === 'object') aplicarSecao('titulos', c.titulos, desenharTitulos, animar);
+    const objeto = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
+    aplicarSecao('case', { c: objeto(c.case), v: lista(c.case_videos, CASE_VIDEOS), m: lista(c.case_motivos, CASE_MOTIVOS), f: objeto(c.case_feedback) }, desenharCase, animar);
+    aplicarSecao('destaques_audio', (objeto(c.destaques_audio).audio || AUDIO_DESTAQUES), (link) => montarAudio($('#audioDestaques'), link), animar);
+    aplicarSecao('cores', objeto(c.cores), desenharCores, animar);
+    aplicarSecao('contato', objeto(c.contato), desenharContato, animar);
   };
 
   /* Primeiro desenha com o que ficou guardado da última visita (ou com o texto original) e depois confere no banco */
@@ -1410,11 +1648,10 @@ document.addEventListener('DOMContentLoaded', () => {
     contadores.forEach((el) => { if (!el.closest('.reveal')) observadorContador.observe(el); });
 
     /* Destaca no menu a seção que está na tela */
-    const links = $$('.nav-links a');
     const espiao = new IntersectionObserver((entradas) => {
       entradas.forEach((entrada) => {
         if (!entrada.isIntersecting) return;
-        links.forEach((a) => {
+        $$('.nav-links a').forEach((a) => {
           if (a.getAttribute('href') === '#' + entrada.target.id) a.setAttribute('aria-current', 'true');
           else a.removeAttribute('aria-current');
         });
@@ -1664,20 +1901,8 @@ document.addEventListener('DOMContentLoaded', () => {
         <p class="lead reveal" style="--d:.12s">Vídeos que mostram como uma boa ideia, contada com verdade, vira resultado. Toque em um card para assistir.</p>
       </header>
 
-      <!-- ESPAÇO DO ÁUDIO: o arquivo entra em AUDIO_DESTAQUES, no começo do script. -->
-      <div class="audio reveal" id="audioCartao" style="--d:.18s" role="group" aria-label="Player de áudio">
-        <audio id="audioEl" preload="none"></audio>
-        <button type="button" class="audio-play" id="audioPlay" aria-label="Ouvir o áudio"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg></button>
-        <div class="audio-meio">
-          <div class="audio-onda" id="audioOnda" aria-hidden="true"></div>
-          <input class="audio-busca" id="audioBusca" type="range" min="0" max="100" step="0.1" value="0" aria-label="Posição do áudio">
-          <div class="audio-tempos"><span id="audioAtual">0:00</span><span id="audioTotal">0:00</span></div>
-        </div>
-        <div class="audio-lado">
-          <button type="button" class="audio-vel" id="audioVel" aria-label="Velocidade do áudio: 1x">1x</button>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
-        </div>
-      </div>
+      <!-- ESPAÇO DO ÁUDIO: o link do áudio vem do painel (Conteúdo do site, "Áudio dos Destaques") ou de AUDIO_DESTAQUES. -->
+      <div class="reveal" id="audioDestaques" style="--d:.18s"></div>
     </div>
 
     <!-- Os cards do carrossel são criados pelos vídeos do painel marcados como Destaque (ou pela lista VIDEOS_PADRAO, no começo do script).
@@ -1689,6 +1914,11 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </div>
 </section>
+
+<!-- ============================ CASE (recorrência e prova social) ============================
+     Todo o conteúdo vem do painel (Conteúdo do site, cartões "Case"). Sem nada salvo, usa CASE_PADRAO, no começo do script.
+     O painel também escolhe onde a seção fica, o fundo, a cor e se aparece no menu. -->
+<section class="secao case" id="case" aria-labelledby="titulo-case" hidden></section>
 
 <!-- ============================ 4. TRABALHOS POR NICHO ============================ -->
 <section class="secao" id="trabalhos" aria-labelledby="titulo-trabalhos">
@@ -1740,23 +1970,23 @@ document.addEventListener('DOMContentLoaded', () => {
       <p class="lead reveal" style="--d:.12s">Conte um pouco sobre a sua marca e o que você quer comunicar. Eu respondo com carinho e com uma proposta pensada para você.</p>
 
       <div class="canais">
-        <a class="canal principal reveal" href="https://wa.me/5519983169592?text=Oi%20Esther%2C%20vim%20pelo%20seu%20portf%C3%B3lio%20e%20quero%20conversar%20sobre%20um%20projeto." target="_blank" rel="noopener noreferrer" style="--d:.16s">
+        <a class="canal principal reveal" data-contato="whatsapp-msg" href="https://wa.me/5519983169592?text=Oi%20Esther%2C%20vim%20pelo%20seu%20portf%C3%B3lio%20e%20quero%20conversar%20sobre%20um%20projeto." target="_blank" rel="noopener noreferrer" style="--d:.16s">
           <span class="canal-icone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.55L3 20.5l1.5-5.4A8.5 8.5 0 1 1 21 11.5z"/></svg></span>
-          <span class="canal-texto"><strong>WhatsApp</strong><span>(19) 98316-9592</span></span>
+          <span class="canal-texto"><strong>WhatsApp</strong><span data-contato-texto="whatsapp">(19) 98316-9592</span></span>
           <svg class="canal-seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
         </a>
-        <a class="canal reveal" href="mailto:contatoesthercustodio@gmail.com" style="--d:.2s">
+        <a class="canal reveal" data-contato="email" href="mailto:contatoesthercustodio@gmail.com" style="--d:.2s">
           <span class="canal-icone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/></svg></span>
-          <span class="canal-texto"><strong>E-mail</strong><span>contatoesthercustodio@gmail.com</span></span>
+          <span class="canal-texto"><strong>E-mail</strong><span data-contato-texto="email">contatoesthercustodio@gmail.com</span></span>
           <svg class="canal-seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
         </a>
-        <a class="canal reveal" href="https://instagram.com/Esthercustodio_" target="_blank" rel="noopener noreferrer" style="--d:.24s">
+        <a class="canal reveal" data-contato="instagram" href="https://instagram.com/Esthercustodio_" target="_blank" rel="noopener noreferrer" style="--d:.24s">
           <span class="canal-icone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".9" fill="currentColor" stroke="none"/></svg></span>
-          <span class="canal-texto"><strong>Instagram</strong><span>@Esthercustodio_</span></span>
+          <span class="canal-texto"><strong>Instagram</strong><span data-contato-texto="instagram">@Esthercustodio_</span></span>
           <svg class="canal-seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
         </a>
       </div>
-      <p class="cidade reveal" style="--d:.28s">Baseada em Hortolândia, São Paulo.</p>
+      <p class="cidade reveal" id="contatoCidade" style="--d:.28s">Baseada em Hortolândia, São Paulo.</p>
     </div>
 
     <div class="form-card reveal" style="--d:.14s">
@@ -1805,18 +2035,18 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="rodape-topo">
       <div>
         <p class="rodape-nome">Esther <em>Custódio</em></p>
-        <p class="rodape-sub">UGC Creator em Hortolândia. Conteúdo que inspira.</p>
+        <p class="rodape-sub" id="rodapeFrase">UGC Creator em Hortolândia. Conteúdo que inspira.</p>
       </div>
       <div class="redes" aria-label="Minhas redes">
-        <a href="https://instagram.com/Esthercustodio_" target="_blank" rel="noopener noreferrer">
+        <a data-contato="instagram" href="https://instagram.com/Esthercustodio_" target="_blank" rel="noopener noreferrer">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".9" fill="currentColor" stroke="none"/></svg>
           Instagram
         </a>
-        <a href="https://wa.me/5519983169592" target="_blank" rel="noopener noreferrer">
+        <a data-contato="whatsapp" href="https://wa.me/5519983169592" target="_blank" rel="noopener noreferrer">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.55L3 20.5l1.5-5.4A8.5 8.5 0 1 1 21 11.5z"/></svg>
           WhatsApp
         </a>
-        <a href="mailto:contatoesthercustodio@gmail.com">
+        <a data-contato="email" href="mailto:contatoesthercustodio@gmail.com">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/></svg>
           E-mail
         </a>
@@ -1824,7 +2054,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
     <div class="rodape-base">
       <p>© <span id="ano">2026</span> Esther Custódio. Todos os direitos reservados.</p>
-      <p>@Esthercustodio_ · Hortolândia</p>
+      <p><span data-contato-texto="instagram">@Esthercustodio_</span> · <span id="rodapeCidade">Hortolândia</span></p>
     </div>
   </div>
 </footer>

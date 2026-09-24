@@ -4084,6 +4084,48 @@
       return campos;
     }
 
+    /* Case Box Magenta: o mesmo texto original do site (vale enquanto nada foi salvo) */
+    var CASE_PADRAO = {
+      mostrar: true, menu: true, rotuloMenu: 'Case', posicao: 'depois-destaques', fundo: 'creme', cor: '#4d301b',
+      etiqueta: 'Case Box Magenta',
+      titulo: 'Por que essa marca já criou mais de *100 vídeos* comigo?',
+      subtitulo: 'Mais do que uma entrega pontual: uma parceria que se tornou recorrente.',
+      contexto: 'A Box Magenta já produziu mais de 100 vídeos comigo. Essa recorrência não nasce de um vídeo que deu certo, e sim de uma relação construída em confiança: entregas consistentes, alinhadas à marca e prontas para performar em cada etapa da jornada de compra.',
+      numero: '+100', numeroRotulo: 'vídeos produzidos para a Box Magenta',
+      videosTitulo: 'Um conteúdo para cada *momento* do funil',
+      motivosTitulo: 'O que faz a parceria *continuar*'
+    };
+    var CASE_VIDEOS = [
+      { etapa: 'Topo de funil', nome: 'Desejo', texto: 'Conteúdo que desperta interesse, desejo e identificação com o produto.', link: '', capa: '', marca: 'Box Magenta' },
+      { etapa: 'Meio de funil', nome: 'Conexão', texto: 'O produto apresentado de forma natural, no contexto de uso, criando identificação.', link: '', capa: '', marca: 'Box Magenta' },
+      { etapa: 'Fundo de funil', nome: 'Conversão', texto: 'O produto mostrado de maneira estratégica, direcionado à ação e à decisão de compra.', link: '', capa: '', marca: 'Box Magenta' }
+    ];
+    var CASE_MOTIVOS = [
+      { titulo: 'Entregas dentro do prazo', texto: 'Cumprimento dos prazos combinados e organização do começo ao fim do projeto.' },
+      { titulo: 'Fidelidade ao briefing', texto: 'Conteúdos coerentes com o briefing, o roteiro e o direcionamento da marca.' },
+      { titulo: 'Versatilidade criativa', texto: 'Linguagem, formato, estética e narrativa adaptados a cada objetivo e campanha.' },
+      { titulo: 'Linguagem natural', texto: 'Vídeos que soam como recomendação de verdade, e não como anúncio.' },
+      { titulo: 'Facilidade na parceria', texto: 'Comunicação clara, organização e agilidade para atender demandas diferentes.' },
+      { titulo: 'Entendimento de marca', texto: 'Mais do que reproduzir o briefing: entender a identidade da marca e traduzir isso para o meu universo de conteúdo.' }
+    ];
+    var CASE_FEEDBACK = { titulo: 'Uma parceria que *fala por si*.', texto: 'O retorno da Box Magenta, na voz de quem acompanha as entregas de perto.', audio: '', autor: 'Box Magenta' };
+    var CORES_PADRAO = { destaque: '#808080', marrom: '#4d301b', fundo: '#f3eee9', fundo2: '#ebe4dc', texto: '#14110d' };
+    var CONTATO_PADRAO = {
+      whatsapp: '19983169592', whatsappMensagem: 'Oi Esther, vim pelo seu portfólio e quero conversar sobre um projeto.',
+      email: 'contatoesthercustodio@gmail.com', instagram: 'Esthercustodio_', cidade: 'Baseada em Hortolândia, São Paulo.',
+      rodapeFrase: 'UGC Creator em Hortolândia. Conteúdo que inspira.', rodapeCidade: 'Hortolândia'
+    };
+    var AJUDA_ASTERISCO = 'A palavra entre asteriscos fica em itálico. Exemplo: mais de *100 vídeos*';
+
+    /* Formulário de objeto que começa com o texto original: o que não foi salvo aparece preenchido com o padrão */
+    function comPadrao(padrao) {
+      return {
+        paraForm: function (v) { var f = {}; Object.keys(padrao).forEach(function (k) { f[k] = v && Object.prototype.hasOwnProperty.call(v, k) ? v[k] : padrao[k]; }); return f; },
+        deForm: function (f) { var v = {}; Object.keys(padrao).forEach(function (k) { v[k] = typeof f[k] === 'string' ? f[k].trim() : f[k]; }); return v; }
+      };
+    }
+    function textoOuPadrao(v, padrao, k) { return texto(v && Object.prototype.hasOwnProperty.call(v, k) ? v[k] : padrao[k]).replace(/\*/g, ''); }
+
     /* As partes editáveis do site */
     var SECOES = [
       {
@@ -4137,6 +4179,66 @@
           });
         }
       },
+      Object.assign({
+        chave: 'case', titulo: 'Case Box Magenta: textos e aparência', tipo: 'objeto',
+        descricao: 'A página de recorrência e prova social: se aparece no site e no menu, onde fica, o fundo, a cor de destaque e os textos principais.',
+        campos: [
+          { nome: 'mostrar', rotulo: 'Mostrar esta página no site', tipo: 'checkbox' },
+          { nome: 'menu', rotulo: 'Mostrar o link no menu do topo', tipo: 'checkbox' },
+          { nome: 'rotuloMenu', rotulo: 'Nome no menu', placeholder: 'Case' },
+          { nome: 'posicao', rotulo: 'Onde fica no site', tipo: 'select', opcoes: [
+            { v: 'depois-destaques', t: 'Depois dos Destaques' }, { v: 'depois-trabalhos', t: 'Depois dos Trabalhos por nicho' },
+            { v: 'depois-servicos', t: 'Depois dos Serviços' }, { v: 'depois-numeros', t: 'Depois dos Números (antes do Contato)' }] },
+          { nome: 'fundo', rotulo: 'Fundo da página', tipo: 'select', opcoes: [
+            { v: 'creme', t: 'Creme (como o Sobre)' }, { v: 'bege', t: 'Bege (como os Destaques)' }, { v: 'escuro', t: 'Escuro' }] },
+          { nome: 'cor', rotulo: 'Cor de destaque (número grande e fases)', tipo: 'color', ajuda: 'Original: #4d301b (marrom). No fundo escuro, o marrom vira o bege claro automaticamente.' },
+          { nome: 'etiqueta', rotulo: 'Etiqueta pequena (acima do título)', largo: true },
+          { nome: 'titulo', rotulo: 'Título', largo: true, obrigatorio: true, ajuda: AJUDA_ASTERISCO },
+          { nome: 'subtitulo', rotulo: 'Subtítulo', largo: true },
+          { nome: 'contexto', rotulo: 'Texto do case (contexto)', tipo: 'textarea', largo: true },
+          { nome: 'numero', rotulo: 'Número em destaque', placeholder: '+100' },
+          { nome: 'numeroRotulo', rotulo: 'Texto abaixo do número', placeholder: 'vídeos produzidos para a Box Magenta' },
+          { nome: 'videosTitulo', rotulo: 'Título da parte dos vídeos', largo: true, ajuda: AJUDA_ASTERISCO },
+          { nome: 'motivosTitulo', rotulo: 'Título da parte dos motivos', largo: true, ajuda: AJUDA_ASTERISCO }
+        ],
+        resumo: function (v) {
+          var mostrar = !(v && v.mostrar === false);
+          return [(mostrar ? 'Aparece no site' : 'Escondida do site'), textoOuPadrao(v, CASE_PADRAO, 'titulo'), textoOuPadrao(v, CASE_PADRAO, 'subtitulo')];
+        }
+      }, comPadrao(CASE_PADRAO)),
+      {
+        chave: 'case_videos', titulo: 'Case Box Magenta: vídeos do funil', tipo: 'lista', item: 'Vídeo', padrao: CASE_VIDEOS,
+        descricao: 'Os vídeos do case (topo, meio e fundo de funil). Cole o link do YouTube; sem link, o card mostra "Vídeo em breve". A capa é opcional (vazio usa um momento do vídeo).',
+        colunas: [
+          { nome: 'etapa', rotulo: 'Etapa (acima do vídeo)', placeholder: 'Topo de funil' },
+          { nome: 'nome', rotulo: 'Nome da fase (abaixo do vídeo)', placeholder: 'Desejo' },
+          { nome: 'texto', rotulo: 'Descrição', tipo: 'textarea', largo: true },
+          { nome: 'link', rotulo: 'Link do vídeo (YouTube)', largo: true, placeholder: 'https://youtube.com/shorts/...' },
+          { nome: 'capa', rotulo: 'Capa (opcional)', largo: true, placeholder: 'img/capas/nome.webp ou https://...' },
+          { nome: 'marca', rotulo: 'Marca (aparece na janela do vídeo)', placeholder: 'Box Magenta' }
+        ],
+        resumo: function (v) { return (Array.isArray(v) ? v : []).map(function (x) { return texto(x.etapa) + ': ' + texto(x.nome) + (texto(x.link) ? '' : ' (sem vídeo)'); }); }
+      },
+      {
+        chave: 'case_motivos', titulo: 'Case Box Magenta: motivos da parceria', tipo: 'lista', item: 'Motivo', padrao: CASE_MOTIVOS,
+        descricao: 'Os cartões numerados que explicam por que a marca continua. Adicione, tire ou mude a ordem.',
+        colunas: [
+          { nome: 'titulo', rotulo: 'Título', obrigatorio: true },
+          { nome: 'texto', rotulo: 'Texto', tipo: 'textarea', largo: true }
+        ],
+        resumo: function (v) { return (Array.isArray(v) ? v : []).map(function (x) { return texto(x.titulo); }); }
+      },
+      Object.assign({
+        chave: 'case_feedback', titulo: 'Case Box Magenta: feedback em áudio', tipo: 'objeto',
+        descricao: 'A área escura com o áudio da marca. O áudio precisa ser um link de arquivo mp3 ou m4a (https://...) ou um arquivo na pasta audio do site (audio/nome.mp3). Vazio mostra "Em breve".',
+        campos: [
+          { nome: 'titulo', rotulo: 'Título', largo: true, obrigatorio: true, ajuda: AJUDA_ASTERISCO },
+          { nome: 'texto', rotulo: 'Texto', tipo: 'textarea', largo: true },
+          { nome: 'audio', rotulo: 'Link do áudio', largo: true, placeholder: 'audio/feedback-box-magenta.mp3' },
+          { nome: 'autor', rotulo: 'Nome abaixo do player', placeholder: 'Box Magenta' }
+        ],
+        resumo: function (v) { return [textoOuPadrao(v, CASE_FEEDBACK, 'titulo'), texto(v && v.audio) ? 'Com áudio' : 'Sem áudio (mostra "Em breve")']; }
+      }, comPadrao(CASE_FEEDBACK)),
       {
         chave: 'nichos', titulo: 'Nichos da galeria', tipo: 'lista', item: 'Nicho',
         descricao: 'As linhas da galeria: nome, descrição (a frase em itálico abaixo do nome) e a ordem. Use "Adicionar nicho" para criar um novo; depois escolha esse nicho nos vídeos. O nome precisa ser igual ao nicho escrito nos vídeos.',
@@ -4188,7 +4290,39 @@
           { nome: 'texto', rotulo: 'Depoimento', tipo: 'textarea', largo: true, obrigatorio: true }
         ],
         resumo: function (v) { return (Array.isArray(v) ? v : []).map(function (d) { return texto(d.nome) + ' (' + texto(d.empresa) + ')'; }); }
-      }
+      },
+      Object.assign({
+        chave: 'destaques_audio', titulo: 'Áudio dos Destaques', tipo: 'objeto',
+        descricao: 'O player ao lado dos vídeos de Destaque. Link de um arquivo mp3 ou m4a (https://...) ou audio/nome.mp3. Vazio mostra "Em breve".',
+        campos: [{ nome: 'audio', rotulo: 'Link do áudio', largo: true, placeholder: 'audio/recado.mp3' }],
+        resumo: function (v) { return [texto(v && v.audio) ? texto(v.audio) : 'Sem áudio (mostra "Em breve")']; }
+      }, comPadrao({ audio: '' })),
+      Object.assign({
+        chave: 'contato', titulo: 'Contatos e rodapé', tipo: 'objeto',
+        descricao: 'WhatsApp, e-mail e Instagram do site inteiro (seção Contato e rodapé), a cidade e as frases do rodapé.',
+        campos: [
+          { nome: 'whatsapp', rotulo: 'WhatsApp (DDD e número)', placeholder: '19983169592', ajuda: 'Só números. O site monta o link e o formato (19) 98316-9592.' },
+          { nome: 'whatsappMensagem', rotulo: 'Mensagem que já vem escrita no WhatsApp', tipo: 'textarea', largo: true },
+          { nome: 'email', rotulo: 'E-mail', tipo: 'email' },
+          { nome: 'instagram', rotulo: 'Instagram (usuário)', placeholder: 'Esthercustodio_' },
+          { nome: 'cidade', rotulo: 'Frase da cidade (seção Contato)', largo: true },
+          { nome: 'rodapeFrase', rotulo: 'Frase do rodapé', largo: true },
+          { nome: 'rodapeCidade', rotulo: 'Cidade no fim do rodapé', placeholder: 'Hortolândia' }
+        ],
+        resumo: function (v) { return [textoOuPadrao(v, CONTATO_PADRAO, 'whatsapp'), textoOuPadrao(v, CONTATO_PADRAO, 'email'), '@' + textoOuPadrao(v, CONTATO_PADRAO, 'instagram')]; }
+      }, comPadrao(CONTATO_PADRAO)),
+      Object.assign({
+        chave: 'cores', titulo: 'Cores do site', tipo: 'objeto',
+        descricao: 'As cores principais do portfólio inteiro. Originais: destaque #808080, marrom #4d301b, fundo #f3eee9, fundo alternativo #ebe4dc, texto #14110d.',
+        campos: [
+          { nome: 'destaque', rotulo: 'Cinza de destaque (botões, play, palavras em itálico)', tipo: 'color' },
+          { nome: 'marrom', rotulo: 'Marrom (a palavra "conecta." e detalhes)', tipo: 'color' },
+          { nome: 'fundo', rotulo: 'Fundo principal (creme)', tipo: 'color' },
+          { nome: 'fundo2', rotulo: 'Fundo alternativo (bege das seções)', tipo: 'color' },
+          { nome: 'texto', rotulo: 'Cor do texto', tipo: 'color' }
+        ],
+        resumo: function (v) { return Object.keys(CORES_PADRAO).map(function (k) { return k + ': ' + textoOuPadrao(v, CORES_PADRAO, k); }); }
+      }, comPadrao(CORES_PADRAO))
     ];
 
     /* ---------- Vídeos do site (a mesma tabela "videos" da aba Portfólio) ---------- */
