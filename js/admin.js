@@ -4181,9 +4181,9 @@
       cor: '#4d301b', audio: '', audioLegenda: 'Feedback da Box Magenta'
     };
     var CASE_VIDEOS = [
-      { etapa: 'Topo de funil', link: '', rotulo1: 'Objetivo', valor1: 'Desejo', rotulo2: 'Visualizações', valor2: '', capa: '', marca: 'Box Magenta' },
-      { etapa: 'Meio de funil', link: '', rotulo1: 'Objetivo', valor1: 'Conexão', rotulo2: 'Visualizações', valor2: '', capa: '', marca: 'Box Magenta' },
-      { etapa: 'Fundo de funil', link: '', rotulo1: 'Objetivo', valor1: 'Conversão', rotulo2: 'Visualizações', valor2: '', capa: '', marca: 'Box Magenta' }
+      { etapa: 'Topo de funil', link: '', resultado: 'Desejo', detalhe: 'Desperta interesse e identificação', capa: '', marca: 'Box Magenta' },
+      { etapa: 'Meio de funil', link: '', resultado: 'Conexão', detalhe: 'O produto no uso de verdade', capa: '', marca: 'Box Magenta' },
+      { etapa: 'Fundo de funil', link: '', resultado: 'Conversão', detalhe: 'Direciona para a compra', capa: '', marca: 'Box Magenta' }
     ];
     var CASE_MOTIVOS = [
       { icone: 'relogio', titulo: 'Entregas no prazo', texto: 'Prazos cumpridos e projeto organizado' },
@@ -4309,18 +4309,16 @@
       }, comPadrao(CASE_PADRAO)),
       {
         chave: 'case_videos', titulo: 'Vídeos do case', tipo: 'lista', item: 'Vídeo', padrao: CASE_VIDEOS,
-        descricao: 'Os vídeos do carrossel (topo, meio e fundo de funil). Sem link, o card mostra "Vídeo em breve". Abaixo do vídeo aparecem até duas linhas; linha sem valor não aparece.',
+        descricao: 'Os vídeos do carrossel (topo, meio e fundo de funil). Sem link, o card mostra "Vídeo em breve". Embaixo do vídeo vão um texto grande (o resultado, por exemplo "+ 100 milhões de views") e um texto pequeno.',
         colunas: [
           { nome: 'etapa', rotulo: 'Nome acima do vídeo', placeholder: 'Topo de funil' },
           { nome: 'link', rotulo: 'Link do vídeo (YouTube)', placeholder: 'https://youtube.com/shorts/...' },
-          { nome: 'rotulo1', rotulo: 'Linha 1: rótulo', placeholder: 'Objetivo' },
-          { nome: 'valor1', rotulo: 'Linha 1: valor', placeholder: 'Desejo' },
-          { nome: 'rotulo2', rotulo: 'Linha 2: rótulo', placeholder: 'Visualizações' },
-          { nome: 'valor2', rotulo: 'Linha 2: valor', placeholder: '1,2M' },
+          { nome: 'resultado', rotulo: 'Texto grande abaixo do vídeo', placeholder: '+ 100 milhões de views' },
+          { nome: 'detalhe', rotulo: 'Texto pequeno abaixo', placeholder: 'apenas no TikTok' },
           { nome: 'capa', rotulo: 'Capa (opcional; vazio usa um momento do vídeo)', tipo: 'arquivo', pasta: 'capas', maxLado: 720, largo: true },
           { nome: 'marca', rotulo: 'Marca (aparece na janela do vídeo)', placeholder: 'Box Magenta' }
         ],
-        resumo: function (v) { return (Array.isArray(v) ? v : []).map(function (x) { return texto(x.etapa) + ': ' + texto(x.valor1) + (texto(x.link) ? '' : ' (sem vídeo)'); }); }
+        resumo: function (v) { return (Array.isArray(v) ? v : []).map(function (x) { return texto(x.etapa) + ': ' + texto(x.resultado != null ? x.resultado : x.valor1) + (texto(x.link) ? '' : ' (sem vídeo)'); }); }
       },
       {
         chave: 'case_motivos', titulo: 'Os porquês (selos com ícone)', tipo: 'lista', item: 'Selo', padrao: CASE_MOTIVOS,
