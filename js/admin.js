@@ -4181,9 +4181,9 @@
       cor: '#4d301b', audio: '', audioLegenda: 'Feedback da Box Magenta'
     };
     var CASE_VIDEOS = [
-      { etapa: 'Topo de funil', link: '', resultado: 'Desejo', detalhe: 'Desperta interesse e identificação', capa: '', marca: 'Box Magenta' },
-      { etapa: 'Meio de funil', link: '', resultado: 'Conexão', detalhe: 'O produto no uso de verdade', capa: '', marca: 'Box Magenta' },
-      { etapa: 'Fundo de funil', link: '', resultado: 'Conversão', detalhe: 'Direciona para a compra', capa: '', marca: 'Box Magenta' }
+      { etapa: 'Topo de funil', link: 'https://youtube.com/shorts/wA2zUnK1D-c', resultado: 'Desejo', detalhe: 'Desperta interesse e identificação', capa: 'img/capas/box-magenta-desejo.webp', marca: 'Box Magenta' },
+      { etapa: 'Meio de funil', link: 'https://youtube.com/shorts/wI1U8XUVzB0', resultado: 'Conexão', detalhe: 'O produto no uso de verdade', capa: 'img/capas/box-magenta-conexao.webp', marca: 'Box Magenta' },
+      { etapa: 'Fundo de funil', link: 'https://youtube.com/shorts/RW_Ve8hzwjs', resultado: 'Conversão', detalhe: 'Direciona para a compra', capa: 'img/capas/box-magenta-conversao.webp', marca: 'Box Magenta' }
     ];
     var CASE_MOTIVOS = [
       { icone: 'relogio', titulo: 'Entregas no prazo', texto: 'Prazos cumpridos e projeto organizado' },
@@ -4204,11 +4204,10 @@
     var CAPA_PADRAO = { titulo1: 'Inspiração', titulo2: 'que *conecta.*', botao: 'Quero criar com a Esther', link: 'Ver os trabalhos', foto: '', fotoAlt: 'Esther Custódio olhando por cima do ombro e sorrindo, com cabelo cacheado e brinco dourado' };
     var FAIXA_PADRAO = { mostrar: true, titulo: 'Marcas com quem já trabalhei' };
     var SOBRE_PADRAO = {
-      foto: '', fotoAlt: 'Esther Custódio sorrindo, gravando um vídeo em casa',
+      foto: '', fotoAlt: 'Esther Custódio sentada num sofá, sorrindo, num estúdio rosa com o logo do TikTok',
       abre: 'Eu gosto de mostrar produtos do jeito que as pessoas realmente usam: na rotina, com luz natural e com opinião de verdade.',
-      texto: 'Sou criadora de conteúdo UGC em Hortolândia e já entreguei 250 vídeos para marcas de beleza, skincare, moda, casa e decoração, fitness e viagem. Cada projeto começa com uma conversa para entender o que a sua marca quer dizer e termina com um conteúdo que você vai ter orgulho de postar.', promessasTitulo: 'Minhas três promessas',
-      promessa1: 'Roteiro aprovado antes de gravar', promessa2: 'Uma rodada de ajuste inclusa', promessa3: 'Entrega em até 72 horas úteis',
-      assinaturaPequena: 'Com carinho,', assinatura: 'Esther Custódio'
+      texto: 'Sou criadora de conteúdo UGC em Hortolândia e já entreguei 250 vídeos para marcas de beleza, skincare, moda, casa e decoração, fitness e viagem. Cada projeto começa com uma conversa para entender o que a sua marca quer dizer e termina com um conteúdo que você vai ter orgulho de postar.',
+      selo1: '+150 marcas parceiras', selo2: 'Hortolândia · SP · Brasil'
     };
     var CAPTURA_PADRAO = { mostrar: true, titulo: 'Quer meu mídia kit *completo?*', sub: 'Deixe o seu nome e o seu e-mail que eu envio para você.', botao: 'Quero receber' };
     var LOGOS_PADRAO = [{"imagem": "img/marcas/mac.webp", "nome": "M·A·C"}, {"imagem": "img/marcas/natura.webp", "nome": "Natura"}, {"imagem": "img/marcas/truss.webp", "nome": "Truss Professional"}, {"imagem": "img/marcas/canva.webp", "nome": "Canva"}, {"imagem": "img/marcas/creamy.webp", "nome": "Creamy"}, {"imagem": "img/marcas/beleza-na-web.webp", "nome": "Beleza na Web"}, {"imagem": "img/marcas/mascavo.webp", "nome": "Mascavo"}, {"imagem": "img/marcas/loreal.webp", "nome": "L'Oréal Groupe"}, {"imagem": "img/marcas/fini.webp", "nome": "Fini"}, {"imagem": "img/marcas/lola-from-rio.webp", "nome": "Lola from Rio"}, {"imagem": "img/marcas/ifood.webp", "nome": "iFood"}, {"imagem": "img/marcas/pantene.webp", "nome": "Pantene"}, {"imagem": "img/marcas/ca.webp", "nome": "C&A"}, {"imagem": "img/marcas/sallve.webp", "nome": "Sallve"}, {"imagem": "img/marcas/marca-simbolo.webp", "nome": "com um símbolo preto em um círculo rosa"}, {"imagem": "img/marcas/rohto.webp", "nome": "Rohto"}, {"imagem": "img/marcas/marca-m-rosa.webp", "nome": "com a letra m em um círculo rosa"}, {"imagem": "img/marcas/dabelle.webp", "nome": "DaBelle"}, {"imagem": "img/marcas/amazon.webp", "nome": "Amazon"}, {"imagem": "img/marcas/hiven.webp", "nome": "Hiven"}, {"imagem": "img/marcas/matrix.webp", "nome": "Matrix Professional"}, {"imagem": "img/marcas/marca-p-roxo.webp", "nome": "com a letra p roxa em um círculo lilás"}, {"imagem": "img/marcas/dafiti.webp", "nome": "Dafiti"}, {"imagem": "img/marcas/epile.webp", "nome": "Épilé"}, {"imagem": "img/marcas/99food.webp", "nome": "99Food"}, {"imagem": "img/marcas/nina-makeup.webp", "nome": "Nina Makeup"}, {"imagem": "img/marcas/salton.webp", "nome": "Salton"}, {"imagem": "img/marcas/abela.webp", "nome": "Abela Cosmetics"}, {"imagem": "img/marcas/color-wow.webp", "nome": "Color Wow"}, {"imagem": "img/marcas/oceane.webp", "nome": "Oceane"}, {"imagem": "img/marcas/vizcaya.webp", "nome": "Vizcaya"}, {"imagem": "img/marcas/rildy.webp", "nome": "Rildy"}, {"imagem": "img/marcas/inoar.webp", "nome": "Inoar"}, {"imagem": "img/marcas/marca-p-preto.webp", "nome": "com a letra P branca em um círculo preto"}, {"imagem": "img/marcas/bioderma.webp", "nome": "Bioderma"}, {"imagem": "img/marcas/fenzza.webp", "nome": "Fenzza"}, {"imagem": "img/marcas/petrizi.webp", "nome": "Petrizi"}, {"imagem": "img/marcas/ruby-kisses.webp", "nome": "Ruby Kisses"}, {"imagem": "img/marcas/garnier.webp", "nome": "Garnier"}, {"imagem": "img/marcas/kiss-new-york.webp", "nome": "Kiss New York"}, {"imagem": "img/marcas/authentic-feet.webp", "nome": "Authentic Feet"}];
@@ -4278,20 +4277,16 @@
       },
       Object.assign({
         chave: 'sobre', titulo: 'Textos e foto do Sobre mim', tipo: 'objeto',
-        descricao: 'A foto, a frase de abertura, o parágrafo, as três promessas e a assinatura.',
+        descricao: 'A foto, os parágrafos (com negrito) e os dois selos abaixo do texto.',
         campos: [
           { nome: 'foto', rotulo: 'Foto (formato em pé, 4:5)', tipo: 'arquivo', pasta: 'sobre', maxLado: 1400, largo: true },
           { nome: 'fotoAlt', rotulo: 'Descrição da foto (para quem usa leitor de tela)', largo: true },
-          { nome: 'abre', rotulo: 'Frase de abertura (em destaque)', tipo: 'textarea', largo: true, obrigatorio: true },
-          { nome: 'texto', rotulo: 'Parágrafo', tipo: 'textarea', largo: true },
-          { nome: 'promessasTitulo', rotulo: 'Título das promessas', largo: true },
-          { nome: 'promessa1', rotulo: 'Promessa 1', largo: true },
-          { nome: 'promessa2', rotulo: 'Promessa 2', largo: true },
-          { nome: 'promessa3', rotulo: 'Promessa 3', largo: true },
-          { nome: 'assinaturaPequena', rotulo: 'Antes da assinatura', placeholder: 'Com carinho,' },
-          { nome: 'assinatura', rotulo: 'Assinatura', placeholder: 'Esther Custódio' }
+          { nome: 'abre', rotulo: 'Primeiro parágrafo', tipo: 'textarea', largo: true, obrigatorio: true, ajuda: 'Palavra entre **asteriscos** fica em negrito.' },
+          { nome: 'texto', rotulo: 'Mais parágrafos', tipo: 'textarea', largo: true, ajuda: 'Deixe uma linha em branco para separar os parágrafos. **palavra** fica em negrito.' },
+          { nome: 'selo1', rotulo: 'Selo 1 (em destaque)', placeholder: '+150 marcas parceiras' },
+          { nome: 'selo2', rotulo: 'Selo 2', placeholder: 'Hortolândia · SP · Brasil' }
         ],
-        resumo: function (v) { return [cortar(textoOuPadrao(v, SOBRE_PADRAO, 'abre'), 110), texto(v && v.foto) ? 'Com foto' : 'Sem foto (mostra o espaço reservado)']; }
+        resumo: function (v) { return [cortar(textoOuPadrao(v, SOBRE_PADRAO, 'abre'), 110), texto(v && v.foto) ? 'Foto enviada pelo painel' : 'Foto do site (img/sobre-esther.webp)']; }
       }, comPadrao(SOBRE_PADRAO)),
       Object.assign({
         chave: 'case', titulo: 'Textos, cor e áudio', tipo: 'objeto',

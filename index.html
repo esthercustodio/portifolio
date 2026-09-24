@@ -82,7 +82,7 @@ button,input,textarea{font:inherit;color:inherit}
   font-family:var(--serif);font-weight:700;
   font-size:clamp(2.3rem,5.4vw,4.2rem);line-height:1.02;letter-spacing:-.025em;
 }
-.titulo em{font-style:italic;font-weight:700;color:var(--accent)}
+.titulo em{font-style:italic;font-weight:700;color:var(--marrom)}
 .escuro .titulo em{color:var(--marrom-claro)}
 .lead{color:var(--muted);font-size:1.1rem;margin-top:1.1rem;max-width:36rem}
 .escuro .lead{color:rgba(243,238,233,.78)}
@@ -215,19 +215,17 @@ button,input,textarea{font:inherit;color:inherit}
 /* =========================================================
    2. SOBRE
    ========================================================= */
-.sobre-grid{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1fr);gap:clamp(2.5rem,6vw,5.5rem);align-items:center}
-.sobre-foto{position:relative;isolation:isolate;max-width:460px}
-.sobre-foto::before{content:"";position:absolute;inset:14px -14px -14px 14px;border:1px solid var(--marrom);border-radius:var(--radius-lg);z-index:-1}
-.sobre-texto p{margin-top:1.1rem;color:var(--muted)}
-.sobre-texto p.abre{font-family:var(--serif);font-size:clamp(1.3rem,2.3vw,1.7rem);line-height:1.35;color:var(--ink);margin-top:1.4rem}
-.promessas-titulo{margin-top:2rem;font-size:.78rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-text)}
-.promessas{display:grid;gap:.85rem;margin-top:1rem}
-.promessas li{display:flex;align-items:center;gap:.9rem;font-weight:600;padding-bottom:.85rem;border-bottom:1px solid var(--line)}
+.sobre-grid{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1fr);gap:clamp(2.5rem,6vw,5.5rem);align-items:center}
+.sobre-foto{max-width:420px}
+.sobre-img{display:block;width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;border-radius:24px;background:var(--cream-2);box-shadow:0 30px 60px -34px rgba(20,17,13,.55)}
+.sobre-texto p{margin-top:1.1rem;font-size:1.02rem;line-height:1.75;color:var(--muted)}
+.sobre-texto p strong{font-weight:700;color:var(--ink)}
+.sobre-texto .titulo{margin-bottom:.4rem}
+.sobre-selos{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1.9rem}
+.sobre-selo{display:inline-block;padding:.72rem 1.25rem;border:1px solid var(--line);border-radius:999px;background:var(--cream-2);font-size:.92rem;font-weight:600;color:var(--ink)}
+.sobre-selo.forte{background:rgba(77,48,27,.1);border-color:rgba(77,48,27,.3);color:var(--marrom)}
 .check{flex:none;width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center}
 .check svg{width:14px;height:14px}
-.assinatura{margin-top:2rem;display:flex;flex-direction:column;gap:.15rem}
-.assinatura small{font-size:.85rem;color:var(--muted)}
-.assinatura strong{font-family:var(--serif);font-style:italic;font-weight:700;font-size:clamp(1.7rem,3.4vw,2.4rem);color:var(--accent);letter-spacing:-.01em}
 
 /* =========================================================
    3. DESTAQUES
@@ -352,7 +350,7 @@ button,input,textarea{font:inherit;color:inherit}
   background:var(--paper);font-size:.92rem;font-weight:600;text-decoration:none;color:var(--ink);
   box-shadow:0 1px 2px rgba(20,17,13,.05);transition:background .25s,color .25s,transform .25s;
 }
-.chip-nicho:hover{background:var(--ink);color:var(--cream);transform:translateY(-2px)}
+.chip-nicho:hover{background:var(--marrom);border-color:var(--marrom);color:var(--cream);transform:translateY(-2px)}
 /* Uma linha por nicho: título, quantidade pequena, frase em itálico e as setas que passam os vídeos */
 .nichos{--gap:clamp(.7rem,1.6vw,1.25rem)}
 .nicho-linha{margin-top:clamp(2.4rem,5vw,3.6rem)}
@@ -464,7 +462,7 @@ button,input,textarea{font:inherit;color:inherit}
 .metricas{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--ink)}
 .metricas li{padding:1.4rem 1rem 1.6rem 0}
 .metricas li + li{padding-left:clamp(.9rem,2.4vw,2rem);border-left:1px solid var(--line)}
-.metricas .contador{display:block;font-family:var(--serif);font-weight:700;font-size:clamp(2.6rem,6vw,4.6rem);line-height:1;letter-spacing:-.03em;color:var(--accent)}
+.metricas .contador{display:block;font-family:var(--serif);font-weight:700;font-size:clamp(2.6rem,6vw,4.6rem);line-height:1;letter-spacing:-.03em;color:var(--marrom)}
 .resultados{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(1rem,2.4vw,1.75rem);margin-top:clamp(2.5rem,6vw,4rem)}
 .resultado{background:var(--ink);color:var(--cream);border-radius:var(--radius-lg);padding:clamp(1.5rem,3vw,2.2rem);box-shadow:var(--shadow)}
 .resultado-num{font-family:var(--serif);font-weight:700;font-size:clamp(2.8rem,5vw,3.8rem);line-height:1;letter-spacing:-.03em;color:var(--marrom-claro)}
@@ -514,6 +512,9 @@ button,input,textarea{font:inherit;color:inherit}
 .campo textarea{min-height:140px;resize:vertical}
 .campo input:focus,.campo textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(128,128,128,.4)}
 .form-card .btn{width:100%}
+/* botões das páginas (fora da capa) no marrom do "Como eu te ajudo" */
+.form-card .btn-primario,.captura .btn-primario{background:var(--marrom);border-color:var(--marrom);color:var(--cream)}
+.form-card .btn-primario:hover,.captura .btn-primario:hover{background:var(--ink);border-color:var(--ink);color:var(--cream)}
 .form-nota{margin-top:.9rem;font-size:.85rem;color:var(--muted);text-align:center}
 .confirmacao{text-align:center;padding:1.5rem .5rem}
 .confirmacao:focus{outline:none}
@@ -554,7 +555,7 @@ button,input,textarea{font:inherit;color:inherit}
 .captura-fechar:hover{background:rgba(20,17,13,.08)}
 .captura-fechar svg{width:20px;height:20px}
 .captura h2{font-family:var(--serif);font-weight:700;font-size:clamp(1.8rem,5vw,2.3rem);line-height:1.05;letter-spacing:-.02em}
-.captura h2 em{font-style:italic;font-weight:700;color:var(--accent)}
+.captura h2 em{font-style:italic;font-weight:700;color:var(--marrom)}
 .captura p.sub{margin:.8rem 0 1.4rem;color:var(--muted);font-size:.98rem}
 .captura .btn{width:100%}
 .captura .confirmacao{padding:.5rem 0}
@@ -750,9 +751,9 @@ const CASE_PADRAO = {
 /* ONDE ENTRAM OS 3 VÍDEOS: link do YouTube e capa (opcional). Sem link, o card mostra "Vídeo em breve".
    Embaixo do vídeo: "resultado" (texto grande, ex.: "+ 100 milhões de views") e "detalhe" (texto pequeno, ex.: "apenas no TikTok"). */
 const CASE_VIDEOS = [
-  { etapa: "Topo de funil", resultado: "Desejo", detalhe: "Desperta interesse e identificação", link: "", capa: "", marca: "Box Magenta" },
-  { etapa: "Meio de funil", resultado: "Conexão", detalhe: "O produto no uso de verdade", link: "", capa: "", marca: "Box Magenta" },
-  { etapa: "Fundo de funil", resultado: "Conversão", detalhe: "Direciona para a compra", link: "", capa: "", marca: "Box Magenta" }
+  { etapa: "Topo de funil", resultado: "Desejo", detalhe: "Desperta interesse e identificação", link: "https://youtube.com/shorts/wA2zUnK1D-c", capa: "img/capas/box-magenta-desejo.webp", marca: "Box Magenta" },
+  { etapa: "Meio de funil", resultado: "Conexão", detalhe: "O produto no uso de verdade", link: "https://youtube.com/shorts/wI1U8XUVzB0", capa: "img/capas/box-magenta-conexao.webp", marca: "Box Magenta" },
+  { etapa: "Fundo de funil", resultado: "Conversão", detalhe: "Direciona para a compra", link: "https://youtube.com/shorts/RW_Ve8hzwjs", capa: "img/capas/box-magenta-conversao.webp", marca: "Box Magenta" }
 ];
 /* Os "porquês", em selos com ícone. Ícones: check, relogio, roteiro, estrela, conversa, parceria, coracao, alvo */
 const CASE_MOTIVOS = [
@@ -1367,15 +1368,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  /* Sobre mim: **palavra** (ou *palavra*) fica em negrito; linha em branco separa parágrafos */
   const desenharSobre = (c) => {
-    if (c.abre) $('#sobreAbre').textContent = String(c.abre);
-    if (c.texto) $('#sobreTexto').textContent = String(c.texto);
+    if (c.abre) $('#sobreAbre').innerHTML = comNegrito(String(c.abre));
+    if (c.texto) $('#sobreTexto').innerHTML = String(c.texto).split(/\n\s*\n/).map((par) => par.trim()).filter(Boolean).map((par) => `<p>${comNegrito(par)}</p>`).join('');
   };
 
   /* Títulos das seções (painel, cartão "Títulos das seções"). Campo vazio mantém o texto original.
      No título, a palavra entre asteriscos (*destaque*) fica em itálico. */
   const SECOES_COM_TITULO = ['sobre', 'destaques', 'trabalhos', 'servicos', 'numeros', 'contato'];
   const comEnfase = (t) => esc(t).replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  const comNegrito = (t) => esc(t).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<strong>$1</strong>');
   const desenharTitulos = (t) => {
     SECOES_COM_TITULO.forEach((id) => {
       const v = t[id];
@@ -1412,7 +1415,6 @@ document.addEventListener('DOMContentLoaded', () => {
     coracao: traco('<path d="M12 19.5s-7.5-4.4-7.5-10A4.3 4.3 0 0 1 12 7a4.3 4.3 0 0 1 7.5 2.5c0 5.6-7.5 10-7.5 10z"/>'),
     alvo: traco('<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/>')
   };
-  const comNegrito = (t) => esc(t).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   let videosCase = [];
   const valorCase = (obj, padrao, chave) => (obj && Object.prototype.hasOwnProperty.call(obj, chave) ? obj[chave] : padrao[chave]);
   /* cor do case: no fundo escuro, o marrom original vira o bege claro (senão some no escuro) */
@@ -1543,14 +1545,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const desenharSobreExtra = (c) => {
     const t = (v) => String(v == null ? '' : v).trim();
     const foto = imagemSegura(c.foto);
-    if (foto) $('.sobre-foto').innerHTML = `<div class="ph g3 foto-45"><img src="${esc(foto)}" alt="${esc(t(c.fotoAlt) || 'Esther Custódio')}" loading="lazy"></div>`;
-    if (c.promessasTitulo != null) $('.promessas-titulo').textContent = t(c.promessasTitulo);
-    const promessas = [c.promessa1, c.promessa2, c.promessa3].map(t);
-    if ([c.promessa1, c.promessa2, c.promessa3].some((x) => x != null)) {
-      $('.promessas').innerHTML = promessas.filter(Boolean).map((x, i) => `<li class="reveal in" style="--d:${(0.22 + 0.06 * i).toFixed(2)}s"><span class="check">${ICONES.check}</span>${esc(x)}</li>`).join('');
+    if (foto) $('.sobre-img').src = foto;
+    if (t(c.fotoAlt)) $('.sobre-img').alt = t(c.fotoAlt);
+    if (c.selo1 != null || c.selo2 != null) {
+      $('#sobreSelos').innerHTML = [t(c.selo1), t(c.selo2)].map((x, i) => (x ? `<span class="sobre-selo${i === 0 ? ' forte' : ''}">${esc(x)}</span>` : '')).join('');
     }
-    if (t(c.assinaturaPequena)) $('.assinatura small').textContent = t(c.assinaturaPequena);
-    if (t(c.assinatura)) $('.assinatura strong').textContent = t(c.assinatura);
   };
   const logosDoPainel = (lista) => lista.map((m) => ({ src: imagemSegura(m.imagem), alt: `Logo ${String(m.nome || '').trim()}`.trim() })).filter((m) => m.src);
   const desenharFaixa = (c) => {
@@ -1648,7 +1647,6 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (erro) { /* o site segue com o que já está na tela */ }
   })();
 
-  $$('.promessas .check').forEach((el) => { el.innerHTML = ICONES.check; });
 
   /* ---------- Menu (sanduíche no celular) ---------- */
   const cabecalho = $('.site-header');
@@ -1927,28 +1925,20 @@ document.addEventListener('DOMContentLoaded', () => {
 <section class="secao" id="sobre" aria-labelledby="titulo-sobre">
   <div class="container sobre-grid">
     <div class="sobre-foto reveal">
-      <!-- FOTO DO SOBRE: mesma troca da capa. Apague o <span class="ph-legenda">, tire role e aria-label
-           e coloque dentro da div:
-           <img src="foto-sobre.jpg" alt="Esther Custódio sorrindo, gravando um vídeo em casa" loading="lazy" width="880" height="1100"> -->
-      <div class="ph g3 foto-45" role="img" aria-label="Espaço para a foto de Esther Custódio, formato 4:5">
-        <span class="ph-legenda">foto da creator 4:5</span>
-      </div>
+      <!-- FOTO DO SOBRE: img/sobre-esther.webp (ou a foto enviada pelo painel, página Sobre mim) -->
+      <img class="sobre-img" src="img/sobre-esther.webp" width="880" height="1100" loading="lazy" decoding="async"
+           alt="Esther Custódio sentada num sofá, sorrindo, num estúdio rosa com o logo do TikTok">
     </div>
 
     <div class="sobre-texto">
       <p class="eyebrow reveal"><b>01</b>Sobre mim</p>
       <h2 class="titulo reveal" id="titulo-sobre" style="--d:.06s">Prazer, eu sou a <em>Esther</em></h2>
-      <p class="abre reveal" id="sobreAbre" style="--d:.12s">Eu gosto de mostrar produtos do jeito que as pessoas realmente usam: na rotina, com luz natural e com opinião de verdade.</p>
-      <p class="reveal" id="sobreTexto" style="--d:.16s">Sou criadora de conteúdo UGC em Hortolândia e já entreguei 250 vídeos para marcas de beleza, skincare, moda, casa e decoração, fitness e viagem. Cada projeto começa com uma conversa para entender o que a sua marca quer dizer e termina com um conteúdo que você vai ter orgulho de postar.</p>
-
-      <p class="promessas-titulo reveal" style="--d:.2s">Minhas três promessas</p>
-      <ul class="promessas">
-        <li class="reveal" style="--d:.22s"><span class="check"></span>Roteiro aprovado antes de gravar</li>
-        <li class="reveal" style="--d:.28s"><span class="check"></span>Uma rodada de ajuste inclusa</li>
-        <li class="reveal" style="--d:.34s"><span class="check"></span>Entrega em até 72 horas úteis</li>
-      </ul>
-
-      <p class="assinatura reveal" style="--d:.38s"><small>Com carinho,</small><strong>Esther Custódio</strong></p>
+      <p class="reveal" id="sobreAbre" style="--d:.12s">Eu gosto de mostrar produtos do jeito que as pessoas realmente usam: na rotina, com luz natural e com opinião de verdade.</p>
+      <div class="reveal" id="sobreTexto" style="--d:.16s"><p>Sou criadora de conteúdo UGC em Hortolândia e já entreguei 250 vídeos para marcas de beleza, skincare, moda, casa e decoração, fitness e viagem. Cada projeto começa com uma conversa para entender o que a sua marca quer dizer e termina com um conteúdo que você vai ter orgulho de postar.</p></div>
+      <div class="sobre-selos reveal" id="sobreSelos" style="--d:.2s">
+        <span class="sobre-selo forte">+150 marcas parceiras</span>
+        <span class="sobre-selo">Hortolândia · SP · Brasil</span>
+      </div>
     </div>
   </div>
 </section>
