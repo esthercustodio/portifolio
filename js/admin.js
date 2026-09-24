@@ -4154,7 +4154,7 @@
       sobre: { rotulo: 'Sobre mim', titulo: 'Prazer, eu sou a *Esther*' },
       destaques: { rotulo: 'Em evidência', titulo: 'Conteúdos de *destaque*', texto: 'Vídeos que mostram como uma boa ideia, contada com verdade, vira resultado. Toque em um card para assistir.' },
       trabalhos: { rotulo: 'Categorias', titulo: 'Que tipo de *conteúdo* você precisa?', texto: 'Navegue pelos nichos. Cada linha é uma especialidade. Deslize para o lado para ver mais.' },
-      servicos: { rotulo: 'Serviços', titulo: 'Como eu te *ajudo*', texto: 'Do roteiro à publicação, cada etapa pensada para a sua marca aparecer melhor.' },
+      servicos: { rotulo: 'Serviços', titulo: 'Como eu te *ajudo*', texto: 'Do roteiro à publicação, cada etapa pensada para a sua marca aparecer melhor.', botao: 'Bora criar juntos' },
       numeros: { rotulo: 'Resultados', titulo: 'Números e *depoimentos*' },
       contato: { rotulo: 'Contato', titulo: 'Bora criar *juntos*', texto: 'Conte um pouco sobre a sua marca e o que você quer comunicar. Eu respondo com carinho e com uma proposta pensada para você.' }
     };
@@ -4353,13 +4353,12 @@
       },
       {
         chave: 'servicos', titulo: 'Serviços', tipo: 'lista', item: 'Serviço',
-        descricao: 'Os serviços da seção "Como eu te ajudo".',
+        descricao: 'Os cards da seção "Como eu te ajudo": o título vai na etiqueta no alto do card e a descrição dentro dele.',
         colunas: [
-          { nome: 'numero', rotulo: 'Número', placeholder: '01' },
-          { nome: 'titulo', rotulo: 'Título', obrigatorio: true },
+          { nome: 'titulo', rotulo: 'Título (etiqueta do card)', obrigatorio: true, placeholder: 'Publipost' },
           { nome: 'texto', rotulo: 'Descrição', tipo: 'textarea', largo: true }
         ],
-        resumo: function (v) { return (Array.isArray(v) ? v : []).map(function (s) { return texto(s.numero) + ' ' + texto(s.titulo); }); }
+        resumo: function (v) { return (Array.isArray(v) ? v : []).map(function (s) { return texto(s.titulo); }); }
       },
       {
         chave: 'resultados', titulo: 'Resultados de campanha', tipo: 'lista', item: 'Resultado',
@@ -4433,6 +4432,7 @@
         { nome: 'titulo', rotulo: 'Título', largo: true, ajuda: AJUDA_ASTERISCO }
       ];
       if ('texto' in TITULOS_PADRAO[pid]) campos.push({ nome: 'texto', rotulo: 'Texto de abertura', tipo: 'textarea', largo: true });
+      if ('botao' in TITULOS_PADRAO[pid]) campos.push({ nome: 'botao', rotulo: 'Texto do botão (leva ao Contato)', largo: true });
       SECOES.push({
         id: 'titulos_' + pid, chave: 'titulos', titulo: 'Título da página', tipo: 'objeto',
         descricao: 'A etiqueta pequena, o título e o texto de abertura. Campo vazio mantém o texto original.',
