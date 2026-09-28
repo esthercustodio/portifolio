@@ -140,7 +140,9 @@ button,input,textarea{font:inherit;color:inherit}
 .brand{font-family:var(--serif);font-weight:600;font-size:1.2rem;letter-spacing:-.01em;text-decoration:none;white-space:nowrap}
 .brand em{font-weight:400}
 .nav-links{display:flex;align-items:center;gap:clamp(1.25rem,2.6vw,2.25rem)}
-.nav-links a{position:relative;text-decoration:none;font-size:.92rem;font-weight:500;padding-block:.4rem}
+.nav-links a{position:relative;text-decoration:none;font-size:.74rem;font-weight:500;letter-spacing:.16em;text-transform:uppercase;padding-block:.4rem}
+.nav-cta{flex:none;display:inline-flex;align-items:center;padding:.62rem 1.15rem;border-radius:8px;background:var(--ink);color:var(--cream);font-size:.8rem;font-weight:600;text-decoration:none;transition:background .25s}
+.nav-cta:hover{background:var(--marrom)}
 .nav-links a::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .3s}
 .nav-links a:hover::after,.nav-links a[aria-current="true"]::after{transform:scaleX(1)}
 .nav-toggle{
@@ -162,7 +164,8 @@ button,input,textarea{font:inherit;color:inherit}
     box-shadow:0 24px 30px -20px rgba(20,17,13,.35);
   }
   .nav-links.aberto{display:flex}
-  .nav-links a{display:block;padding:.95rem 0;font-size:1.15rem;border-bottom:1px solid var(--line)}
+  .nav-links a{display:block;padding:.95rem 0;font-size:.9rem;letter-spacing:.14em;border-bottom:1px solid var(--line)}
+  .nav-cta{display:none}
   .nav-links a::after{display:none}
   .nav-links a[aria-current="true"]{color:var(--accent-text)}
 }
@@ -193,14 +196,38 @@ button,input,textarea{font:inherit;color:inherit}
 .btn-link{font-weight:500;font-size:.98rem;color:var(--muted);text-decoration:none;padding:.5rem .1rem;transition:color .25s}
 .btn-link:hover{color:var(--ink);text-decoration:underline;text-underline-offset:4px}
 .hero-foto{position:relative;width:100%;max-width:500px;margin-left:auto}
+.hero-botoes .btn-primario{border-radius:999px;padding-inline:1.9rem}
+/* avisos flutuando sobre a foto da capa */
+.hero-toast{position:absolute;z-index:2;display:flex;align-items:center;gap:.65rem;max-width:235px;padding:.7rem .95rem .7rem .7rem;border-radius:14px;background:#fff;color:var(--ink);box-shadow:0 18px 40px -18px rgba(20,17,13,.5),0 0 0 1px rgba(20,17,13,.06);animation:flutuar 6s ease-in-out infinite}
+.hero-toast[hidden]{display:none}
+.hero-toast-ico{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--marrom);color:#fff}
+.hero-toast-ico svg{width:15px;height:15px}
+.hero-toast strong{display:block;font-size:.8rem;font-weight:700;line-height:1.25}
+.hero-toast small{display:block;margin-top:.1rem;font-size:.72rem;line-height:1.3;color:var(--muted)}
+.hero-toast-a{top:36%;right:-3%}
+.hero-toast-b{bottom:13%;left:-7%;animation-delay:-3s}
+@keyframes flutuar{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+/* faixa escura com os serviços, correndo */
+.faixa-servicos{margin-top:clamp(2rem,4vw,3rem);background:var(--ink);color:var(--cream);overflow:hidden;padding-block:.95rem}
+.faixa-servicos-track{display:flex;width:max-content;animation:faixa var(--dur,40s) linear infinite}
+.faixa-servicos-lista{display:flex;flex:none;align-items:center;gap:2.2rem;margin:0;padding:0 2.2rem 0 0;list-style:none}
+.faixa-servicos-lista li{display:flex;align-items:center;gap:2.2rem;font-family:var(--serif);font-weight:700;font-size:.9rem;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.faixa-servicos-lista li::before{content:"";flex:none;width:9px;height:9px;background:var(--marrom-claro);transform:rotate(45deg)}
+@keyframes faixa{to{transform:translateX(-50%)}}
+/* linha de números logo abaixo da faixa */
+.numeros-topo{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:0;padding:clamp(1.6rem,3vw,2.3rem) 0;list-style:none}
+.numeros-topo li{padding:0 1.3rem;border-left:1px solid var(--line)}
+.numeros-topo li:first-child{padding-left:0;border-left:0}
+.numeros-topo strong{display:block;font-family:var(--serif);font-weight:700;font-size:clamp(1.6rem,3vw,2.3rem);line-height:1;color:var(--ink)}
+.numeros-topo span{display:block;margin-top:.5rem;font-size:.66rem;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
 .hero-recorte{display:block;width:100%;height:auto}
 .foto-45{aspect-ratio:4/5}
 
 .numero-rotulo{display:block;margin-top:.5rem;font-size:clamp(.68rem,1.6vw,.85rem);font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 
 /* Faixa de marcas: carrossel de logos redondos, todos do mesmo tamanho, sobre fundo claro e limpo */
-.marcas{margin-top:clamp(2.5rem,5vw,4rem);background:var(--paper);border-block:1px solid var(--line);padding-block:clamp(1.4rem,3vw,2.1rem) clamp(1.6rem,3.4vw,2.4rem);overflow:hidden}
-.marcas-titulo{text-align:center;font-size:.72rem;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:1.3rem;padding-inline:1.25rem}
+.marcas{margin-top:0;background:var(--paper);border-block:1px solid var(--line);padding-block:clamp(1.4rem,3vw,2.1rem) clamp(1.6rem,3.4vw,2.4rem);overflow:hidden}
+.marcas-titulo{display:flex;align-items:center;justify-content:center;gap:1rem;text-align:center;font-size:.72rem;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:1.3rem;padding-inline:1.25rem}
 .marcas-janela{overflow:hidden;padding-block:.5rem;-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
 /* Três listas iguais em fila, com o mesmo espaço entre todos os logos (sem lacuna antes do primeiro).
    O movimento anda exatamente uma lista e recomeça igual: fica contínuo, sem pulo. */
@@ -210,6 +237,7 @@ button,input,textarea{font:inherit;color:inherit}
 .logo-marca{flex:none;width:clamp(72px,9vw,96px);aspect-ratio:1;border-radius:50%;background:#fff;box-shadow:0 0 0 1px rgba(20,17,13,.12),0 6px 16px -10px rgba(20,17,13,.35);transition:transform .35s cubic-bezier(.2,.7,.2,1),box-shadow .35s}
 .logo-marca:hover{transform:translateY(-4px) scale(1.06);box-shadow:0 0 0 1px rgba(20,17,13,.16),0 14px 26px -12px rgba(20,17,13,.45)}
 .logo-marca img{display:block;width:100%;height:100%;border-radius:50%;object-fit:cover}
+.marcas-titulo::before,.marcas-titulo::after{content:"";flex:none;width:clamp(24px,5vw,56px);height:1px;background:currentColor;opacity:.6}
 @keyframes rolar{from{transform:translateX(calc(var(--inicio) - 33.3333%))}to{transform:translateX(calc(var(--inicio) - 66.6667%))}}
 
 /* =========================================================
@@ -218,7 +246,7 @@ button,input,textarea{font:inherit;color:inherit}
 .sobre-grid{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1fr);gap:clamp(2.5rem,6vw,5.5rem);align-items:center}
 .sobre-foto{max-width:420px}
 .sobre-img{display:block;width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;border-radius:24px;background:var(--cream-2);box-shadow:0 30px 60px -34px rgba(20,17,13,.55)}
-.sobre-texto p{margin-top:1.1rem;font-size:1.02rem;line-height:1.75;color:var(--muted)}
+.sobre-texto p:not(.eyebrow){margin-top:1.1rem;font-size:1.02rem;line-height:1.75;color:var(--muted)}
 .sobre-texto p strong{font-weight:700;color:var(--ink)}
 .sobre-texto .titulo{margin-bottom:.4rem}
 .sobre-selos{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1.9rem}
@@ -338,6 +366,14 @@ button,input,textarea{font:inherit;color:inherit}
 .case.escuro .case-contexto strong{color:var(--cream)}
 @media (max-width:620px){
   .selos{grid-template-columns:1fr}
+  .numeros-topo{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:1.4rem}
+  .numeros-topo li:nth-child(3){padding-left:0;border-left:0}
+  .hero-toast{max-width:180px;padding:.55rem .75rem .55rem .55rem}
+  .hero-toast-a{right:0}
+  .hero-toast-b{left:0}
+}
+@media (prefers-reduced-motion:reduce){
+  .hero-toast,.faixa-servicos-track{animation:none}
 }
 
 /* =========================================================
@@ -729,6 +765,15 @@ const VIDEOS_PADRAO = [
   { marca: "Pantene", titulo: "Pantene", nicho: "Cabelo", link: "https://youtube.com/shorts/joqQGhQ4SdY", destaque: "", capa: "img/capas/pantene-2.webp", emDestaques: false },
   { marca: "Amar Biquínis", titulo: "Amar Biquínis", nicho: "Cabelo", link: "https://youtube.com/shorts/AylWWVBZ7go", destaque: "", capa: "img/capas/amar-biquinis.webp", emDestaques: false },
   { marca: "Skala", titulo: "Skala", nicho: "Cabelo", link: "https://youtube.com/shorts/-bcptTQtnkQ", destaque: "", capa: "img/capas/skala.webp", emDestaques: false }
+];
+
+/* ---- NÚMEROS ABAIXO DA CAPA (a linha logo depois da faixa escura) ----
+   O painel (página Capa, cartão "Números abaixo da capa") sobrescreve. */
+const NUMEROS_TOPO = [
+  { valor: "450+", rotulo: "vídeos produzidos" },
+  { valor: "150+", rotulo: "marcas atendidas" },
+  { valor: "6", rotulo: "nichos atendidos" },
+  { valor: "3 anos", rotulo: "de experiência" }
 ];
 
 /* ---- ÁUDIO DA SEÇÃO DE DESTAQUES ----
@@ -1528,6 +1573,12 @@ document.addEventListener('DOMContentLoaded', () => {
       menu.appendChild(a);
     });
     if (secaoCase) corDoCase();
+    const faixaLogos = $('.marcas');
+    const sobre = document.getElementById('sobre');
+    if (faixaLogos) {
+      if (sobre && !sobre.hidden) sobre.after(faixaLogos);
+      else $('.hero').after(faixaLogos);
+    }
     renumerar();
   };
 
@@ -1541,6 +1592,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const foto = imagemSegura(c.foto);
     if (foto) $('.hero-recorte').src = foto;
     if (t(c.fotoAlt)) $('.hero-recorte').alt = t(c.fotoAlt);
+    if (t(c.menuBotao)) $('#navCta').textContent = t(c.menuBotao);
+    [['A', c.toast1Titulo, c.toast1Texto], ['B', c.toast2Titulo, c.toast2Texto]].forEach(([letra, titulo, texto]) => {
+      if (titulo == null && texto == null) return;
+      const aviso = $(`#heroToast${letra}`);
+      aviso.hidden = !t(titulo) && !t(texto);
+      aviso.querySelector('strong').textContent = t(titulo);
+      aviso.querySelector('small').textContent = t(texto);
+    });
   };
   const desenharSobreExtra = (c) => {
     const t = (v) => String(v == null ? '' : v).trim();
@@ -1556,6 +1615,26 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof c.titulo === 'string') $('.marcas-titulo').textContent = c.titulo.trim();
     $('.marcas').hidden = c.mostrar === false;
   };
+  /* Faixa escura da capa: os títulos dos serviços, repetidos até encher a tela, em duas cópias (movimento contínuo) */
+  const desenharFaixaServicos = (titulos) => {
+    const alvo = $('#faixaServicos');
+    if (!alvo) return;
+    let itens = titulos.map((t) => String(t || '').trim()).filter(Boolean);
+    if (!itens.length) { alvo.closest('.faixa-servicos').hidden = true; return; }
+    alvo.closest('.faixa-servicos').hidden = false;
+    while (itens.length < 8) itens = itens.concat(itens);
+    const lista = (escondida) => `<ul class="faixa-servicos-lista"${escondida ? ' aria-hidden="true"' : ''}>${itens.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>`;
+    alvo.innerHTML = lista(false) + lista(true);
+    alvo.style.setProperty('--dur', `${Math.max(20, itens.length * 5)}s`);
+  };
+  const desenharNumerosTopo = (lista) => {
+    const alvo = $('#numerosTopo');
+    if (!alvo) return;
+    const itens = lista.filter((n) => n && (String(n.valor || '').trim() || String(n.rotulo || '').trim()));
+    alvo.hidden = !itens.length;
+    alvo.innerHTML = itens.map((n) => `<li><strong>${esc(String(n.valor || '').trim())}</strong><span>${esc(String(n.rotulo || '').trim())}</span></li>`).join('');
+  };
+
   let capturaLigada = true;
   const desenharCaptura = (c) => {
     const t = (v) => String(v == null ? '' : v).trim();
@@ -1614,6 +1693,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const lista = (v, padrao) => (Array.isArray(v) && v.length ? v : padrao);
     aplicarSecao('nichos', lista(c.nichos, NICHOS_PADRAO), (n) => { nichosSite = n; desenharNichos(); }, animar);
     aplicarSecao('servicos', lista(c.servicos, SERVICOS), desenharServicos, animar);
+    aplicarSecao('faixa_servicos', lista(c.servicos, SERVICOS).map((x) => x && x.titulo), desenharFaixaServicos, animar);
+    aplicarSecao('numeros_topo', lista(c.numeros_topo, NUMEROS_TOPO), desenharNumerosTopo, animar);
     aplicarSecao('metricas', lista(c.metricas, METRICAS), desenharMetricas, animar);
     aplicarSecao('resultados', lista(c.resultados, RESULTADOS), desenharResultados, animar);
     aplicarSecao('depoimentos', lista(c.depoimentos, DEPOIMENTOS), desenharDepoimentos, animar);
@@ -1879,6 +1960,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <a href="#contato">Contato</a>
       </div>
     </nav>
+    <a class="nav-cta" href="#contato" id="navCta">Trabalhe comigo</a>
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="menu" aria-label="Abrir menu">
       <span></span><span></span><span></span>
     </button>
@@ -1909,15 +1991,18 @@ document.addEventListener('DOMContentLoaded', () => {
            leve (WebP ou PNG com fundo transparente) e troque o nome no src abaixo. -->
       <img class="hero-recorte" src="img/capa-esther.webp" width="640" height="734" fetchpriority="high"
            alt="Esther Custódio olhando por cima do ombro e sorrindo, com cabelo cacheado e brinco dourado">
+      <div class="hero-toast hero-toast-a" id="heroToastA"><span class="hero-toast-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><span><strong>+100 vídeos com a Box Magenta</strong><small>Parceria recorrente</small></span></div>
+      <div class="hero-toast hero-toast-b" id="heroToastB"><span class="hero-toast-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><span><strong>Entregas no prazo</strong><small>Roteiro aprovado antes de gravar</small></span></div>
     </figure>
   </div>
 
-  <!-- Carrossel de logos das marcas (a lista e a ordem ficam em LOGOS_MARCAS, no script) -->
-  <div class="marcas" role="region" aria-label="Marcas com quem já trabalhei">
-    <p class="marcas-titulo">Marcas com quem já trabalhei</p>
-    <div class="marcas-janela">
-      <div class="marcas-track" id="marcasTrack"></div>
-    </div>
+  <!-- Faixa escura: os nomes dos serviços (vêm da seção Como eu te ajudo) -->
+  <div class="faixa-servicos" aria-label="O que eu faço">
+    <div class="faixa-servicos-track" id="faixaServicos"></div>
+  </div>
+  <!-- Números logo abaixo da capa (painel, página Capa, cartão "Números abaixo da capa") -->
+  <div class="container">
+    <ul class="numeros-topo" id="numerosTopo"></ul>
   </div>
 </section>
 
@@ -1942,6 +2027,15 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </div>
 </section>
+
+<!-- Faixa de logos (o script a coloca logo depois do Sobre mim) -->
+<!-- Carrossel de logos das marcas (a lista e a ordem ficam em LOGOS_MARCAS, no script) -->
+<div class="marcas" role="region" aria-label="Marcas com quem já trabalhei">
+  <p class="marcas-titulo">Marcas com quem já trabalhei</p>
+  <div class="marcas-janela">
+    <div class="marcas-track" id="marcasTrack"></div>
+  </div>
+</div>
 
 <!-- ============================ 3. CONTEÚDOS DE DESTAQUE ============================ -->
 <section class="secao bg-2" id="destaques" aria-labelledby="titulo-destaques">

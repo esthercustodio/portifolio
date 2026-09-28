@@ -4201,8 +4201,10 @@
     };
     var AJUDA_ASTERISCO = 'A palavra entre asteriscos fica em itálico. Exemplo: mais de *100 vídeos*';
     var AJUDA_ASTERISCO_CAPA = 'A palavra entre asteriscos fica em itálico e marrom. Exemplo: que *conecta.*';
-    var CAPA_PADRAO = { titulo1: 'Inspiração', titulo2: 'que *conecta.*', botao: 'Quero criar com a Esther', link: 'Ver os trabalhos', foto: '', fotoAlt: 'Esther Custódio olhando por cima do ombro e sorrindo, com cabelo cacheado e brinco dourado' };
+    var CAPA_PADRAO = { titulo1: 'Inspiração', titulo2: 'que *conecta.*', botao: 'Quero criar com a Esther', link: 'Ver os trabalhos', menuBotao: 'Trabalhe comigo',
+      toast1Titulo: '+100 vídeos com a Box Magenta', toast1Texto: 'Parceria recorrente', toast2Titulo: 'Entregas no prazo', toast2Texto: 'Roteiro aprovado antes de gravar', foto: '', fotoAlt: 'Esther Custódio olhando por cima do ombro e sorrindo, com cabelo cacheado e brinco dourado' };
     var FAIXA_PADRAO = { mostrar: true, titulo: 'Marcas com quem já trabalhei' };
+    var NUMEROS_TOPO_PADRAO = [{ valor: '450+', rotulo: 'vídeos produzidos' }, { valor: '150+', rotulo: 'marcas atendidas' }, { valor: '6', rotulo: 'nichos atendidos' }, { valor: '3 anos', rotulo: 'de experiência' }];
     var SOBRE_PADRAO = {
       foto: '', fotoAlt: 'Esther Custódio sentada num sofá, sorrindo, num estúdio rosa com o logo do TikTok',
       abre: 'Eu gosto de mostrar produtos do jeito que as pessoas realmente usam: na rotina, com luz natural e com opinião de verdade.',
@@ -4228,7 +4230,7 @@
     var SECOES = [
       Object.assign({
         chave: 'capa', titulo: 'Capa', tipo: 'objeto',
-        descricao: 'O selo, o título grande, a frase, os dois números, os botões e a foto da capa.',
+        descricao: 'O selo, o título grande, a frase, os dois números, os botões, o botão do menu, a foto e os dois avisos que flutuam sobre ela.',
         campos: [
           { nome: 'chip', rotulo: 'Texto do selo (ao lado do ícone)', obrigatorio: true, largo: true },
           { nome: 'titulo1', rotulo: 'Título: primeira linha', placeholder: 'Inspiração', ajuda: AJUDA_ASTERISCO_CAPA },
@@ -4238,6 +4240,11 @@
           { nome: 'numero2', rotulo: 'Segundo número', placeholder: '+200 marcas' },
           { nome: 'botao', rotulo: 'Texto do botão', placeholder: 'Quero criar com a Esther' },
           { nome: 'link', rotulo: 'Texto do link ao lado', placeholder: 'Ver os trabalhos' },
+          { nome: 'menuBotao', rotulo: 'Botão do menu do topo (leva ao Contato)', placeholder: 'Trabalhe comigo' },
+          { nome: 'toast1Titulo', rotulo: 'Aviso 1 sobre a foto: título', placeholder: '+100 vídeos com a Box Magenta', ajuda: 'Os avisos com check que flutuam sobre a foto. Deixe o título e o texto vazios para esconder.' },
+          { nome: 'toast1Texto', rotulo: 'Aviso 1: texto pequeno', placeholder: 'Parceria recorrente' },
+          { nome: 'toast2Titulo', rotulo: 'Aviso 2 sobre a foto: título', placeholder: 'Entregas no prazo' },
+          { nome: 'toast2Texto', rotulo: 'Aviso 2: texto pequeno', placeholder: 'Roteiro aprovado antes de gravar' },
           { nome: 'foto', rotulo: 'Foto da capa (de preferência sem fundo, PNG ou WebP)', tipo: 'arquivo', pasta: 'capa', maxLado: 1400, largo: true },
           { nome: 'fotoAlt', rotulo: 'Descrição da foto (para quem usa leitor de tela)', largo: true }
         ],
@@ -4257,6 +4264,15 @@
         },
         resumo: function (v) { var n = (v && v.numeros) || []; return [texto(v && v.chip), textoOuPadrao(v, CAPA_PADRAO, 'titulo1') + ' ' + textoOuPadrao(v, CAPA_PADRAO, 'titulo2'), n.join('  |  '), texto(v && v.foto) ? 'Foto trocada pelo painel' : 'Foto original']; }
       }),
+      {
+        chave: 'numeros_topo', titulo: 'Números abaixo da capa', tipo: 'lista', item: 'Número', padrao: NUMEROS_TOPO_PADRAO,
+        descricao: 'A linha de números logo abaixo da faixa escura (a faixa mostra os títulos dos serviços, da página Como eu te ajudo).',
+        colunas: [
+          { nome: 'valor', rotulo: 'Número', obrigatorio: true, placeholder: '450+' },
+          { nome: 'rotulo', rotulo: 'O que é', placeholder: 'vídeos produzidos' }
+        ],
+        resumo: function (v) { return (Array.isArray(v) ? v : []).map(function (n) { return texto(n.valor) + ' ' + texto(n.rotulo); }); }
+      },
       Object.assign({
         chave: 'marcas_faixa', titulo: 'Faixa de marcas', tipo: 'objeto',
         descricao: 'O título pequeno acima dos logos e se a faixa aparece no site.',
@@ -4447,8 +4463,8 @@
 
     /* As páginas do site: cada uma abre só os seus cartões */
     var PAGINAS_CONTEUDO = [
-      { id: 'capa', titulo: 'Capa', desc: 'Selo, título, frase, números, botões e a foto da capa.', secoes: ['capa'] },
-      { id: 'marcas', titulo: 'Marcas trabalhadas', desc: 'A faixa de logos logo abaixo da capa: título, logos e ordem.', secoes: ['marcas_faixa', 'logos'] },
+      { id: 'capa', titulo: 'Capa', desc: 'Selo, título, frase, botões, foto, avisos sobre a foto e a linha de números abaixo.', secoes: ['capa', 'numeros_topo'] },
+      { id: 'marcas', titulo: 'Marcas trabalhadas', desc: 'A faixa de logos logo depois do Sobre mim: título, logos e ordem.', secoes: ['marcas_faixa', 'logos'] },
       { id: 'sobre', titulo: 'Sobre mim', desc: 'Título, foto, textos, promessas e assinatura.', secoes: ['titulos_sobre', 'sobre'] },
       { id: 'destaques', titulo: 'Conteúdos em destaque', desc: 'Título, áudio e os vídeos do carrossel de Destaques.', secoes: ['titulos_destaques', 'destaques_audio'], videos: true },
       { id: 'case', titulo: 'Por que essa marca fechou 100 conteúdos comigo', desc: 'O case da Box Magenta: textos, selos com ícone, vídeos e áudio de feedback.', secoes: ['case', 'case_motivos', 'case_videos'] },
