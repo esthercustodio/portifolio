@@ -278,7 +278,9 @@ button,input,textarea{font:inherit;color:inherit}
 #destaques .destaque:first-child{margin-left:auto}
 #destaques .destaque:last-child{margin-right:auto}
 #destaques .destaques-grid::before,#destaques .destaques-grid::after{display:none}
-#destaques .destaque{opacity:1;filter:none;transform:none;scroll-snap-align:start}
+#destaques .destaque{opacity:1;filter:none;transform:none;scroll-snap-align:start;min-width:0}
+/* o texto grande nunca alarga o card: todos ficam do mesmo tamanho */
+#destaques .destaque-num{font-size:clamp(1.25rem,2vw,1.55rem);overflow-wrap:anywhere}
 .carrossel.sem-setas .carrossel-seta{display:none}
 /* Carrossel: o card do meio fica nítido e os vizinhos ficam desfocados (a classe .ativo vem do script) */
 .carrossel{--card-w:clamp(210px,24vw,290px);--gap:1.25rem;position:relative;min-width:0}
@@ -953,7 +955,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const c = String(v.capa || '').trim();
     if (/^(https:\/\/|img\/)/i.test(c)) return c;
     const codigo = idYoutube(v.link);
-    return codigo ? `https://i.ytimg.com/vi/${codigo}/maxresdefault.jpg` : '';
+    return codigo ? `https://i.ytimg.com/vi/${codigo}/oardefault.jpg` : '';                /* imagem em pé do próprio vídeo (Shorts) */
   };
   const prepararVideo = (v) => ({
     yt: idYoutube(v.link), link: seguro(v.link), marca: String(v.marca || '').trim(), titulo: String(v.titulo || '').trim(),
