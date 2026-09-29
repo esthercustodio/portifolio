@@ -445,8 +445,7 @@ button,input,textarea{font:inherit;color:inherit}
 /* prévia: o vídeo roda sem som dentro do card (o som só vem ao clicar e abrir o vídeo) */
 /* o player da prévia é bem mais largo que o card (16:9 na mesma altura): o YouTube põe nome do canal, logo e botões
    nas bordas do player, e o card mostra só a faixa do meio, onde está o vídeo */
-.vprevia{position:absolute;left:50%;top:0;width:auto;height:100%;aspect-ratio:16/9;max-width:none;border:0;z-index:-2;pointer-events:none;opacity:0;transform:translateX(-50%) scale(1.3);transition:opacity .35s}
-/* scale 1.3: o título que o YouTube mostra no alto nos primeiros segundos fica fora do card */
+.vprevia{position:absolute;left:50%;top:0;width:auto;height:100%;aspect-ratio:16/9;max-width:none;border:0;z-index:-2;pointer-events:none;opacity:0;transform:translateX(-50%) scale(1.02);transition:opacity .6s}
 .vprevia.pronta{opacity:1}
 .vcard::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(to top,rgba(20,17,13,.82) 0%,rgba(20,17,13,.25) 30%,transparent 52%)}
 .vplay{position:absolute;top:50%;left:50%;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;box-shadow:0 10px 26px rgba(0,0,0,.35);transition:transform .35s cubic-bezier(.2,.7,.2,1),background .25s}
@@ -1254,7 +1253,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const id = encodeURIComponent(v.yt);
       const f = document.createElement('iframe');
       f.className = 'vprevia';
-      f.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&controls=0&playsinline=1&rel=0&modestbranding=1&iv_load_policy=3&cc_load_policy=0&disablekb=1&fs=0&enablejsapi=1`;
+      f.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id}&playsinline=1&rel=0&modestbranding=1&iv_load_policy=3&cc_load_policy=0&disablekb=1&fs=0&enablejsapi=1`;
       f.title = '';
       f.tabIndex = -1;
       f.setAttribute('aria-hidden', 'true');
@@ -1263,52 +1262,58 @@ document.addEventListener('DOMContentLoaded', () => {
         const dizer = (func, args) => f.contentWindow && f.contentWindow.postMessage(JSON.stringify({ event: 'command', func, args: args || [], id: 1, channel: 'widget' }), '*');
         f.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }), '*');
         [300, 1200, 3000].forEach((ms) => setTimeout(() => { dizer('mute'); dizer('unloadModule', ['captions']); }, ms));   /* garante sem som e sem legenda */
-        setTimeout(() => f.classList.add('pronta'), 4000);          /* garantia, caso o YouTube não avise que começou */
+        setTimeout(() => f.classList.add('pronta'), 8000);          /* garantia, caso o YouTube não avise que começou */
       });
       card.insertBefore(f, card.firstChild);
-    }, 150));
+    }, 400));
   };
   /* A prévia só aparece uns segundos depois de começar a tocar: é quando o YouTube já tirou os controles
      que ele mostra no começo (setas e barra). Até lá o card fica com a capa. */
   window.addEventListener('message', (e) => {
     const f = $$('.vprevia').find((x) => x.contentWindow === e.source);
-    if (!f) return;
+    if (!f || f.dataset.tocou) return;
     let d = null;
     try { d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data; } catch (erro) { return; }
-    if (!d || !d.info) return;
-    if (d.info.playerState === 0) {                                  /* acabou: volta ao começo (sem lista de repetição, que mostrava setas) */
-      f.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'seekTo', args: [0, true], id: 1, channel: 'widget' }), '*');
-      f.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo', args: [], id: 1, channel: 'widget' }), '*');
-      return;
-    }
-    if (f.dataset.tocou || d.info.playerState !== 1) return;
+    if (!d || !d.info || d.info.playerState !== 1) return;
     f.dataset.tocou = '1';
-    setTimeout(() => f.classList.add('pronta'), 250);           /* aparece assim que começa a tocar */
+    setTimeout(() => f.classList.add('pronta'), 3000);
   });
   const desligarPrevia = (card) => {
     if (card.dataset.previaEspera) { clearTimeout(Number(card.dataset.previaEspera)); delete card.dataset.previaEspera; }
     const f = card.querySelector('.vprevia');
     if (f) f.remove();
   };
-  /* Prévia só do vídeo em que o mouse está: o card não muda, o vídeo roda sem som por trás da mesma capa.
-     Ao sair do card, a prévia para. Celular e tablet (sem mouse) ficam com a capa parada. */
+  /* Só a fileira em que o mouse está roda a prévia (e só os cards dela que aparecem na tela).
+     Celular e tablet (sem mouse) ficam com a capa parada. */
   const comMouse = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-  let cardAtivo = null;
-  const ativarCard = (card) => {
-    if (card === cardAtivo) return;
-    if (cardAtivo) desligarPrevia(cardAtivo);
-    cardAtivo = card;
-    if (card) ligarPrevia(card);
+  let linhaAtiva = null;
+  const visiveis = new WeakSet();
+  const vigiaPrevia = previaPermitida && comMouse && 'IntersectionObserver' in window
+    ? new IntersectionObserver((itens) => itens.forEach((e) => {
+      if (e.isIntersecting) visiveis.add(e.target); else visiveis.delete(e.target);
+      if (e.isIntersecting && linhaAtiva && linhaAtiva.contains(e.target)) ligarPrevia(e.target); else desligarPrevia(e.target);
+    }), { threshold: 0.3 })
+    : null;
+  const ativarLinha = (linha) => {
+    if (linha === linhaAtiva) return;
+    if (linhaAtiva) $$('.vcard[data-v]', linhaAtiva).forEach(desligarPrevia);
+    linhaAtiva = linha;
+    if (linha) $$('.vcard[data-v]', linha).forEach((c) => { if (visiveis.has(c)) ligarPrevia(c); });
   };
-  const observarPrevias = () => { cardAtivo = null; };
-  if (previaPermitida && comMouse) {
-    nichosEl.addEventListener('mouseover', (e) => ativarCard(e.target.closest('.vcard[data-v]')));
-    nichosEl.addEventListener('mouseleave', () => ativarCard(null));
+  const observarPrevias = () => {
+    if (!vigiaPrevia) return;
+    vigiaPrevia.disconnect();
+    linhaAtiva = null;
+    $$('.vcard[data-v]', nichosEl).forEach((c) => vigiaPrevia.observe(c));
+  };
+  if (vigiaPrevia) {
+    nichosEl.addEventListener('mouseover', (e) => ativarLinha(e.target.closest('.nicho-linha')));
+    nichosEl.addEventListener('mouseleave', () => ativarLinha(null));
   }
   const pausarPrevias = (pausar) => {
     previasPausadas = pausar;
     if (pausar) $$('.vcard[data-v]').forEach(desligarPrevia);
-    cardAtivo = null;
+    else if (linhaAtiva) { const l = linhaAtiva; linhaAtiva = null; ativarLinha(l); }   /* ao fechar o vídeo, a fileira do mouse volta a rodar */
   };
 
   const atualizarSetas = (linha) => {
