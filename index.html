@@ -1552,6 +1552,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const PAGINAS_SITE = ['sobre', 'case', 'destaques', 'trabalhos', 'servicos', 'numeros', 'contato'];
   const MENU_PADRAO = { sobre: 'Sobre', case: '', destaques: '', trabalhos: 'Categorias', servicos: 'Serviços', numeros: '', contato: 'Contato' };
   const MENU_ORDEM = ['sobre', 'servicos', 'trabalhos', 'contato', 'case', 'destaques', 'numeros'];   /* ordem dos links no menu do topo */
+  /* No EN (tradução automática), o menu usa estes nomes: o tradutor erra palavras soltas como "Sobre" */
+  const EM_INGLES = /\.translate\.goog$/.test(location.hostname);
+  const MENU_EN = { sobre: 'About', case: 'Case', destaques: 'Highlights', trabalhos: 'Categories', servicos: 'Services', numeros: 'Testimonials', contato: 'Contact' };
   const FUNDO_ORIGINAL = {};
   PAGINAS_SITE.forEach((id) => {
     const el = document.getElementById(id);
@@ -1589,11 +1592,14 @@ document.addEventListener('DOMContentLoaded', () => {
     MENU_ORDEM.forEach((id) => {
       const sec = document.getElementById(id);
       if (!sec || sec.hidden) return;
-      const nome = typeof pag(id).menu === 'string' ? pag(id).menu.trim() : MENU_PADRAO[id];
+      const personalizado = typeof pag(id).menu === 'string' && pag(id).menu.trim() !== MENU_PADRAO[id];
+      const nomePt = typeof pag(id).menu === 'string' ? pag(id).menu.trim() : MENU_PADRAO[id];
+      const nome = EM_INGLES && nomePt && !personalizado ? MENU_EN[id] : nomePt;
       if (!nome) return;
       const a = document.createElement('a');
       a.href = `#${id}`;
       a.textContent = nome;
+      if (EM_INGLES && !personalizado) a.setAttribute('translate', 'no');
       a.addEventListener('click', () => alternarMenu(false));
       menu.appendChild(a);
     });
