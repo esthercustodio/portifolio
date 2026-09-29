@@ -4194,7 +4194,7 @@
       titulo: 'Por que essa marca já criou mais de *100 vídeos* comigo?',
       subtitulo: 'Mais do que uma entrega pontual: uma parceria que se tornou recorrente.',
       contexto: 'A **Box Magenta** já produziu **mais de 100 vídeos** comigo. A recorrência vem da confiança: entregas consistentes, alinhadas à marca e pensadas para cada etapa do funil.',
-      cor: '#4d301b', audio: '', audioLegenda: 'Feedback da Box Magenta'
+      cor: '#4d301b', audio: '', audioLegenda: 'Feedback da Box Magenta', marcaNome: 'Box Magenta', marcaCor: '#e5195e'
     };
     var CASE_VIDEOS = [
       { etapa: 'Topo de funil', link: 'https://youtube.com/shorts/wA2zUnK1D-c', resultado: 'Desejo', detalhe: 'Desperta interesse e identificação', capa: 'img/capas/box-magenta-desejo.webp', marca: 'Box Magenta' },
@@ -4335,6 +4335,8 @@
         campos: [
           { nome: 'etiqueta', rotulo: 'Etiqueta pequena (acima do título)', largo: true },
           { nome: 'titulo', rotulo: 'Título', largo: true, obrigatorio: true, ajuda: AJUDA_ASTERISCO },
+          { nome: 'marcaNome', rotulo: 'Nome da marca (em destaque, abaixo do título)', placeholder: 'Box Magenta' },
+          { nome: 'marcaCor', rotulo: 'Cor do nome da marca', tipo: 'color', ajuda: 'Original: #e5195e (rosa da caixa).' },
           { nome: 'subtitulo', rotulo: 'Subtítulo', largo: true },
           { nome: 'contexto', rotulo: 'Texto curto', tipo: 'textarea', largo: true, ajuda: 'Palavra entre dois asteriscos fica em negrito. Exemplo: **mais de 100 vídeos**' },
           { nome: 'cor', rotulo: 'Cor dos ícones e dos valores', tipo: 'color', ajuda: 'Original: #4d301b (marrom). No fundo escuro, o marrom vira bege claro sozinho.' },
@@ -4930,8 +4932,8 @@
       secaoAtual.innerHTML = '<div class="pagina-topo"><button type="button" class="btn pequeno" data-voltar="1">' + ic('setaEsquerda') + 'Todas as páginas</button>' +
         '<div><h2 class="pagina-titulo">' + esc(pag.titulo) + '</h2><p class="pagina-desc">' + esc(pag.desc) + '</p></div></div>' +
         (pag.layout ? htmlLayout() : '') +
-        (pag.videos ? '<div id="videosSite">' + htmlVideosSite() + '</div>' : '') +
-        '<div class="cards-conteudo">' + pag.secoes.map(function (id) { return SECOES.filter(function (s) { return s.id === id; })[0]; }).filter(Boolean).map(htmlCartaoSecao).join('') + '</div>';
+        '<div class="cards-conteudo" style="margin-bottom:1rem">' + pag.secoes.map(function (id) { return SECOES.filter(function (s) { return s.id === id; })[0]; }).filter(Boolean).map(htmlCartaoSecao).join('') + '</div>' +
+        (pag.videos ? '<div id="videosSite">' + htmlVideosSite() + '</div>' : '');
     }
 
     Abas.conteudo = {
