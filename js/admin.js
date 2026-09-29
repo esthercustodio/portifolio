@@ -605,7 +605,8 @@
       { nome: 'titulo', rotulo: 'Título do vídeo', obrigatorio: true, ajuda: 'O nome grande no card (embaixo) e na janela do vídeo. Exemplo: Olheira. Se for igual à marca, aparece só a marca.' },
       { nome: 'link', rotulo: 'Link do vídeo', tipo: 'url', largo: true, placeholder: 'https://youtube.com/shorts/...', ajuda: 'Link do YouTube: o vídeo toca dentro do seu site, sem abrir o YouTube.' },
       { nome: 'nicho', rotulo: 'Nicho', lista: nichos, ajuda: 'A linha do site onde ele aparece. Vazio: só nos Destaques.' },
-      { nome: 'destaque', rotulo: 'Texto do resultado', placeholder: '190 mil visualizações', ajuda: 'Aparece abaixo do card nos Destaques.' }
+      { nome: 'destaque', rotulo: 'Texto grande abaixo do card', placeholder: '190 mil', ajuda: 'Aparece em negrito abaixo do card nos Destaques.' },
+      { nome: 'destaqueSub', rotulo: 'Texto pequeno abaixo', placeholder: 'visualizações', ajuda: 'A linha menor, logo embaixo do texto grande.' }
     ];
     if (novos) {
       campos.push({ nome: 'capa', rotulo: 'Capa (opcional)', tipo: 'arquivo', pasta: 'capas', maxLado: 720, largo: true, placeholder: 'Envie uma foto em pé (9:16) ou cole um link', ajuda: 'Vazio: usa um momento do próprio vídeo.' });
@@ -620,14 +621,29 @@
   function formularioVideo(video, aposMudar) {
     var videos = cache.videos || [];
     var editando = !!video;
+    /* "destaque" guarda os dois textos: o grande na 1ª linha e o pequeno na 2ª.
+       Texto antigo sem quebra ("190 mil visualizações") é separado do mesmo jeito que o site faz. */
+    var valores = Object.assign({ visivel: true }, video || {});
+    var dt = String(valores.destaque || '').trim();
+    if (dt.indexOf('\n') >= 0) {
+      valores.destaque = dt.split('\n')[0].trim();
+      valores.destaqueSub = dt.split('\n').slice(1).join(' ').trim();
+    } else {
+      var m = dt.match(/^(\+?\s*[\d.,]+\s*(?:mil|mi|milhões|milhão|k|m|b)?)\s+(.+)$/i);
+      valores.destaque = m ? m[1].replace(/\s+/g, ' ').trim() : dt;
+      valores.destaqueSub = m ? m[2].trim() : '';
+    }
     formulario({
       titulo: editando ? 'Editar vídeo' : 'Adicionar vídeo',
       campos: camposVideo(videos, videosTemCamposNovos()),
-      valores: video || { visivel: true },
+      valores: valores,
       textoApagar: 'Apagar este vídeo? Ele some do site e não dá para desfazer.',
       aoSalvar: async function (v) {
         if (v.link && !linkSeguro(v.link)) return { ok: false, erro: 'O link precisa começar com http:// ou https://' };
         if (v.capa && !/^(https:\/\/|img\/)/i.test(v.capa)) return { ok: false, erro: 'A capa precisa começar com img/ (imagem da pasta do site) ou https://' };
+        var grande = String(v.destaque || '').trim(), pequeno = String(v.destaqueSub || '').trim();
+        v.destaque = pequeno ? grande + '\n' + pequeno : (grande || null);
+        delete v.destaqueSub;                                        /* não existe essa coluna: vai junto no "destaque" */
         if (!editando) v.ordem = videos.reduce(function (m, x) { return Math.max(m, x.ordem || 0); }, 0) + 1;
         var r = await gravar('videos', v, editando ? video.id : null);
         if (r.ok) { aviso(editando ? 'Vídeo atualizado.' : 'Vídeo adicionado.'); await aposMudar(); }
@@ -4211,7 +4227,7 @@
     };
     var CAPTURA_PADRAO = { mostrar: true, titulo: 'Quer meu mídia kit *completo?*', sub: 'Deixe o seu nome e o seu e-mail que eu envio para você.', botao: 'Quero receber' };
     var LOGOS_PADRAO = [{"imagem": "img/marcas/mac.webp", "nome": "M·A·C"}, {"imagem": "img/marcas/natura.webp", "nome": "Natura"}, {"imagem": "img/marcas/truss.webp", "nome": "Truss Professional"}, {"imagem": "img/marcas/canva.webp", "nome": "Canva"}, {"imagem": "img/marcas/creamy.webp", "nome": "Creamy"}, {"imagem": "img/marcas/beleza-na-web.webp", "nome": "Beleza na Web"}, {"imagem": "img/marcas/mascavo.webp", "nome": "Mascavo"}, {"imagem": "img/marcas/loreal.webp", "nome": "L'Oréal Groupe"}, {"imagem": "img/marcas/fini.webp", "nome": "Fini"}, {"imagem": "img/marcas/lola-from-rio.webp", "nome": "Lola from Rio"}, {"imagem": "img/marcas/ifood.webp", "nome": "iFood"}, {"imagem": "img/marcas/pantene.webp", "nome": "Pantene"}, {"imagem": "img/marcas/ca.webp", "nome": "C&A"}, {"imagem": "img/marcas/sallve.webp", "nome": "Sallve"}, {"imagem": "img/marcas/marca-simbolo.webp", "nome": "com um símbolo preto em um círculo rosa"}, {"imagem": "img/marcas/rohto.webp", "nome": "Rohto"}, {"imagem": "img/marcas/marca-m-rosa.webp", "nome": "com a letra m em um círculo rosa"}, {"imagem": "img/marcas/dabelle.webp", "nome": "DaBelle"}, {"imagem": "img/marcas/amazon.webp", "nome": "Amazon"}, {"imagem": "img/marcas/hiven.webp", "nome": "Hiven"}, {"imagem": "img/marcas/matrix.webp", "nome": "Matrix Professional"}, {"imagem": "img/marcas/marca-p-roxo.webp", "nome": "com a letra p roxa em um círculo lilás"}, {"imagem": "img/marcas/dafiti.webp", "nome": "Dafiti"}, {"imagem": "img/marcas/epile.webp", "nome": "Épilé"}, {"imagem": "img/marcas/99food.webp", "nome": "99Food"}, {"imagem": "img/marcas/nina-makeup.webp", "nome": "Nina Makeup"}, {"imagem": "img/marcas/salton.webp", "nome": "Salton"}, {"imagem": "img/marcas/abela.webp", "nome": "Abela Cosmetics"}, {"imagem": "img/marcas/color-wow.webp", "nome": "Color Wow"}, {"imagem": "img/marcas/oceane.webp", "nome": "Oceane"}, {"imagem": "img/marcas/vizcaya.webp", "nome": "Vizcaya"}, {"imagem": "img/marcas/rildy.webp", "nome": "Rildy"}, {"imagem": "img/marcas/inoar.webp", "nome": "Inoar"}, {"imagem": "img/marcas/marca-p-preto.webp", "nome": "com a letra P branca em um círculo preto"}, {"imagem": "img/marcas/bioderma.webp", "nome": "Bioderma"}, {"imagem": "img/marcas/fenzza.webp", "nome": "Fenzza"}, {"imagem": "img/marcas/petrizi.webp", "nome": "Petrizi"}, {"imagem": "img/marcas/ruby-kisses.webp", "nome": "Ruby Kisses"}, {"imagem": "img/marcas/garnier.webp", "nome": "Garnier"}, {"imagem": "img/marcas/kiss-new-york.webp", "nome": "Kiss New York"}, {"imagem": "img/marcas/authentic-feet.webp", "nome": "Authentic Feet"}];
-    var PAGINAS_SITE = ['sobre', 'destaques', 'case', 'trabalhos', 'servicos', 'numeros', 'contato'];
+    var PAGINAS_SITE = ['sobre', 'case', 'destaques', 'trabalhos', 'servicos', 'numeros', 'contato'];
     var NOMES_PAGINAS = { sobre: 'Sobre mim', destaques: 'Conteúdos em destaque', case: 'Por que essa marca fechou 100 conteúdos comigo', trabalhos: 'Que tipo de conteúdo você precisa', servicos: 'Como eu te ajudo', numeros: 'Números e depoimentos', contato: 'Bora criar juntos' };
     var MENU_PADRAO = { sobre: 'Sobre', destaques: 'Destaques', case: 'Case', trabalhos: 'Trabalhos', servicos: 'Serviços', numeros: 'Números', contato: 'Contato' };
 
@@ -4386,12 +4402,6 @@
         resumo: function (v) { return (Array.isArray(v) ? v : []).map(function (d) { return texto(d.nome) + ' (' + texto(d.empresa) + ')'; }); }
       },
       Object.assign({
-        chave: 'destaques_audio', titulo: 'Áudio dos Destaques', tipo: 'objeto',
-        descricao: 'O player ao lado dos vídeos de Destaque. Link de um arquivo mp3 ou m4a (https://...) ou audio/nome.mp3. Vazio mostra "Em breve".',
-        campos: [{ nome: 'audio', rotulo: 'Áudio', tipo: 'arquivo', aceita: 'audio/*', pasta: 'audios', largo: true }],
-        resumo: function (v) { return [texto(v && v.audio) ? texto(v.audio) : 'Sem áudio (mostra "Em breve")']; }
-      }, comPadrao({ audio: '' })),
-      Object.assign({
         chave: 'contato', titulo: 'Contatos e rodapé', tipo: 'objeto',
         descricao: 'WhatsApp, e-mail e Instagram do site inteiro (seção Contato e rodapé) e a frase do rodapé.',
         campos: [
@@ -4462,8 +4472,8 @@
       { id: 'capa', titulo: 'Capa', desc: 'Selo, título, frase, botões, foto e os avisos sobre a foto.', secoes: ['capa'] },
       { id: 'marcas', titulo: 'Marcas trabalhadas', desc: 'A faixa de logos logo depois da capa: título, logos e ordem.', secoes: ['marcas_faixa', 'logos'] },
       { id: 'sobre', titulo: 'Sobre mim', desc: 'Título, foto, textos, promessas e assinatura.', secoes: ['titulos_sobre', 'sobre'] },
-      { id: 'destaques', titulo: 'Conteúdos em destaque', desc: 'Título, áudio e os vídeos do carrossel de Destaques.', secoes: ['titulos_destaques', 'destaques_audio'], videos: true },
       { id: 'case', titulo: 'Por que essa marca fechou 100 conteúdos comigo', desc: 'O case da Box Magenta: textos, selos com ícone, vídeos e áudio de feedback.', secoes: ['case', 'case_motivos', 'case_videos'] },
+      { id: 'destaques', titulo: 'Conteúdos em destaque', desc: 'Título e os vídeos do carrossel de Destaques.', secoes: ['titulos_destaques'], videos: true },
       { id: 'trabalhos', titulo: 'Que tipo de conteúdo você precisa', desc: 'Título, nichos (nome, descrição e ordem) e os vídeos de cada nicho.', secoes: ['titulos_trabalhos', 'nichos'], videos: true },
       { id: 'servicos', titulo: 'Como eu te ajudo', desc: 'Título e os serviços.', secoes: ['titulos_servicos', 'servicos'] },
       { id: 'numeros', titulo: 'Números e depoimentos', desc: 'Título, números com contador, resultados de campanha e depoimentos.', secoes: ['titulos_numeros', 'metricas', 'resultados', 'depoimentos'] },

@@ -253,6 +253,10 @@ button,input,textarea{font:inherit;color:inherit}
 }
 .destaques-texto .titulo{font-size:clamp(2.3rem,4.4vw,3.4rem)}
 #destaques{padding-bottom:calc(clamp(3rem,5vw,4rem) - 1.25rem)}
+/* Destaques: título em cima e o carrossel embaixo, na largura toda */
+#destaques .destaques-layout{grid-template-columns:1fr;gap:0}
+#destaques .secao-topo{margin-bottom:clamp(1.4rem,3vw,2rem)}
+#destaques .carrossel{--card-w:clamp(210px,21vw,260px)}
 /* Carrossel: o card do meio fica nítido e os vizinhos ficam desfocados (a classe .ativo vem do script) */
 .carrossel{--card-w:clamp(210px,24vw,290px);--gap:1.25rem;position:relative;min-width:0}
 .carrossel-seta{
@@ -298,7 +302,7 @@ button,input,textarea{font:inherit;color:inherit}
 .destaque-rotulo{margin-top:.2rem;font-size:1rem;color:var(--muted)}
 .destaque-ctx{margin-top:.2rem;font-size:.9rem;color:var(--accent-text)}
 
-/* Espaço do áudio (estilo mensagem de voz). O arquivo entra em AUDIO_DESTAQUES, no começo do script. */
+/* Player de áudio (estilo mensagem de voz), usado no feedback do case. Montado por montarAudio. */
 .audio{
   display:flex;align-items:center;gap:1rem;max-width:26rem;padding:.9rem 1.1rem;
   border-radius:22px;background:var(--cream);color:var(--ink);
@@ -763,10 +767,6 @@ const VIDEOS_PADRAO = [
   { marca: "Skala", titulo: "Skala", nicho: "Cabelo", link: "https://youtube.com/shorts/-bcptTQtnkQ", destaque: "", capa: "img/capas/skala.webp", emDestaques: false }
 ];
 
-/* ---- ÁUDIO DA SEÇÃO DE DESTAQUES ----
-   ONDE ENTRA O ÁUDIO: coloque o arquivo (mp3 ou m4a) em uma pasta chamada audio e escreva o caminho aqui,
-   por exemplo "audio/recado.mp3". Enquanto estiver "", o player aparece parado, com o aviso "Em breve". */
-const AUDIO_DESTAQUES = "";
 
 /* ---- CASE: POR QUE A MARCA JÁ CRIOU MAIS DE 100 VÍDEOS COMIGO ----
    Texto original: o painel (página "Por que essa marca fechou 100 conteúdos comigo") sobrescreve.
@@ -919,6 +919,10 @@ document.addEventListener('DOMContentLoaded', () => {
   /* "2,4M views" vira número "2,4M" e rótulo "views". Texto sem número ("Roteiro Criativo") fica inteiro, sem rótulo. */
   const partirDestaque = (texto) => {
     const t = String(texto || '').trim();
+    if (t.includes('\n')) {                                          /* painel: texto grande na 1ª linha, texto pequeno na 2ª */
+      const [numero, ...resto] = t.split('\n');
+      return { numero: numero.trim(), rotulo: resto.join(' ').trim() };
+    }
     const m = t.match(/^(\+?\s*[\d.,]+\s*(?:mil|mi|milhões|milhão|k|m|b)?)\s+(.+)$/i);
     if (m) return { numero: m[1].replace(/\s+/g, ' ').trim(), rotulo: m[2].trim() };
     if (/^\+?\s*[\d.,]+\s*(?:mil|mi|milhões|milhão|k|m|b)?$/i.test(t)) return { numero: t, rotulo: 'views' };
@@ -1021,6 +1025,7 @@ document.addEventListener('DOMContentLoaded', () => {
     $$('.destaque-capa img', trilho).forEach((img) => img.addEventListener('error', () => img.remove()));   /* capa que não abre: fica o degradê */
     trilho.scrollLeft = 0;
     marcarAtivo();
+    requestAnimationFrame(() => { carrosselDestaques.ir(Math.min(1, lista.length - 1), true); marcarAtivo(); });   /* abre com vídeo dos dois lados */
   };
   desenharDestaques(videosSite.filter((v) => v.emDestaques));   /* aparece já ao abrir; os vídeos do painel entram depois, se houver */
 
@@ -1547,7 +1552,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   /* ---------- Ordem, fundo e menu das páginas (painel, página "Cores, ordem e menu") ---------- */
-  const PAGINAS_SITE = ['sobre', 'destaques', 'case', 'trabalhos', 'servicos', 'numeros', 'contato'];
+  const PAGINAS_SITE = ['sobre', 'case', 'destaques', 'trabalhos', 'servicos', 'numeros', 'contato'];
   const MENU_PADRAO = { sobre: 'Sobre', destaques: 'Destaques', case: 'Case', trabalhos: 'Trabalhos', servicos: 'Serviços', numeros: 'Números', contato: 'Contato' };
   const FUNDO_ORIGINAL = {};
   PAGINAS_SITE.forEach((id) => {
@@ -1700,7 +1705,6 @@ document.addEventListener('DOMContentLoaded', () => {
     aplicarSecao('logos', logos.length ? logos : LOGOS_MARCAS.map((m) => ({ src: `img/marcas/${m.arquivo}.webp`, alt: m.alt })), desenharMarcas, animar);
     aplicarSecao('marcas_faixa', objeto(c.marcas_faixa), desenharFaixa, animar);
     aplicarSecao('captura', objeto(c.captura), desenharCaptura, animar);
-    aplicarSecao('destaques_audio', (objeto(c.destaques_audio).audio || AUDIO_DESTAQUES), (link) => montarAudio($('#audioDestaques'), link), animar);
     aplicarSecao('cores', objeto(c.cores), desenharCores, animar);
     aplicarSecao('contato', objeto(c.contato), desenharContato, animar);
   };
@@ -2031,8 +2035,6 @@ document.addEventListener('DOMContentLoaded', () => {
         <p class="lead reveal" style="--d:.12s">Vídeos que mostram como uma boa ideia, contada com verdade, vira resultado. Toque em um card para assistir.</p>
       </header>
 
-      <!-- ESPAÇO DO ÁUDIO: o link do áudio vem do painel (Conteúdo do site, "Áudio dos Destaques") ou de AUDIO_DESTAQUES. -->
-      <div class="reveal" id="audioDestaques" style="--d:.18s"></div>
     </div>
 
     <!-- Os cards do carrossel são criados pelos vídeos do painel marcados como Destaque (ou pela lista VIDEOS_PADRAO, no começo do script).
@@ -2048,7 +2050,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- ============================ CASE (recorrência e prova social) ============================
      Todo o conteúdo vem do painel (Conteúdo do site, cartões "Case"). Sem nada salvo, usa CASE_PADRAO, no começo do script.
      O painel também escolhe onde a seção fica, o fundo, a cor e se aparece no menu. -->
-<section class="secao case" id="case" aria-labelledby="titulo-case" hidden></section>
+<section class="secao bg-2 case" id="case" aria-labelledby="titulo-case" hidden></section>
 
 <!-- ============================ 4. TRABALHOS POR NICHO ============================ -->
 <section class="secao" id="trabalhos" aria-labelledby="titulo-trabalhos">
