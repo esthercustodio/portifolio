@@ -271,6 +271,12 @@ button,input,textarea{font:inherit;color:inherit}
 #destaques .secao-topo{margin-bottom:clamp(1.4rem,3vw,2rem)}
 #destaques .carrossel{--card-w:calc((100% - 4 * var(--gap)) / 5)}
 #destaques .destaques-grid{scroll-snap-type:x proximity}
+/* título e vídeos centralizados: fica equilibrado com poucos ou muitos vídeos */
+#destaques .secao-topo{margin-inline:auto;text-align:center}
+#destaques .secao-topo .eyebrow{justify-content:center}
+#destaques .secao-topo .lead{margin-inline:auto}
+#destaques .destaque:first-child{margin-left:auto}
+#destaques .destaque:last-child{margin-right:auto}
 #destaques .destaques-grid::before,#destaques .destaques-grid::after{display:none}
 #destaques .destaque{opacity:1;filter:none;transform:none;scroll-snap-align:start}
 .carrossel.sem-setas .carrossel-seta{display:none}
@@ -956,7 +962,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   const nomeDoVideo = (v) => v.marca || v.titulo || 'Vídeo';
   const legendaDoVideo = (v) => (v.titulo && v.titulo.toLowerCase() !== v.marca.toLowerCase() ? v.titulo : '');
-  let videosSite = VIDEOS_PADRAO.map(prepararVideo);      /* trocada pela lista do painel quando o banco responde */
+  /* Abre com a última lista de vídeos que veio do painel (guardada no navegador) para não piscar; sem ela, usa a reserva */
+  let videosGuardados = null;
+  try { videosGuardados = JSON.parse(localStorage.getItem('videosSite') || 'null'); } catch (erro) { videosGuardados = null; }
+  let videosSite = (Array.isArray(videosGuardados) && videosGuardados.length ? videosGuardados : VIDEOS_PADRAO).map(prepararVideo);   /* trocada pela lista do painel quando o banco responde */
   let nichosSite = NICHOS_PADRAO;
 
   /* Carrossel (Destaques e case): o card que está no meio ganha a classe "ativo" (nítido); os vizinhos ficam desfocados.
@@ -1364,6 +1373,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const linhas = await carregarVideos();
     /* Banco fora do ar, sem vídeos ou ainda sem o videos-site.sql: fica a lista de reserva que já está na tela */
     if (!linhas || !linhas.length || !linhas.some((v) => 'em_destaques' in v)) return;
+    try { localStorage.setItem('videosSite', JSON.stringify(linhas)); } catch (erro) { /* segue sem guardar */ }
     videosSite = linhas.map(prepararVideo);
     desenharDestaques(videosSite.filter((v) => v.emDestaques));
     desenharNichos();
