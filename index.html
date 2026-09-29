@@ -175,7 +175,7 @@ button,input,textarea{font:inherit;color:inherit}
    1. CAPA
    ========================================================= */
 .hero{
-  padding-top:calc(var(--nav-h) + clamp(2.5rem,6vw,4.5rem));
+  padding-top:calc(var(--nav-h) + clamp(2.5rem,6vw,4.5rem));padding-bottom:clamp(3rem,5vw,4rem);
   background-image:linear-gradient(rgba(20,17,13,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(20,17,13,.055) 1px,transparent 1px);
   background-size:44px 44px;
 }
@@ -205,15 +205,9 @@ button,input,textarea{font:inherit;color:inherit}
 .hero-toast-ico svg{width:15px;height:15px}
 .hero-toast strong{display:block;font-size:.8rem;font-weight:700;line-height:1.25}
 .hero-toast small{display:block;margin-top:.1rem;font-size:.72rem;line-height:1.3;color:var(--muted)}
-.hero-toast-a{top:60%;right:-7%}
-.hero-toast-b{bottom:4%;left:-9%;animation-delay:-3s}
+.hero-toast-a{top:73%;right:-7%}
+.hero-toast-b{bottom:2%;left:-10%;animation-delay:-3s}
 @keyframes flutuar{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-/* linha de números logo abaixo da faixa */
-.numeros-topo{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:0;padding:clamp(1.6rem,3vw,2.3rem) 0;list-style:none}
-.numeros-topo li{padding:0 1.3rem;border-left:1px solid var(--line)}
-.numeros-topo li:first-child{padding-left:0;border-left:0}
-.numeros-topo strong{display:block;font-family:var(--serif);font-weight:700;font-size:clamp(1.6rem,3vw,2.3rem);line-height:1;color:var(--ink)}
-.numeros-topo span{display:block;margin-top:.5rem;font-size:.66rem;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
 .hero-recorte{display:block;width:100%;height:auto}
 .foto-45{aspect-ratio:4/5}
 
@@ -258,6 +252,7 @@ button,input,textarea{font:inherit;color:inherit}
   gap:clamp(2rem,5vw,4.5rem);align-items:center;
 }
 .destaques-texto .titulo{font-size:clamp(2.3rem,4.4vw,3.4rem)}
+#destaques{padding-bottom:calc(clamp(3rem,5vw,4rem) - 1.25rem)}
 /* Carrossel: o card do meio fica nítido e os vizinhos ficam desfocados (a classe .ativo vem do script) */
 .carrossel{--card-w:clamp(210px,24vw,290px);--gap:1.25rem;position:relative;min-width:0}
 .carrossel-seta{
@@ -272,7 +267,7 @@ button,input,textarea{font:inherit;color:inherit}
 .carrossel-seta:hover:not(:disabled){transform:translateY(-50%) scale(1.08)}
 .carrossel-seta:disabled{opacity:.3;cursor:default}
 .destaques-grid{
-  position:relative;display:flex;align-items:flex-start;gap:var(--gap);padding-block:1.5rem;
+  position:relative;display:flex;align-items:flex-start;gap:var(--gap);padding-block:1.5rem;margin-block:-1.5rem;
   overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;
   scroll-snap-type:x mandatory;scrollbar-width:none;
 }
@@ -360,8 +355,6 @@ button,input,textarea{font:inherit;color:inherit}
 .case.escuro .case-contexto strong{color:var(--cream)}
 @media (max-width:620px){
   .selos{grid-template-columns:1fr}
-  .numeros-topo{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:1.4rem}
-  .numeros-topo li:nth-child(3){padding-left:0;border-left:0}
   .hero-toast{max-width:180px;padding:.55rem .75rem .55rem .55rem}
   .hero-toast-a{right:0}
   .hero-toast-b{left:0}
@@ -400,7 +393,7 @@ button,input,textarea{font:inherit;color:inherit}
 .seta-mini:disabled{opacity:.35;cursor:default}
 .nicho-trilho{
   --vw:calc((100% - var(--gap) * 4) / 5);
-  display:flex;gap:var(--gap);padding:.7rem 0 1.1rem;margin-top:-.7rem;
+  display:flex;gap:var(--gap);padding:.7rem 0 1.1rem;margin-top:-.7rem;margin-bottom:-1.1rem;
   overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scrollbar-width:none;
 }
 .nicho-trilho::-webkit-scrollbar{display:none}
@@ -499,13 +492,30 @@ button,input,textarea{font:inherit;color:inherit}
 .resultado h3{font-family:var(--serif);font-weight:700;font-size:1.35rem;margin-top:1.1rem}
 .resultado-marca{font-size:.74rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(243,238,233,.78);margin-top:.2rem}
 .resultado p.txt{margin-top:.8rem;font-size:.97rem;color:rgba(243,238,233,.82)}
-.depoimentos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(1rem,2.4vw,1.75rem);margin-top:clamp(1rem,2.4vw,1.75rem)}
-.depoimento{position:relative;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-lg);padding:clamp(1.6rem,3vw,2.3rem);box-shadow:var(--shadow);display:flex;flex-direction:column;gap:1.4rem}
-.depoimento::before{content:"\201C";font-family:var(--serif);font-size:4.5rem;line-height:.6;color:var(--marrom);height:1.6rem}
-.depoimento blockquote{font-family:var(--serif);font-size:clamp(1.15rem,1.9vw,1.4rem);line-height:1.45;font-weight:400}
-.depoimento figcaption{margin-top:auto;display:flex;flex-direction:column;padding-top:1rem;border-top:1px solid var(--line)}
-.depoimento figcaption strong{font-weight:700}
-.depoimento figcaption span{font-size:.9rem;color:var(--muted)}
+/* Depoimentos: cabeçalho próprio e carrossel de cards com logo redondo, estrelas e um resultado */
+.depo-bloco{margin-top:clamp(2.5rem,5vw,3.5rem)}
+.depo-cab{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:1rem 3rem}
+.depo-cab .eyebrow{margin-bottom:.6rem}
+.depo-titulo{font-size:clamp(1.9rem,3.4vw,2.6rem)}
+.depo-lead{max-width:22rem;color:var(--muted)}
+.depo-carrossel{position:relative;margin-top:1rem}
+.depo-trilho{display:flex;gap:1.5rem;padding:3rem .2rem .6rem;margin-bottom:-.6rem;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent);mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent)}
+.depo-trilho::-webkit-scrollbar{display:none}
+.depo{position:relative;flex:0 0 calc((100% - 3rem) / 3);scroll-snap-align:start;display:flex;flex-direction:column;align-items:center;margin:0;padding:3.1rem 1.6rem 1.5rem;border:1px solid var(--line);border-radius:18px;background:var(--paper);text-align:center}
+.depo-logo{position:absolute;top:0;left:50%;transform:translate(-50%,-50%);width:76px;height:76px;border-radius:50%;background:#fff;border:4px solid var(--cream);box-shadow:0 10px 24px -14px rgba(20,17,13,.5);overflow:hidden;display:grid;place-items:center;font-family:var(--serif);font-weight:700;font-size:1.6rem;color:var(--marrom)}
+.depo-logo img{width:100%;height:100%;object-fit:cover}
+.depo-perfil{font-family:var(--serif);font-weight:700;font-size:1.08rem;line-height:1.25}
+.depo-estrelas{margin-top:.45rem;font-size:.95rem;letter-spacing:.18em;color:var(--marrom)}
+.depo-cat{margin-top:.5rem;font-size:.68rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.depo blockquote{margin:.9rem 0 0;font-size:.92rem;line-height:1.65;color:var(--muted)}
+.depo-num{align-self:stretch;margin-top:auto;padding-top:1rem}
+.depo-num div{padding-top:.9rem;border-top:1px solid var(--line)}
+.depo-num strong{display:block;font-family:var(--serif);font-weight:700;font-size:1.25rem;color:var(--marrom)}
+.depo-num span{display:block;margin-top:.2rem;font-size:.66rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.depo-carrossel .carrossel-seta{top:calc(50% + 1.2rem)}
+.depo-carrossel .carrossel-seta.ant{left:-.9rem}
+.depo-carrossel .carrossel-seta.prox{right:-.9rem}
+.depo-carrossel.sem-setas .carrossel-seta{display:none}
 
 /* =========================================================
    7. CONTATO
@@ -751,15 +761,6 @@ const VIDEOS_PADRAO = [
   { marca: "Pantene", titulo: "Pantene", nicho: "Cabelo", link: "https://youtube.com/shorts/joqQGhQ4SdY", destaque: "", capa: "img/capas/pantene-2.webp", emDestaques: false },
   { marca: "Amar Biquínis", titulo: "Amar Biquínis", nicho: "Cabelo", link: "https://youtube.com/shorts/AylWWVBZ7go", destaque: "", capa: "img/capas/amar-biquinis.webp", emDestaques: false },
   { marca: "Skala", titulo: "Skala", nicho: "Cabelo", link: "https://youtube.com/shorts/-bcptTQtnkQ", destaque: "", capa: "img/capas/skala.webp", emDestaques: false }
-];
-
-/* ---- NÚMEROS ABAIXO DA CAPA (a linha logo depois da faixa escura) ----
-   O painel (página Capa, cartão "Números abaixo da capa") sobrescreve. */
-const NUMEROS_TOPO = [
-  { valor: "450+", rotulo: "vídeos produzidos" },
-  { valor: "150+", rotulo: "marcas atendidas" },
-  { valor: "6", rotulo: "nichos atendidos" },
-  { valor: "3 anos", rotulo: "de experiência" }
 ];
 
 /* ---- ÁUDIO DA SEÇÃO DE DESTAQUES ----
@@ -1381,14 +1382,41 @@ document.addEventListener('DOMContentLoaded', () => {
     animarNovos(alvo, animar);
   };
 
+  /* Depoimentos: nome (marca ou @) em negrito, empresa vira a categoria em maiúsculas; logo, estrelas e resultado são opcionais */
+  const trilhoDepo = $('#depoimentosLista');
+  const setasDepo = () => {
+    const car = trilhoDepo.closest('.depo-carrossel');
+    car.classList.toggle('sem-setas', trilhoDepo.scrollWidth <= trilhoDepo.clientWidth + 2);
+    $('#depoAnt').disabled = trilhoDepo.scrollLeft <= 8;
+    $('#depoProx').disabled = trilhoDepo.scrollLeft + trilhoDepo.clientWidth >= trilhoDepo.scrollWidth - 8;
+  };
+  const passarDepo = (dir) => {
+    const card = $('.depo', trilhoDepo);
+    trilhoDepo.scrollBy({ left: dir * (card ? card.offsetWidth + 24 : trilhoDepo.clientWidth), behavior: reduzir ? 'auto' : 'smooth' });
+  };
+  $('#depoAnt').addEventListener('click', () => passarDepo(-1));
+  $('#depoProx').addEventListener('click', () => passarDepo(1));
+  trilhoDepo.addEventListener('scroll', () => requestAnimationFrame(setasDepo), { passive: true });
+  window.addEventListener('resize', setasDepo);
   const desenharDepoimentos = (lista, animar) => {
-    const alvo = $('#depoimentosLista');
-    alvo.innerHTML = lista.map((d, i) => `
-    <figure class="depoimento reveal" style="--d:${(0.1 * (i % 2)).toFixed(2)}s">
-      <blockquote>${esc(d.texto)}</blockquote>
-      <figcaption><strong>${esc(d.nome)}</strong><span>${esc(d.empresa)}</span></figcaption>
-    </figure>`).join('');
-    animarNovos(alvo, animar);
+    const t = (v) => String(v == null ? '' : v).trim();
+    trilhoDepo.innerHTML = lista.filter((d) => d && (t(d.texto) || t(d.nome))).map((d, i) => {
+      const nome = t(d.nome);
+      const logo = imagemSegura(d.logo);
+      const estrelas = Math.max(0, Math.min(5, d.estrelas == null || t(d.estrelas) === '' ? 5 : Number(d.estrelas) || 0));
+      return `<figure class="depo reveal" style="--d:${(0.08 * (i % 3)).toFixed(2)}s">
+        <div class="depo-logo" aria-hidden="true">${logo ? `<img src="${esc(logo)}" alt="" loading="lazy">` : esc((nome.replace(/^@/, '')[0] || '').toUpperCase())}</div>
+        <figcaption class="depo-perfil">${esc(nome)}</figcaption>
+        ${estrelas ? `<p class="depo-estrelas" aria-label="${estrelas} de 5 estrelas">${'★'.repeat(estrelas)}</p>` : ''}
+        ${t(d.empresa) ? `<p class="depo-cat">${esc(t(d.empresa))}</p>` : ''}
+        <blockquote>${esc(t(d.texto))}</blockquote>
+        ${t(d.numero) || t(d.numeroRotulo) ? `<div class="depo-num"><div><strong>${esc(t(d.numero))}</strong><span>${esc(t(d.numeroRotulo))}</span></div></div>` : ''}
+      </figure>`;
+    }).join('');
+    $$('.depo-logo img', trilhoDepo).forEach((img) => img.addEventListener('error', () => img.remove()));
+    trilhoDepo.scrollLeft = 0;
+    requestAnimationFrame(setasDepo);
+    animarNovos(trilhoDepo, animar);
   };
 
   const desenharCapa = (c) => {
@@ -1427,6 +1455,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (titulo && h2) h2.innerHTML = comEnfase(titulo);
       const apoio = $('.lead', secao);
       if (texto && apoio) apoio.textContent = texto;
+      if (id === 'numeros') {
+        if (String(v.depoRotulo || '').trim()) $('#depoRotulo').textContent = String(v.depoRotulo).trim();
+        if (String(v.depoTitulo || '').trim()) $('#depoTitulo').innerHTML = comEnfase(String(v.depoTitulo).trim());
+        if (String(v.depoTexto || '').trim()) $('#depoTexto').textContent = String(v.depoTexto).trim();
+      }
       const botao = String(v.botao || '').trim();
       const alvoBotao = $('.secao-botao', secao);
       if (botao && alvoBotao) alvoBotao.textContent = botao;
@@ -1597,13 +1630,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof c.titulo === 'string') $('.marcas-titulo').textContent = c.titulo.trim();
     $('.marcas').hidden = c.mostrar === false;
   };
-  const desenharNumerosTopo = (lista) => {
-    const alvo = $('#numerosTopo');
-    if (!alvo) return;
-    const itens = lista.filter((n) => n && (String(n.valor || '').trim() || String(n.rotulo || '').trim()));
-    alvo.hidden = !itens.length;
-    alvo.innerHTML = itens.map((n) => `<li><strong>${esc(String(n.valor || '').trim())}</strong><span>${esc(String(n.rotulo || '').trim())}</span></li>`).join('');
-  };
 
   let capturaLigada = true;
   const desenharCaptura = (c) => {
@@ -1661,7 +1687,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const lista = (v, padrao) => (Array.isArray(v) && v.length ? v : padrao);
     aplicarSecao('nichos', lista(c.nichos, NICHOS_PADRAO), (n) => { nichosSite = n; desenharNichos(); }, animar);
     aplicarSecao('servicos', lista(c.servicos, SERVICOS), desenharServicos, animar);
-    aplicarSecao('numeros_topo', lista(c.numeros_topo, NUMEROS_TOPO), desenharNumerosTopo, animar);
     aplicarSecao('metricas', lista(c.metricas, METRICAS), desenharMetricas, animar);
     aplicarSecao('resultados', lista(c.resultados, RESULTADOS), desenharResultados, animar);
     aplicarSecao('depoimentos', lista(c.depoimentos, DEPOIMENTOS), desenharDepoimentos, animar);
@@ -1963,10 +1988,6 @@ document.addEventListener('DOMContentLoaded', () => {
     </figure>
   </div>
 
-  <!-- Números logo abaixo da capa (painel, página Capa, cartão "Números abaixo da capa") -->
-  <div class="container">
-    <ul class="numeros-topo" id="numerosTopo"></ul>
-  </div>
 </section>
 
 <!-- ============================ 2. SOBRE MIM ============================ -->
@@ -2068,7 +2089,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     <ul class="metricas" id="metricasLista" aria-label="Métricas"></ul>
     <div class="resultados" id="resultadosLista" role="group" aria-label="Resultados de campanha"></div>
-    <div class="depoimentos" id="depoimentosLista" role="group" aria-label="Depoimentos de clientes"></div>
+    <div class="depo-bloco">
+      <div class="depo-cab">
+        <div>
+          <p class="eyebrow reveal"><i></i><span id="depoRotulo">Depoimentos</span></p>
+          <h3 class="titulo depo-titulo reveal" id="depoTitulo">O que dizem <em>sobre o trabalho</em></h3>
+        </div>
+        <p class="depo-lead reveal" id="depoTexto">O retorno de marcas que já criaram conteúdo comigo.</p>
+      </div>
+      <div class="depo-carrossel reveal" role="region" aria-roledescription="carrossel" aria-label="Depoimentos de clientes">
+        <button type="button" class="carrossel-seta ant" id="depoAnt" aria-label="Depoimento anterior" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button>
+        <div class="depo-trilho" id="depoimentosLista"></div>
+        <button type="button" class="carrossel-seta prox" id="depoProx" aria-label="Próximo depoimento"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
+      </div>
+    </div>
   </div>
 </section>
 

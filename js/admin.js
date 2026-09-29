@@ -4155,7 +4155,7 @@
       destaques: { rotulo: 'Em evidência', titulo: 'Conteúdos de *destaque*', texto: 'Vídeos que mostram como uma boa ideia, contada com verdade, vira resultado. Toque em um card para assistir.' },
       trabalhos: { rotulo: 'Categorias', titulo: 'Que tipo de *conteúdo* você precisa?', texto: 'Navegue pelos nichos. Cada linha é uma especialidade. Deslize para o lado para ver mais.' },
       servicos: { rotulo: 'Serviços', titulo: 'Como eu te *ajudo*', texto: 'Do roteiro à publicação, cada etapa pensada para a sua marca aparecer melhor.', botao: 'Bora criar juntos' },
-      numeros: { rotulo: 'Resultados', titulo: 'Números e *depoimentos*' },
+      numeros: { rotulo: 'Resultados', titulo: 'Números e *depoimentos*', depoRotulo: 'Depoimentos', depoTitulo: 'O que dizem *sobre o trabalho*', depoTexto: 'O retorno de marcas que já criaram conteúdo comigo.' },
       contato: { rotulo: 'Contato', titulo: 'Bora criar *juntos*', texto: 'Conte um pouco sobre a sua marca e o que você quer comunicar. Eu respondo com carinho e com uma proposta pensada para você.' }
     };
     var TITULOS_NOMES = { sobre: 'Sobre mim', destaques: 'Destaques', trabalhos: 'Trabalhos por nicho', servicos: 'Serviços', numeros: 'Números', contato: 'Contato' };
@@ -4203,7 +4203,6 @@
     var CAPA_PADRAO = { titulo1: 'Inspiração', titulo2: 'que *conecta.*', botao: 'Quero criar com a Esther', link: 'Ver os trabalhos', menuBotao: 'Trabalhe comigo',
       toast1Titulo: '+100 vídeos com a Box Magenta', toast1Texto: 'Parceria recorrente', toast2Titulo: 'Entregas no prazo', toast2Texto: 'Roteiro aprovado antes de gravar', foto: '', fotoAlt: 'Esther Custódio olhando por cima do ombro e sorrindo, com cabelo cacheado e brinco dourado' };
     var FAIXA_PADRAO = { mostrar: true, titulo: 'Marcas com quem já trabalhei' };
-    var NUMEROS_TOPO_PADRAO = [{ valor: '450+', rotulo: 'vídeos produzidos' }, { valor: '150+', rotulo: 'marcas atendidas' }, { valor: '6', rotulo: 'nichos atendidos' }, { valor: '3 anos', rotulo: 'de experiência' }];
     var SOBRE_PADRAO = {
       foto: '', fotoAlt: 'Esther Custódio sentada num sofá, sorrindo, num estúdio rosa com o logo do TikTok',
       abre: 'Eu gosto de mostrar produtos do jeito que as pessoas realmente usam: na rotina, com luz natural e com opinião de verdade.',
@@ -4263,15 +4262,6 @@
         },
         resumo: function (v) { var n = (v && v.numeros) || []; return [texto(v && v.chip), textoOuPadrao(v, CAPA_PADRAO, 'titulo1') + ' ' + textoOuPadrao(v, CAPA_PADRAO, 'titulo2'), n.join('  |  '), texto(v && v.foto) ? 'Foto trocada pelo painel' : 'Foto original']; }
       }),
-      {
-        chave: 'numeros_topo', titulo: 'Números abaixo da capa', tipo: 'lista', item: 'Número', padrao: NUMEROS_TOPO_PADRAO,
-        descricao: 'A linha de números logo abaixo da capa.',
-        colunas: [
-          { nome: 'valor', rotulo: 'Número', obrigatorio: true, placeholder: '450+' },
-          { nome: 'rotulo', rotulo: 'O que é', placeholder: 'vídeos produzidos' }
-        ],
-        resumo: function (v) { return (Array.isArray(v) ? v : []).map(function (n) { return texto(n.valor) + ' ' + texto(n.rotulo); }); }
-      },
       Object.assign({
         chave: 'marcas_faixa', titulo: 'Faixa de marcas', tipo: 'objeto',
         descricao: 'O título pequeno acima dos logos e se a faixa aparece no site.',
@@ -4383,11 +4373,15 @@
       },
       {
         chave: 'depoimentos', titulo: 'Depoimentos', tipo: 'lista', item: 'Depoimento',
-        descricao: 'O que os clientes falam de você.',
+        descricao: 'Os cards de depoimento: logo redondo, nome da marca ou @, estrelas, categoria, o que a marca falou e um resultado. Use só depoimentos reais das suas marcas.',
         colunas: [
-          { nome: 'nome', rotulo: 'Nome de quem falou', obrigatorio: true },
-          { nome: 'empresa', rotulo: 'Empresa ou marca' },
-          { nome: 'texto', rotulo: 'Depoimento', tipo: 'textarea', largo: true, obrigatorio: true }
+          { nome: 'logo', rotulo: 'Logo da marca (redondo)', tipo: 'arquivo', pasta: 'depoimentos', maxLado: 256, largo: true },
+          { nome: 'nome', rotulo: 'Marca ou @ (em negrito)', obrigatorio: true, placeholder: '@boxmagenta' },
+          { nome: 'estrelas', rotulo: 'Estrelas', tipo: 'select', opcoes: [{ v: '5', t: '5 estrelas' }, { v: '4', t: '4 estrelas' }, { v: '3', t: '3 estrelas' }, { v: '0', t: 'Sem estrelas' }] },
+          { nome: 'empresa', rotulo: 'Categoria (texto pequeno em maiúsculas)', placeholder: 'Conteúdo recorrente' },
+          { nome: 'texto', rotulo: 'O que a marca falou', tipo: 'textarea', largo: true, obrigatorio: true },
+          { nome: 'numero', rotulo: 'Resultado (opcional)', placeholder: '+100' },
+          { nome: 'numeroRotulo', rotulo: 'O que é o resultado', placeholder: 'vídeos produzidos' }
         ],
         resumo: function (v) { return (Array.isArray(v) ? v : []).map(function (d) { return texto(d.nome) + ' (' + texto(d.empresa) + ')'; }); }
       },
@@ -4441,6 +4435,11 @@
       ];
       if ('texto' in TITULOS_PADRAO[pid]) campos.push({ nome: 'texto', rotulo: 'Texto de abertura', tipo: 'textarea', largo: true });
       if ('botao' in TITULOS_PADRAO[pid]) campos.push({ nome: 'botao', rotulo: 'Texto do botão (leva ao Contato)', largo: true });
+      if ('depoTitulo' in TITULOS_PADRAO[pid]) {
+        campos.push({ nome: 'depoRotulo', rotulo: 'Depoimentos: etiqueta pequena' });
+        campos.push({ nome: 'depoTitulo', rotulo: 'Depoimentos: título', largo: true, ajuda: AJUDA_ASTERISCO });
+        campos.push({ nome: 'depoTexto', rotulo: 'Depoimentos: texto ao lado do título', tipo: 'textarea', largo: true });
+      }
       SECOES.push({
         id: 'titulos_' + pid, chave: 'titulos', titulo: 'Título da página', tipo: 'objeto',
         descricao: 'A etiqueta pequena, o título e o texto de abertura. Campo vazio mantém o texto original.',
@@ -4460,7 +4459,7 @@
 
     /* As páginas do site: cada uma abre só os seus cartões */
     var PAGINAS_CONTEUDO = [
-      { id: 'capa', titulo: 'Capa', desc: 'Selo, título, frase, botões, foto, avisos sobre a foto e a linha de números abaixo.', secoes: ['capa', 'numeros_topo'] },
+      { id: 'capa', titulo: 'Capa', desc: 'Selo, título, frase, botões, foto e os avisos sobre a foto.', secoes: ['capa'] },
       { id: 'marcas', titulo: 'Marcas trabalhadas', desc: 'A faixa de logos logo depois da capa: título, logos e ordem.', secoes: ['marcas_faixa', 'logos'] },
       { id: 'sobre', titulo: 'Sobre mim', desc: 'Título, foto, textos, promessas e assinatura.', secoes: ['titulos_sobre', 'sobre'] },
       { id: 'destaques', titulo: 'Conteúdos em destaque', desc: 'Título, áudio e os vídeos do carrossel de Destaques.', secoes: ['titulos_destaques', 'destaques_audio'], videos: true },
