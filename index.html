@@ -358,6 +358,10 @@ button,input,textarea{font:inherit;color:inherit}
 .case.escuro{--case-cor:var(--marrom-claro)}
 .case .lead{color:var(--ink);font-size:1.15rem}
 .titulo-marca{font-style:italic;color:var(--marca-cor,#c2134f)}
+/* título do case em menos linhas: "Por que a Box Magenta" cabe numa linha só */
+#case .destaques-layout{grid-template-columns:minmax(0,6fr) minmax(0,6fr)}
+#case .destaques-texto .titulo{font-size:clamp(2rem,3.1vw,2.6rem);line-height:1.08}
+.titulo-marca{white-space:nowrap}
 .case-marca{display:flex;align-items:center;gap:.8rem;margin-top:.7rem;font-family:var(--serif);font-style:italic;font-weight:700;font-size:clamp(1.5rem,2.6vw,2.1rem);line-height:1.1;letter-spacing:-.01em;color:var(--marca-cor,#c2134f)}
 .case-marca::before{content:"";flex:none;width:34px;height:2px;border-radius:2px;background:currentColor}
 .case-contexto{margin-top:1.1rem;max-width:32rem;line-height:1.7;color:var(--muted)}
