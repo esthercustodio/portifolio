@@ -4476,9 +4476,9 @@
       if ('botao' in TITULOS_PADRAO[pid]) campos.push({ nome: 'botao', rotulo: 'Texto do botão (leva ao Contato)', largo: true });
       SECOES.push({
         id: 'titulos_' + pid, chave: 'titulos', titulo: 'Título da página', tipo: 'objeto',
-        descricao: 'A etiqueta pequena, o título e o texto de abertura. Campo vazio mantém o texto original.',
+        descricao: 'A etiqueta pequena, o título e o texto de abertura. Etiqueta ou título vazio mantém o original; texto de abertura vazio some do site.',
         campos: campos,
-        paraForm: function (v) { var salvo = (v && v[pid]) || {}; var f = {}; Object.keys(TITULOS_PADRAO[pid]).forEach(function (c) { f[c] = texto(salvo[c]).trim() || TITULOS_PADRAO[pid][c]; }); return f; },
+        paraForm: function (v) { var salvo = (v && v[pid]) || {}; var f = {}; Object.keys(TITULOS_PADRAO[pid]).forEach(function (c) { var tem = Object.prototype.hasOwnProperty.call(salvo, c); f[c] = c === 'texto' && tem ? texto(salvo[c]).trim() : (texto(salvo[c]).trim() || TITULOS_PADRAO[pid][c]); }); return f; },
         deForm: function (f) {
           var tudo = Object.assign({}, conteudo.titulos || {});
           var parte = {};

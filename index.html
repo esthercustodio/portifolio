@@ -1479,7 +1479,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const h2 = $(`#titulo-${id}`);
       if (titulo && h2) h2.innerHTML = comEnfase(titulo);
       const apoio = $('.lead', secao);
-      if (texto && apoio) apoio.textContent = texto;
+      if (apoio && Object.prototype.hasOwnProperty.call(v, 'texto')) {      /* texto apagado no painel: a frase some */
+        apoio.textContent = texto;
+        apoio.hidden = !texto;
+      }
       const botao = String(v.botao || '').trim();
       const alvoBotao = $('.secao-botao', secao);
       if (botao && alvoBotao) alvoBotao.textContent = botao;
