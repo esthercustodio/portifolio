@@ -4191,10 +4191,10 @@
     /* Case Box Magenta: o mesmo texto original do site (vale enquanto nada foi salvo) */
     var CASE_PADRAO = {
       etiqueta: 'Case Box Magenta',
-      titulo: 'Por que essa marca já criou mais de *100 vídeos* comigo?',
+      titulo: 'Por que a Box Magenta criou 100 vídeos comigo?',
       subtitulo: 'Mais do que uma entrega pontual: uma parceria que se tornou recorrente.',
       contexto: 'A **Box Magenta** já produziu **mais de 100 vídeos** comigo. A recorrência vem da confiança: entregas consistentes, alinhadas à marca e pensadas para cada etapa do funil.',
-      cor: '#4d301b', audio: '', audioLegenda: 'Feedback da Box Magenta', marcaNome: 'Box Magenta', marcaCor: '#e5195e'
+      cor: '#4d301b', audio: '', audioLegenda: 'Feedback da Box Magenta', marcaNome: 'Box Magenta', marcaCor: '#c2134f'
     };
     var CASE_VIDEOS = [
       { etapa: 'Topo de funil', link: 'https://youtube.com/shorts/wA2zUnK1D-c', resultado: 'Desejo', detalhe: 'Desperta interesse e identificação', capa: 'img/capas/box-magenta-desejo.webp', marca: 'Box Magenta' },
@@ -4335,8 +4335,8 @@
         campos: [
           { nome: 'etiqueta', rotulo: 'Etiqueta pequena (acima do título)', largo: true },
           { nome: 'titulo', rotulo: 'Título', largo: true, obrigatorio: true, ajuda: AJUDA_ASTERISCO },
-          { nome: 'marcaNome', rotulo: 'Nome da marca (em destaque, abaixo do título)', placeholder: 'Box Magenta' },
-          { nome: 'marcaCor', rotulo: 'Cor do nome da marca', tipo: 'color', ajuda: 'Original: #e5195e (rosa da caixa).' },
+          { nome: 'marcaNome', rotulo: 'Nome da marca (fica em rosa no título)', placeholder: 'Box Magenta', ajuda: 'Se o título tiver esse nome, ele fica colorido ali; se não tiver, aparece numa linha abaixo do título.' },
+          { nome: 'marcaCor', rotulo: 'Cor do nome da marca', tipo: 'color', ajuda: 'Original: #c2134f (rosa da Box Magenta).' },
           { nome: 'subtitulo', rotulo: 'Subtítulo', largo: true },
           { nome: 'contexto', rotulo: 'Texto curto', tipo: 'textarea', largo: true, ajuda: 'Palavra entre dois asteriscos fica em negrito. Exemplo: **mais de 100 vídeos**' },
           { nome: 'cor', rotulo: 'Cor dos ícones e dos valores', tipo: 'color', ajuda: 'Original: #4d301b (marrom). No fundo escuro, o marrom vira bege claro sozinho.' },

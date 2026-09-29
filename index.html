@@ -357,7 +357,8 @@ button,input,textarea{font:inherit;color:inherit}
 .case{--case-cor:var(--marrom)}
 .case.escuro{--case-cor:var(--marrom-claro)}
 .case .lead{color:var(--ink);font-size:1.15rem}
-.case-marca{display:flex;align-items:center;gap:.8rem;margin-top:.7rem;font-family:var(--serif);font-style:italic;font-weight:700;font-size:clamp(1.5rem,2.6vw,2.1rem);line-height:1.1;letter-spacing:-.01em;color:var(--marca-cor,#e5195e)}
+.titulo-marca{font-style:italic;color:var(--marca-cor,#c2134f)}
+.case-marca{display:flex;align-items:center;gap:.8rem;margin-top:.7rem;font-family:var(--serif);font-style:italic;font-weight:700;font-size:clamp(1.5rem,2.6vw,2.1rem);line-height:1.1;letter-spacing:-.01em;color:var(--marca-cor,#c2134f)}
 .case-marca::before{content:"";flex:none;width:34px;height:2px;border-radius:2px;background:currentColor}
 .case-contexto{margin-top:1.1rem;max-width:32rem;line-height:1.7;color:var(--muted)}
 .case .audio{max-width:28rem;padding:1rem 1.2rem;border-radius:24px;background:var(--cream-2)}
@@ -796,14 +797,14 @@ const VIDEOS_PADRAO = [
    No título, *palavra* fica em itálico; no texto, **palavra** fica em negrito. */
 const CASE_PADRAO = {
   etiqueta: "Case Box Magenta",
-  titulo: "Por que essa marca já criou mais de *100 vídeos* comigo?",
+  titulo: "Por que a Box Magenta criou 100 vídeos comigo?",   /* o nome da marca (marcaNome) sai em rosa */
   subtitulo: "Mais do que uma entrega pontual: uma parceria que se tornou recorrente.",
   contexto: "A **Box Magenta** já produziu **mais de 100 vídeos** comigo. A recorrência vem da confiança: entregas consistentes, alinhadas à marca e pensadas para cada etapa do funil.",
   cor: "#4d301b",                       /* cor dos ícones e dos valores abaixo dos vídeos */
   audio: "",                            /* ONDE ENTRA O ÁUDIO DO FEEDBACK (link mp3 ou m4a). Vazio: "Em breve" */
   audioLegenda: "Feedback da Box Magenta",
   marcaNome: "Box Magenta",             /* nome da marca em destaque, logo abaixo do título */
-  marcaCor: "#e5195e"                   /* rosa da caixa da Box Magenta */
+  marcaCor: "#c2134f"                   /* rosa da Box Magenta, um pouco mais fechado */
 };
 /* ONDE ENTRAM OS 3 VÍDEOS: link do YouTube e capa (opcional). Sem link, o card mostra "Vídeo em breve".
    Embaixo do vídeo: "resultado" (texto grande, ex.: "+ 100 milhões de views") e "detalhe" (texto pequeno, ex.: "apenas no TikTok"). */
@@ -1524,12 +1525,21 @@ document.addEventListener('DOMContentLoaded', () => {
         : `<div class="destaque" tabindex="0" aria-label="${esc(texto(b.etapa))}: vídeo em breve">${miolo}</div>`;
     };
     const motivos = (dados.m || []).filter((m) => m && (texto(m.titulo) || texto(m.texto)));
+    /* o nome da marca dentro do título fica em rosa; se o título não tiver o nome, ele aparece numa linha abaixo */
+    const corMarca = /^#[0-9a-f]{6}$/i.test(texto(k('marcaCor'))) ? texto(k('marcaCor')) : '';
+    const nomeMarca = esc(texto(k('marcaNome')));
+    let tituloCase = comEnfase(texto(k('titulo')));
+    const nomeNoTitulo = !!nomeMarca && tituloCase.toLowerCase().includes(nomeMarca.toLowerCase());
+    if (nomeNoTitulo) {
+      const ini = tituloCase.toLowerCase().indexOf(nomeMarca.toLowerCase());
+      tituloCase = `${tituloCase.slice(0, ini)}<span class="titulo-marca">${tituloCase.slice(ini, ini + nomeMarca.length)}</span>${tituloCase.slice(ini + nomeMarca.length)}`;
+    }
     secaoCase.innerHTML = `<div class="container destaques-layout">
       <div class="destaques-texto">
         <header class="secao-topo">
           <p class="eyebrow reveal"><b></b>${esc(texto(k('etiqueta')))}</p>
-          <h2 class="titulo reveal" id="titulo-case" style="--d:.06s">${comEnfase(texto(k('titulo')))}</h2>
-          ${texto(k('marcaNome')) ? `<p class="case-marca reveal" style="--d:.09s${/^#[0-9a-f]{6}$/i.test(texto(k('marcaCor'))) ? `;--marca-cor:${texto(k('marcaCor'))}` : ''}">${esc(texto(k('marcaNome')))}</p>` : ''}
+          <h2 class="titulo reveal" id="titulo-case" style="--d:.06s${corMarca ? `;--marca-cor:${corMarca}` : ''}">${tituloCase}</h2>
+          ${texto(k('marcaNome')) && !nomeNoTitulo ? `<p class="case-marca reveal" style="--d:.09s${/^#[0-9a-f]{6}$/i.test(texto(k('marcaCor'))) ? `;--marca-cor:${texto(k('marcaCor'))}` : ''}">${esc(texto(k('marcaNome')))}</p>` : ''}
           ${texto(k('subtitulo')) ? `<p class="lead reveal" style="--d:.12s">${esc(texto(k('subtitulo')))}</p>` : ''}
           ${texto(k('contexto')) ? `<p class="case-contexto reveal" style="--d:.16s">${comNegrito(texto(k('contexto')))}</p>` : ''}
         </header>
