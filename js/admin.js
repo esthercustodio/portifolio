@@ -4196,8 +4196,7 @@
     var CORES_PADRAO = { destaque: '#808080', marrom: '#4d301b', fundo: '#f3eee9', fundo2: '#ebe4dc', texto: '#14110d' };
     var CONTATO_PADRAO = {
       whatsapp: '19983169592', whatsappMensagem: 'Oi Esther, vim pelo seu portfólio e quero conversar sobre um projeto.',
-      email: 'contatoesthercustodio@gmail.com', instagram: 'Esthercustodio_', cidade: 'Baseada em Hortolândia, São Paulo.',
-      rodapeFrase: 'UGC Creator em Hortolândia. Conteúdo que inspira.', rodapeCidade: 'Hortolândia'
+      email: 'contatoesthercustodio@gmail.com', instagram: 'Esthercustodio_', rodapeFrase: 'UGC Creator em Hortolândia. Conteúdo que inspira.'
     };
     var AJUDA_ASTERISCO = 'A palavra entre asteriscos fica em itálico. Exemplo: mais de *100 vídeos*';
     var AJUDA_ASTERISCO_CAPA = 'A palavra entre asteriscos fica em itálico e marrom. Exemplo: que *conecta.*';
@@ -4266,7 +4265,7 @@
       }),
       {
         chave: 'numeros_topo', titulo: 'Números abaixo da capa', tipo: 'lista', item: 'Número', padrao: NUMEROS_TOPO_PADRAO,
-        descricao: 'A linha de números logo abaixo da faixa escura (a faixa mostra os títulos dos serviços, da página Como eu te ajudo).',
+        descricao: 'A linha de números logo abaixo da capa.',
         colunas: [
           { nome: 'valor', rotulo: 'Número', obrigatorio: true, placeholder: '450+' },
           { nome: 'rotulo', rotulo: 'O que é', placeholder: 'vídeos produzidos' }
@@ -4400,15 +4399,13 @@
       }, comPadrao({ audio: '' })),
       Object.assign({
         chave: 'contato', titulo: 'Contatos e rodapé', tipo: 'objeto',
-        descricao: 'WhatsApp, e-mail e Instagram do site inteiro (seção Contato e rodapé), a cidade e as frases do rodapé.',
+        descricao: 'WhatsApp, e-mail e Instagram do site inteiro (seção Contato e rodapé) e a frase do rodapé.',
         campos: [
           { nome: 'whatsapp', rotulo: 'WhatsApp (DDD e número)', placeholder: '19983169592', ajuda: 'Só números. O site monta o link e o formato (19) 98316-9592.' },
           { nome: 'whatsappMensagem', rotulo: 'Mensagem que já vem escrita no WhatsApp', tipo: 'textarea', largo: true },
           { nome: 'email', rotulo: 'E-mail', tipo: 'email' },
           { nome: 'instagram', rotulo: 'Instagram (usuário)', placeholder: 'Esthercustodio_' },
-          { nome: 'cidade', rotulo: 'Frase da cidade (seção Contato)', largo: true },
-          { nome: 'rodapeFrase', rotulo: 'Frase do rodapé', largo: true },
-          { nome: 'rodapeCidade', rotulo: 'Cidade no fim do rodapé', placeholder: 'Hortolândia' }
+          { nome: 'rodapeFrase', rotulo: 'Frase do rodapé (abaixo do nome)', largo: true }
         ],
         resumo: function (v) { return [textoOuPadrao(v, CONTATO_PADRAO, 'whatsapp'), textoOuPadrao(v, CONTATO_PADRAO, 'email'), '@' + textoOuPadrao(v, CONTATO_PADRAO, 'instagram')]; }
       }, comPadrao(CONTATO_PADRAO)),
@@ -4464,7 +4461,7 @@
     /* As páginas do site: cada uma abre só os seus cartões */
     var PAGINAS_CONTEUDO = [
       { id: 'capa', titulo: 'Capa', desc: 'Selo, título, frase, botões, foto, avisos sobre a foto e a linha de números abaixo.', secoes: ['capa', 'numeros_topo'] },
-      { id: 'marcas', titulo: 'Marcas trabalhadas', desc: 'A faixa de logos logo depois do Sobre mim: título, logos e ordem.', secoes: ['marcas_faixa', 'logos'] },
+      { id: 'marcas', titulo: 'Marcas trabalhadas', desc: 'A faixa de logos logo depois da capa: título, logos e ordem.', secoes: ['marcas_faixa', 'logos'] },
       { id: 'sobre', titulo: 'Sobre mim', desc: 'Título, foto, textos, promessas e assinatura.', secoes: ['titulos_sobre', 'sobre'] },
       { id: 'destaques', titulo: 'Conteúdos em destaque', desc: 'Título, áudio e os vídeos do carrossel de Destaques.', secoes: ['titulos_destaques', 'destaques_audio'], videos: true },
       { id: 'case', titulo: 'Por que essa marca fechou 100 conteúdos comigo', desc: 'O case da Box Magenta: textos, selos com ícone, vídeos e áudio de feedback.', secoes: ['case', 'case_motivos', 'case_videos'] },

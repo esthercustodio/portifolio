@@ -64,8 +64,8 @@ button,input,textarea{font:inherit;color:inherit}
 .pular:focus{top:1rem}
 
 .container{width:100%;max-width:1200px;margin-inline:auto;padding-inline:clamp(1.25rem,5vw,3rem)}
-.secao{padding-block:clamp(4.5rem,10vw,8rem)}
-.secao-topo{max-width:44rem;margin-bottom:clamp(2rem,5vw,3.5rem)}
+.secao{padding-block:clamp(3rem,5vw,4rem)}
+.secao-topo{max-width:44rem;margin-bottom:clamp(1.8rem,3.5vw,2.6rem)}
 
 .eyebrow{
   display:flex;align-items:center;gap:.75rem;
@@ -208,13 +208,6 @@ button,input,textarea{font:inherit;color:inherit}
 .hero-toast-a{top:60%;right:-7%}
 .hero-toast-b{bottom:4%;left:-9%;animation-delay:-3s}
 @keyframes flutuar{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-/* faixa escura com os serviços, correndo */
-.faixa-servicos{margin-top:clamp(2rem,4vw,3rem);background:var(--ink);color:var(--cream);overflow:hidden;padding-block:.95rem}
-.faixa-servicos-track{display:flex;width:max-content;animation:faixa var(--dur,40s) linear infinite}
-.faixa-servicos-lista{display:flex;flex:none;align-items:center;gap:2.2rem;margin:0;padding:0 2.2rem 0 0;list-style:none}
-.faixa-servicos-lista li{display:flex;align-items:center;gap:2.2rem;font-family:var(--serif);font-weight:700;font-size:.9rem;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
-.faixa-servicos-lista li::before{content:"";flex:none;width:9px;height:9px;background:var(--marrom-claro);transform:rotate(45deg)}
-@keyframes faixa{to{transform:translateX(-50%)}}
 /* linha de números logo abaixo da faixa */
 .numeros-topo{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:0;padding:clamp(1.6rem,3vw,2.3rem) 0;list-style:none}
 .numeros-topo li{padding:0 1.3rem;border-left:1px solid var(--line)}
@@ -374,7 +367,7 @@ button,input,textarea{font:inherit;color:inherit}
   .hero-toast-b{left:0}
 }
 @media (prefers-reduced-motion:reduce){
-  .hero-toast,.faixa-servicos-track{animation:none}
+  .hero-toast{animation:none}
 }
 
 /* =========================================================
@@ -517,27 +510,20 @@ button,input,textarea{font:inherit;color:inherit}
 /* =========================================================
    7. CONTATO
    ========================================================= */
-.contato-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:clamp(2.5rem,6vw,5.5rem);align-items:start}
-.canais{display:grid;gap:.8rem;margin-top:2rem}
-.canal{
-  display:flex;align-items:center;gap:1rem;text-decoration:none;
-  padding:1rem 1.15rem;border:1.5px solid var(--ink);border-radius:var(--radius);
-  transition:background .25s,color .25s,transform .25s;
-}
-.canal:hover{transform:translateX(4px);background:var(--ink);color:var(--cream)}
-.canal.principal{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
-.canal.principal:hover{background:var(--ink);border-color:var(--ink);color:var(--cream)}
-.canal.principal:not(:hover) .canal-texto span{opacity:1}
-.canal-icone{flex:none;width:42px;height:42px;border-radius:50%;background:rgba(20,17,13,.08);display:grid;place-items:center}
-.canal.principal .canal-icone,.canal:hover .canal-icone{background:rgba(243,238,233,.18)}
-.canal-icone svg{width:20px;height:20px}
-.canal-texto{display:flex;flex-direction:column;line-height:1.3;min-width:0}
-.canal-texto strong{font-weight:700}
-.canal-texto span{font-size:.9rem;opacity:.85;overflow-wrap:anywhere}
-.canal-seta{margin-left:auto;width:18px;height:18px;flex:none}
-.cidade{margin-top:1.6rem;font-size:.95rem;color:var(--muted)}
+.contato-grid{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.2fr);gap:clamp(2.5rem,6vw,5rem);align-items:start}
+/* canais: ícone redondo com contorno e o contato ao lado, sem caixa */
+.canais{display:grid;gap:1rem;margin-top:2rem}
+.canal{display:flex;align-items:center;gap:.85rem;width:max-content;max-width:100%;text-decoration:none;color:var(--ink);transition:color .25s}
+.canal:hover{color:var(--marrom)}
+.canal-icone{flex:none;width:40px;height:40px;border-radius:50%;border:1px solid var(--line-forte,rgba(20,17,13,.3));display:grid;place-items:center;transition:border-color .25s}
+.canal:hover .canal-icone{border-color:var(--marrom)}
+.canal-icone svg{width:18px;height:18px}
+.canal-texto{min-width:0;font-size:.98rem;font-weight:500;overflow-wrap:anywhere}
+.canal-texto strong{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.canal-seta{display:none}
 
-.form-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-lg);padding:clamp(1.5rem,3.5vw,2.5rem);box-shadow:var(--shadow)}
+.form-card{padding:0}
+.campos-linha{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 1rem}
 .campo{display:flex;flex-direction:column;gap:.45rem;margin-bottom:1.15rem}
 .campo label{font-weight:600;font-size:.92rem}
 .campo-dica{display:block;margin-top:.15rem;font-weight:400;font-size:.78rem;color:var(--muted)}
@@ -548,11 +534,12 @@ button,input,textarea{font:inherit;color:inherit}
 }
 .campo textarea{min-height:140px;resize:vertical}
 .campo input:focus,.campo textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(128,128,128,.4)}
-.form-card .btn{width:100%}
+.form-card .btn{width:auto;border-radius:999px;padding-inline:1.9rem}
+.form-card .btn svg{width:16px;height:16px}
 /* botões das páginas (fora da capa) no marrom do "Como eu te ajudo" */
 .form-card .btn-primario,.captura .btn-primario{background:var(--marrom);border-color:var(--marrom);color:var(--cream)}
 .form-card .btn-primario:hover,.captura .btn-primario:hover{background:var(--ink);border-color:var(--ink);color:var(--cream)}
-.form-nota{margin-top:.9rem;font-size:.85rem;color:var(--muted);text-align:center}
+.form-nota{margin-top:.9rem;font-size:.85rem;color:var(--muted)}
 .confirmacao{text-align:center;padding:1.5rem .5rem}
 .confirmacao:focus{outline:none}
 .confirmacao .ok{width:64px;height:64px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;margin:0 auto 1.2rem}
@@ -565,16 +552,14 @@ button,input,textarea{font:inherit;color:inherit}
 /* =========================================================
    8. RODAPÉ
    ========================================================= */
-.site-footer{background:var(--ink);color:var(--cream);padding-block:clamp(3rem,7vw,5rem) 2rem}
-.rodape-topo{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:2rem}
-.rodape-nome{font-family:var(--serif);font-weight:700;font-size:clamp(2rem,5vw,3.6rem);line-height:1;letter-spacing:-.025em}
+.site-footer{background:var(--ink);color:var(--cream);padding-block:2.2rem}
+.rodape{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1.2rem 2rem}
+.rodape-nome{font-family:var(--serif);font-weight:700;font-size:1.35rem;line-height:1;letter-spacing:-.015em}
 .rodape-nome em{font-style:italic;font-weight:700;color:var(--marrom-claro)}
-.rodape-sub{margin-top:.8rem;color:rgba(243,238,233,.75);font-size:.95rem}
-.redes{display:flex;flex-wrap:wrap;gap:.7rem}
-.redes a{display:inline-flex;align-items:center;gap:.55rem;text-decoration:none;padding:.65rem 1.05rem;border:1px solid rgba(243,238,233,.4);border-radius:var(--radius);font-size:.92rem;font-weight:500;transition:background .25s,color .25s,border-color .25s}
-.redes a:hover{background:var(--cream);color:var(--ink);border-color:var(--cream)}
-.redes svg{width:17px;height:17px}
-.rodape-base{margin-top:clamp(2rem,5vw,3.5rem);padding-top:1.4rem;border-top:1px solid rgba(243,238,233,.22);font-size:.85rem;color:rgba(243,238,233,.72);display:flex;flex-wrap:wrap;justify-content:space-between;gap:.5rem 2rem}
+.rodape-sub{margin-top:.45rem;font-size:.7rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:rgba(243,238,233,.7)}
+.rodape-links{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1rem;font-size:.72rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:rgba(243,238,233,.72)}
+.rodape-links a{text-decoration:none;transition:color .25s}
+.rodape-links a:hover{color:var(--cream)}
 
 /* =========================================================
    CARD DE CAPTURA (aparece após 7 segundos)
@@ -1575,11 +1560,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     if (secaoCase) corDoCase();
     const faixaLogos = $('.marcas');
-    const sobre = document.getElementById('sobre');
-    if (faixaLogos) {
-      if (sobre && !sobre.hidden) sobre.after(faixaLogos);
-      else $('.hero').after(faixaLogos);
-    }
+    if (faixaLogos) $('.hero').after(faixaLogos);                  /* a faixa de logos fica logo depois da capa */
     renumerar();
   };
 
@@ -1615,18 +1596,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const desenharFaixa = (c) => {
     if (typeof c.titulo === 'string') $('.marcas-titulo').textContent = c.titulo.trim();
     $('.marcas').hidden = c.mostrar === false;
-  };
-  /* Faixa escura da capa: os títulos dos serviços, repetidos até encher a tela, em duas cópias (movimento contínuo) */
-  const desenharFaixaServicos = (titulos) => {
-    const alvo = $('#faixaServicos');
-    if (!alvo) return;
-    let itens = titulos.map((t) => String(t || '').trim()).filter(Boolean);
-    if (!itens.length) { alvo.closest('.faixa-servicos').hidden = true; return; }
-    alvo.closest('.faixa-servicos').hidden = false;
-    while (itens.length < 8) itens = itens.concat(itens);
-    const lista = (escondida) => `<ul class="faixa-servicos-lista"${escondida ? ' aria-hidden="true"' : ''}>${itens.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>`;
-    alvo.innerHTML = lista(false) + lista(true);
-    alvo.style.setProperty('--dur', `${Math.max(20, itens.length * 5)}s`);
   };
   const desenharNumerosTopo = (lista) => {
     const alvo = $('#numerosTopo');
@@ -1677,9 +1646,7 @@ document.addEventListener('DOMContentLoaded', () => {
       $$('[data-contato="instagram"]').forEach((a) => { a.href = `https://instagram.com/${insta}`; });
       $$('[data-contato-texto="instagram"]').forEach((el) => { el.textContent = `@${insta}`; });
     }
-    if (t(c.cidade)) $('#contatoCidade').textContent = t(c.cidade);
     if (t(c.rodapeFrase)) $('#rodapeFrase').textContent = t(c.rodapeFrase);
-    if (t(c.rodapeCidade)) $('#rodapeCidade').textContent = t(c.rodapeCidade);
   };
 
   /* Só redesenha a seção se o conteúdo mudou (evita piscar o que já está na tela) */
@@ -1694,7 +1661,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const lista = (v, padrao) => (Array.isArray(v) && v.length ? v : padrao);
     aplicarSecao('nichos', lista(c.nichos, NICHOS_PADRAO), (n) => { nichosSite = n; desenharNichos(); }, animar);
     aplicarSecao('servicos', lista(c.servicos, SERVICOS), desenharServicos, animar);
-    aplicarSecao('faixa_servicos', lista(c.servicos, SERVICOS).map((x) => x && x.titulo), desenharFaixaServicos, animar);
     aplicarSecao('numeros_topo', lista(c.numeros_topo, NUMEROS_TOPO), desenharNumerosTopo, animar);
     aplicarSecao('metricas', lista(c.metricas, METRICAS), desenharMetricas, animar);
     aplicarSecao('resultados', lista(c.resultados, RESULTADOS), desenharResultados, animar);
@@ -1997,10 +1963,6 @@ document.addEventListener('DOMContentLoaded', () => {
     </figure>
   </div>
 
-  <!-- Faixa escura: os nomes dos serviços (vêm da seção Como eu te ajudo) -->
-  <div class="faixa-servicos" aria-label="O que eu faço">
-    <div class="faixa-servicos-track" id="faixaServicos"></div>
-  </div>
   <!-- Números logo abaixo da capa (painel, página Capa, cartão "Números abaixo da capa") -->
   <div class="container">
     <ul class="numeros-topo" id="numerosTopo"></ul>
@@ -2029,7 +1991,7 @@ document.addEventListener('DOMContentLoaded', () => {
   </div>
 </section>
 
-<!-- Faixa de logos (o script a coloca logo depois do Sobre mim) -->
+<!-- Faixa de logos (o script a coloca logo depois da capa) -->
 <!-- Carrossel de logos das marcas (a lista e a ordem ficam em LOGOS_MARCAS, no script) -->
 <div class="marcas" role="region" aria-label="Marcas com quem já trabalhei">
   <p class="marcas-titulo">Marcas com quem já trabalhei</p>
@@ -2119,12 +2081,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <p class="lead reveal" style="--d:.12s">Conte um pouco sobre a sua marca e o que você quer comunicar. Eu respondo com carinho e com uma proposta pensada para você.</p>
 
       <div class="canais">
-        <a class="canal principal reveal" data-contato="whatsapp-msg" href="https://wa.me/5519983169592?text=Oi%20Esther%2C%20vim%20pelo%20seu%20portf%C3%B3lio%20e%20quero%20conversar%20sobre%20um%20projeto." target="_blank" rel="noopener noreferrer" style="--d:.16s">
-          <span class="canal-icone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.55L3 20.5l1.5-5.4A8.5 8.5 0 1 1 21 11.5z"/></svg></span>
-          <span class="canal-texto"><strong>WhatsApp</strong><span data-contato-texto="whatsapp">(19) 98316-9592</span></span>
-          <svg class="canal-seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
-        </a>
-        <a class="canal reveal" data-contato="email" href="mailto:contatoesthercustodio@gmail.com" style="--d:.2s">
+        <a class="canal reveal" data-contato="email" href="mailto:contatoesthercustodio@gmail.com" style="--d:.16s">
           <span class="canal-icone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/></svg></span>
           <span class="canal-texto"><strong>E-mail</strong><span data-contato-texto="email">contatoesthercustodio@gmail.com</span></span>
           <svg class="canal-seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
@@ -2134,19 +2091,25 @@ document.addEventListener('DOMContentLoaded', () => {
           <span class="canal-texto"><strong>Instagram</strong><span data-contato-texto="instagram">@Esthercustodio_</span></span>
           <svg class="canal-seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
         </a>
+        <a class="canal reveal" data-contato="whatsapp-msg" href="https://wa.me/5519983169592?text=Oi%20Esther%2C%20vim%20pelo%20seu%20portf%C3%B3lio%20e%20quero%20conversar%20sobre%20um%20projeto." target="_blank" rel="noopener noreferrer" style="--d:.16s">
+          <span class="canal-icone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.55L3 20.5l1.5-5.4A8.5 8.5 0 1 1 21 11.5z"/></svg></span>
+          <span class="canal-texto"><strong>WhatsApp</strong><span data-contato-texto="whatsapp">(19) 98316-9592</span></span>
+          <svg class="canal-seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
+        </a>
       </div>
-      <p class="cidade reveal" id="contatoCidade" style="--d:.28s">Baseada em Hortolândia, São Paulo.</p>
     </div>
 
     <div class="form-card reveal" style="--d:.14s">
       <form id="formContato" aria-label="Formulário de contato">
-        <div class="campo">
-          <label for="nome">Nome</label>
-          <input id="nome" name="nome" type="text" autocomplete="name" placeholder="Como posso te chamar?" required>
-        </div>
-        <div class="campo">
-          <label for="email">E-mail</label>
-          <input id="email" name="email" type="email" autocomplete="email" placeholder="seuemail@email.com" required>
+        <div class="campos-linha">
+          <div class="campo">
+            <label for="nome">Nome</label>
+            <input id="nome" name="nome" type="text" autocomplete="name" placeholder="Como posso te chamar?" required>
+          </div>
+          <div class="campo">
+            <label for="email">E-mail</label>
+            <input id="email" name="email" type="email" autocomplete="email" placeholder="seuemail@email.com" required>
+          </div>
         </div>
         <div class="campo">
           <label for="marca">Marca / empresa</label>
@@ -2162,7 +2125,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="armadilha" aria-hidden="true"><label>Não preencha este campo<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
         <p class="form-erro" id="erroContato" role="alert" hidden>Não consegui enviar agora. Tente de novo em instantes ou chame pelo WhatsApp ou pelo e-mail.</p>
-        <button class="btn btn-primario" type="submit">Enviar mensagem</button>
+        <button class="btn btn-primario" type="submit">Enviar mensagem <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></button>
         <p class="form-nota">Eu respondo o mais rápido que conseguir.</p>
       </form>
 
@@ -2180,31 +2143,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <!-- ============================ 8. RODAPÉ ============================ -->
 <footer class="site-footer">
-  <div class="container">
-    <div class="rodape-topo">
-      <div>
-        <p class="rodape-nome">Esther <em>Custódio</em></p>
-        <p class="rodape-sub" id="rodapeFrase">UGC Creator em Hortolândia. Conteúdo que inspira.</p>
-      </div>
-      <div class="redes" aria-label="Minhas redes">
-        <a data-contato="instagram" href="https://instagram.com/Esthercustodio_" target="_blank" rel="noopener noreferrer">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".9" fill="currentColor" stroke="none"/></svg>
-          Instagram
-        </a>
-        <a data-contato="whatsapp" href="https://wa.me/5519983169592" target="_blank" rel="noopener noreferrer">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.55L3 20.5l1.5-5.4A8.5 8.5 0 1 1 21 11.5z"/></svg>
-          WhatsApp
-        </a>
-        <a data-contato="email" href="mailto:contatoesthercustodio@gmail.com">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/></svg>
-          E-mail
-        </a>
-      </div>
+  <div class="container rodape">
+    <div>
+      <p class="rodape-nome">Esther <em>Custódio</em></p>
+      <p class="rodape-sub" id="rodapeFrase">UGC Creator em Hortolândia. Conteúdo que inspira.</p>
     </div>
-    <div class="rodape-base">
-      <p>© <span id="ano">2026</span> Esther Custódio. Todos os direitos reservados.</p>
-      <p><span data-contato-texto="instagram">@Esthercustodio_</span> · <span id="rodapeCidade">Hortolândia</span></p>
-    </div>
+    <nav class="rodape-links" aria-label="Minhas redes">
+      <a data-contato="email" href="mailto:contatoesthercustodio@gmail.com">E-mail</a>
+      <span aria-hidden="true">·</span>
+      <a data-contato="instagram" href="https://instagram.com/Esthercustodio_" target="_blank" rel="noopener noreferrer">Instagram</a>
+      <span aria-hidden="true">·</span>
+      <a data-contato="whatsapp" href="https://wa.me/5519983169592" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+      <span aria-hidden="true">·</span>
+      <span>© <span id="ano">2026</span></span>
+    </nav>
   </div>
 </footer>
 
