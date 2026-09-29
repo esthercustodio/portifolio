@@ -1528,7 +1528,9 @@ document.addEventListener('DOMContentLoaded', () => {
     /* o nome da marca dentro do título fica em rosa; se o título não tiver o nome, ele aparece numa linha abaixo */
     const corMarca = /^#[0-9a-f]{6}$/i.test(texto(k('marcaCor'))) ? texto(k('marcaCor')) : '';
     const nomeMarca = esc(texto(k('marcaNome')));
-    let tituloCase = comEnfase(texto(k('titulo')));
+    /* o título antigo salvo no painel ("Porque essa marca...") vira o novo, com o nome da marca */
+    const tituloSalvo = texto(k('titulo'));
+    let tituloCase = comEnfase(/^porque essa marca criou 100 v[ií]deos comigo\??$/i.test(tituloSalvo) ? CASE_PADRAO.titulo : tituloSalvo);
     const nomeNoTitulo = !!nomeMarca && tituloCase.toLowerCase().includes(nomeMarca.toLowerCase());
     if (nomeNoTitulo) {
       const ini = tituloCase.toLowerCase().indexOf(nomeMarca.toLowerCase());

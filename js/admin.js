@@ -4344,7 +4344,14 @@
           { nome: 'audioLegenda', rotulo: 'Texto abaixo do áudio', largo: true }
         ],
         resumo: function (v) { return [textoOuPadrao(v, CASE_PADRAO, 'titulo'), texto(v && v.audio) ? 'Com áudio' : 'Sem áudio (mostra "Em breve")']; }
-      }, comPadrao(CASE_PADRAO)),
+      }, comPadrao(CASE_PADRAO), {
+        paraForm: function (v) {
+          var f = comPadrao(CASE_PADRAO).paraForm(v);
+          if (/^porque essa marca criou 100 v[ií]deos comigo\??$/i.test(texto(f.titulo).trim())) f.titulo = CASE_PADRAO.titulo;   /* título antigo vira o novo */
+          if (!v || !v.marcaCor) f.marcaCor = CASE_PADRAO.marcaCor;
+          return f;
+        }
+      }),
       {
         chave: 'case_videos', titulo: 'Vídeos do case', tipo: 'lista', item: 'Vídeo', padrao: CASE_VIDEOS,
         descricao: 'Os vídeos do carrossel (topo, meio e fundo de funil). Sem link, o card mostra "Vídeo em breve". Embaixo do vídeo vão um texto grande (o resultado, por exemplo "+ 100 milhões de views") e um texto pequeno.',
