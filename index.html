@@ -43,7 +43,7 @@
    BASE
    ========================================================= */
 *,*::before,*::after{box-sizing:border-box}
-html{scroll-padding-top:calc(var(--nav-h) + 8px);-webkit-text-size-adjust:100%}
+html{scroll-padding-top:calc(var(--nav-h) + var(--aviso-h, 0px) + 8px);-webkit-text-size-adjust:100%}
 @media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
 body{
   margin:0;background:var(--cream);color:var(--ink);
@@ -131,19 +131,33 @@ button,input,textarea{font:inherit;color:inherit}
    MENU
    ========================================================= */
 .site-header{
-  position:fixed;inset:0 0 auto 0;z-index:50;height:var(--nav-h);
+  position:fixed;inset:0 0 auto 0;z-index:50;
   background:rgba(243,238,233,.9);
   -webkit-backdrop-filter:saturate(1.2) blur(10px);backdrop-filter:saturate(1.2) blur(10px);
   border-bottom:1px solid transparent;transition:border-color .3s,box-shadow .3s;
 }
 .site-header.rolou{border-bottom-color:var(--line);box-shadow:0 8px 24px -18px rgba(20,17,13,.35)}
-.nav{height:100%;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.nav{height:var(--nav-h);display:flex;align-items:center;justify-content:space-between;gap:1rem}
+/* barra de aviso do topo (Black Friday) */
+.aviso-topo{background:#f2b705;color:var(--ink)}
+.aviso-topo[hidden]{display:none}
+.aviso-topo-in{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:.4rem 1rem;min-height:40px;padding-block:.35rem;font-size:.84rem}
+.aviso-selo{padding:.22rem .7rem;border-radius:999px;background:var(--ink);color:#f2b705;font-size:.66rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.aviso-texto strong{font-weight:600}
+.aviso-texto span{margin-left:.5rem;color:rgba(20,17,13,.72)}
+.aviso-link{font-size:.8rem;font-weight:700;text-decoration:none;white-space:nowrap}
+.aviso-link:hover span:first-child{text-decoration:underline;text-underline-offset:3px}
 .brand{font-family:var(--serif);font-weight:600;font-size:1.2rem;letter-spacing:-.01em;text-decoration:none;white-space:nowrap}
 .brand em{font-weight:400}
 .nav-links{display:flex;align-items:center;gap:clamp(1.25rem,2.6vw,2.25rem)}
 .nav-links a{position:relative;text-decoration:none;font-size:.74rem;font-weight:500;letter-spacing:.16em;text-transform:uppercase;padding-block:.4rem}
 .nav-cta{flex:none;display:inline-flex;align-items:center;padding:.62rem 1.15rem;border-radius:8px;background:var(--ink);color:var(--cream);font-size:.8rem;font-weight:600;text-decoration:none;transition:background .25s}
 .nav-cta:hover{background:var(--marrom)}
+.nav-acoes{display:flex;align-items:center;gap:1rem}
+.nav-idioma{display:flex;padding:3px;border:1px solid var(--line);border-radius:999px}
+.nav-idioma a{padding:.28rem .62rem;border-radius:999px;font-size:.7rem;font-weight:700;letter-spacing:.06em;text-decoration:none;color:var(--muted);transition:background .25s,color .25s}
+.nav-idioma a.ativo{background:var(--ink);color:var(--cream)}
+.nav-idioma a:not(.ativo):hover{color:var(--ink)}
 .nav-links a::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .3s}
 .nav-links a:hover::after,.nav-links a[aria-current="true"]::after{transform:scaleX(1)}
 .nav-toggle{
@@ -166,7 +180,7 @@ button,input,textarea{font:inherit;color:inherit}
   }
   .nav-links.aberto{display:flex}
   .nav-links a{display:block;padding:.95rem 0;font-size:.9rem;letter-spacing:.14em;border-bottom:1px solid var(--line)}
-  .nav-cta{display:none}
+  .nav-acoes{display:none}
   .nav-links a::after{display:none}
   .nav-links a[aria-current="true"]{color:var(--accent-text)}
 }
@@ -175,7 +189,7 @@ button,input,textarea{font:inherit;color:inherit}
    1. CAPA
    ========================================================= */
 .hero{
-  padding-top:calc(var(--nav-h) + clamp(2.5rem,6vw,4.5rem));padding-bottom:clamp(3rem,5vw,4rem);
+  padding-top:calc(var(--nav-h) + var(--aviso-h, 0px) + clamp(2.5rem,6vw,4.5rem));padding-bottom:clamp(3rem,5vw,4rem);
   background-image:linear-gradient(rgba(20,17,13,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(20,17,13,.055) 1px,transparent 1px);
   background-size:44px 44px;
 }
@@ -252,11 +266,14 @@ button,input,textarea{font:inherit;color:inherit}
   gap:clamp(2rem,5vw,4.5rem);align-items:center;
 }
 .destaques-texto .titulo{font-size:clamp(2.3rem,4.4vw,3.4rem)}
-#destaques{padding-bottom:calc(clamp(3rem,5vw,4rem) - 1.25rem)}
 /* Destaques: título em cima e o carrossel embaixo, na largura toda */
 #destaques .destaques-layout{grid-template-columns:1fr;gap:0}
 #destaques .secao-topo{margin-bottom:clamp(1.4rem,3vw,2rem)}
-#destaques .carrossel{--card-w:clamp(210px,21vw,260px)}
+#destaques .carrossel{--card-w:calc((100% - 4 * var(--gap)) / 5)}
+#destaques .destaques-grid{scroll-snap-type:x proximity}
+#destaques .destaques-grid::before,#destaques .destaques-grid::after{display:none}
+#destaques .destaque{opacity:1;filter:none;transform:none;scroll-snap-align:start}
+.carrossel.sem-setas .carrossel-seta{display:none}
 /* Carrossel: o card do meio fica nítido e os vizinhos ficam desfocados (a classe .ativo vem do script) */
 .carrossel{--card-w:clamp(210px,24vw,290px);--gap:1.25rem;position:relative;min-width:0}
 .carrossel-seta{
@@ -497,11 +514,10 @@ button,input,textarea{font:inherit;color:inherit}
 .resultado-marca{font-size:.74rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(243,238,233,.78);margin-top:.2rem}
 .resultado p.txt{margin-top:.8rem;font-size:.97rem;color:rgba(243,238,233,.82)}
 /* Depoimentos: cabeçalho próprio e carrossel de cards com logo redondo, estrelas e um resultado */
-.depo-bloco{margin-top:clamp(2.5rem,5vw,3.5rem)}
 .depo-cab{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:1rem 3rem}
-.depo-cab .eyebrow{margin-bottom:.6rem}
+.depo-cab .secao-topo{margin-bottom:0}
 .depo-titulo{font-size:clamp(1.9rem,3.4vw,2.6rem)}
-.depo-lead{max-width:22rem;color:var(--muted)}
+.depo-lead{max-width:22rem;margin-top:0;font-size:1rem;color:var(--muted)}
 .depo-carrossel{position:relative;margin-top:1rem}
 .depo-trilho{display:flex;gap:1.5rem;padding:3rem .2rem .6rem;margin-bottom:-.6rem;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent);mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent)}
 .depo-trilho::-webkit-scrollbar{display:none}
@@ -827,32 +843,24 @@ const SERVICOS = [
     texto: "Conteúdos entregues todo mês, com calendário combinado, para a sua marca manter presença constante e sempre nova." }
 ];
 
-/* ---- MÉTRICAS (quatro números com contador animado) ----
-   valor null mostra "00" para você trocar depois.
-   prefixo e sufixo são opcionais (exemplo: prefixo "+" ou sufixo " mil"). */
-const METRICAS = [
-  { valor: 250,  prefixo: "", sufixo: "", rotulo: "vídeos entregues" },
-  { valor: 6,    prefixo: "", sufixo: "", rotulo: "nichos atendidos" },
-  { valor: null, prefixo: "", sufixo: "", rotulo: "marcas atendidas" },   /* TROCAR */
-  { valor: null, prefixo: "", sufixo: "", rotulo: "views somadas" }       /* TROCAR */
-];
+/* ---- BARRA DE AVISO DO TOPO (Black Friday) ----
+   {dias} vira a contagem ("60 dias"); depois da data a barra some sozinha. O painel (página Capa) sobrescreve. */
+const AVISO_PADRAO = {
+  mostrar: true,
+  selo: "Black Friday",
+  data: "2026-11-27",
+  texto: "Faltam {dias} pra Black Friday · garanta os vídeos da sua campanha",
+  link: "reservar agenda"
+};
 
-/* ---- RESULTADOS DE CAMPANHA (três) ---- */
-const RESULTADOS = [
-  { numero: "+00%", titulo: "Resultado da campanha 01", marca: "Marca 01",
-    texto: "Descreva aqui o que a campanha alcançou, por exemplo mais alcance, mais cliques ou mais vendas." },
-  { numero: "+00%", titulo: "Resultado da campanha 02", marca: "Marca 02",
-    texto: "Descreva aqui o que a campanha alcançou, por exemplo mais alcance, mais cliques ou mais vendas." },
-  { numero: "+00%", titulo: "Resultado da campanha 03", marca: "Marca 03",
-    texto: "Descreva aqui o que a campanha alcançou, por exemplo mais alcance, mais cliques ou mais vendas." }
-];
-
-/* ---- DEPOIMENTOS (quatro) ---- */
+/* ---- DEPOIMENTOS: feedbacks reais de marcas (vieram do portfólio antigo da Esther) ----
+   O painel (página Depoimentos) sobrescreve. Enquanto o painel só tiver os depoimentos de exemplo
+   ("Escreva aqui o depoimento..."), o site mostra esta lista. */
 const DEPOIMENTOS = [
-  { nome: "Cliente 01", empresa: "Marca 01", texto: "Escreva aqui o depoimento do cliente. Conte em uma ou duas frases como foi trabalhar com a Esther." },
-  { nome: "Cliente 02", empresa: "Marca 02", texto: "Escreva aqui o depoimento do cliente. Conte em uma ou duas frases como foi trabalhar com a Esther." },
-  { nome: "Cliente 03", empresa: "Marca 03", texto: "Escreva aqui o depoimento do cliente. Conte em uma ou duas frases como foi trabalhar com a Esther." },
-  { nome: "Cliente 04", empresa: "Marca 04", texto: "Escreva aqui o depoimento do cliente. Conte em uma ou duas frases como foi trabalhar com a Esther." }
+  { logo: "img/marcas/inoar.webp", nome: "Inoar Cosméticos", estrelas: 5, empresa: "", texto: "Esther, é um privilégio trabalhar com você! Sua dedicação e talento são notáveis, e o resultado final do cabelo sempre supera nossas expectativas. Desde o início da nossa parceria, você tem nos impressionado com seu profissionalismo e atenção aos detalhes. Que venham muitos outros projetos juntos!", numero: "", numeroRotulo: "" },
+  { logo: "img/marcas/vizcaya.webp", nome: "Vizcaya Cosméticos", estrelas: 5, empresa: "", texto: "Esther, como sempre, foi MUITO comprometida. É a nossa 3ª campanha com ela e, em todas, nos entregou vídeos impecáveis e com a estética muito próxima a nossa. Arrasou demais! 🫶", numero: "3", numeroRotulo: "campanhas com a marca" },
+  { logo: "", nome: "Forever Liss", estrelas: 5, empresa: "", texto: "Conteúdos muito bons, recomendo!", numero: "", numeroRotulo: "" },
+  { logo: "", nome: "Mensagem de uma marca", estrelas: 0, empresa: "Recebida no WhatsApp", texto: "Que diva!!!! 💖😭 Ficou absolutamente TUDO esse vídeo Esther, aprovadíssimo ✨", numero: "", numeroRotulo: "" }
 ];
 
 /* =========================================================
@@ -953,11 +961,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* Carrossel (Destaques e case): o card que está no meio ganha a classe "ativo" (nítido); os vizinhos ficam desfocados.
      Clicar em um vizinho só o traz para o meio; clicar no card do meio chama aoAbrir. */
-  const criarCarrossel = (trilhoC, ant, prox, aoAbrir) => {
+  /* livre = true: os cards ficam lado a lado, todos nítidos, e o clique já abre o vídeo (Destaques) */
+  const criarCarrossel = (trilhoC, ant, prox, aoAbrir, livre) => {
     let atual = 0;
     const cartoes = () => $$('.destaque', trilhoC);
     const marcar = () => {
       const lista = cartoes();
+      if (livre) {
+        lista.forEach((c) => c.classList.add('ativo'));
+        trilhoC.closest('.carrossel').classList.toggle('sem-setas', trilhoC.scrollWidth <= trilhoC.clientWidth + 2);
+        ant.disabled = trilhoC.scrollLeft <= 8;
+        prox.disabled = trilhoC.scrollLeft + trilhoC.clientWidth >= trilhoC.scrollWidth - 8;
+        return;
+      }
       const centro = trilhoC.scrollLeft + trilhoC.clientWidth / 2;
       let menor = Infinity;
       lista.forEach((c, i) => {
@@ -973,19 +989,24 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!c) return;
       trilhoC.scrollTo({ left: c.offsetLeft + c.offsetWidth / 2 - trilhoC.clientWidth / 2, behavior: reduzir || instantaneo ? 'auto' : 'smooth' });
     };
+    const passar = (dir) => {
+      const c = cartoes()[0];
+      trilhoC.scrollBy({ left: dir * (c ? c.offsetWidth + 20 : trilhoC.clientWidth), behavior: reduzir ? 'auto' : 'smooth' });
+    };
     let quadroC = 0;
     trilhoC.addEventListener('scroll', () => { cancelAnimationFrame(quadroC); quadroC = requestAnimationFrame(marcar); }, { passive: true });
     window.addEventListener('resize', marcar);
-    ant.addEventListener('click', () => ir(atual - 1));
-    prox.addEventListener('click', () => ir(atual + 1));
+    ant.addEventListener('click', () => (livre ? passar(-1) : ir(atual - 1)));
+    prox.addEventListener('click', () => (livre ? passar(1) : ir(atual + 1)));
     trilhoC.addEventListener('click', (e) => {
       const c = e.target.closest('.destaque');
       if (!c) return;
       const i = cartoes().indexOf(c);
-      if (!c.classList.contains('ativo')) { e.preventDefault(); ir(i); return; }
+      if (!livre && !c.classList.contains('ativo')) { e.preventDefault(); ir(i); return; }
       aoAbrir(i, c, e);
     });
     trilhoC.addEventListener('focusin', (e) => {          /* teclado: o card que recebe o foco vai para o meio */
+      if (livre) return;
       const c = e.target.closest('.destaque');
       if (c && !c.classList.contains('ativo') && e.target.matches(':focus-visible')) ir(cartoes().indexOf(c));
     });
@@ -995,7 +1016,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const carrosselDestaques = criarCarrossel(trilho, $('#destAnt'), $('#destProx'), (i, c, e) => {
     const v = destaquesAtuais[i];
     if (v && v.yt && abrirPlayer(v, c)) e.preventDefault();      /* o vídeo toca aqui mesmo, numa janela do site */
-  });
+  }, true);
   const marcarAtivo = carrosselDestaques.marcar;
 
   let destaquesAtuais = [];
@@ -1025,7 +1046,7 @@ document.addEventListener('DOMContentLoaded', () => {
     $$('.destaque-capa img', trilho).forEach((img) => img.addEventListener('error', () => img.remove()));   /* capa que não abre: fica o degradê */
     trilho.scrollLeft = 0;
     marcarAtivo();
-    requestAnimationFrame(() => { carrosselDestaques.ir(Math.min(1, lista.length - 1), true); marcarAtivo(); });   /* abre com vídeo dos dois lados */
+    requestAnimationFrame(marcarAtivo);
   };
   desenharDestaques(videosSite.filter((v) => v.emDestaques));   /* aparece já ao abrir; os vídeos do painel entram depois, se houver */
 
@@ -1349,7 +1370,7 @@ document.addEventListener('DOMContentLoaded', () => {
   })();
 
   /* ---------- Conteúdo editável pelo painel (aba "Conteúdo do site") ----------
-     As listas lá de cima (SERVICOS, METRICAS...) são o texto original e servem de reserva. */
+     As listas lá de cima (SERVICOS, DEPOIMENTOS...) são o texto original e servem de reserva. */
   const animarNovos = (raiz, animar) => {
     if (!animar) return;
     $$('.reveal', raiz).forEach((el) => observarNovos(el));
@@ -1366,26 +1387,7 @@ document.addEventListener('DOMContentLoaded', () => {
     animarNovos(alvo, animar);
   };
 
-  const desenharMetricas = (lista, animar) => {
-    const alvo = $('#metricasLista');
-    alvo.innerHTML = lista.map((m, i) => {
-      const numero = m.valor === null || m.valor === undefined || m.valor === '' || Number.isNaN(Number(m.valor)) ? null : Number(m.valor);
-      return `<li class="reveal" style="--d:${(0.1 * i).toFixed(2)}s">${contadorHTML({ valor: numero, prefixo: m.prefixo, sufixo: m.sufixo })}<span class="numero-rotulo">${esc(m.rotulo)}</span></li>`;
-    }).join('');
-    animarNovos(alvo, animar);
-  };
 
-  const desenharResultados = (lista, animar) => {
-    const alvo = $('#resultadosLista');
-    alvo.innerHTML = lista.map((r, i) => `
-    <article class="resultado reveal" style="--d:${(0.1 * i).toFixed(2)}s">
-      <p class="resultado-num">${esc(r.numero)}</p>
-      <h3>${esc(r.titulo)}</h3>
-      <p class="resultado-marca">${esc(r.marca)}</p>
-      <p class="txt">${esc(r.texto)}</p>
-    </article>`).join('');
-    animarNovos(alvo, animar);
-  };
 
   /* Depoimentos: nome (marca ou @) em negrito, empresa vira a categoria em maiúsculas; logo, estrelas e resultado são opcionais */
   const trilhoDepo = $('#depoimentosLista');
@@ -1460,11 +1462,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (titulo && h2) h2.innerHTML = comEnfase(titulo);
       const apoio = $('.lead', secao);
       if (texto && apoio) apoio.textContent = texto;
-      if (id === 'numeros') {
-        if (String(v.depoRotulo || '').trim()) $('#depoRotulo').textContent = String(v.depoRotulo).trim();
-        if (String(v.depoTitulo || '').trim()) $('#depoTitulo').innerHTML = comEnfase(String(v.depoTitulo).trim());
-        if (String(v.depoTexto || '').trim()) $('#depoTexto').textContent = String(v.depoTexto).trim();
-      }
       const botao = String(v.botao || '').trim();
       const alvoBotao = $('.secao-botao', secao);
       if (botao && alvoBotao) alvoBotao.textContent = botao;
@@ -1553,7 +1550,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ---------- Ordem, fundo e menu das páginas (painel, página "Cores, ordem e menu") ---------- */
   const PAGINAS_SITE = ['sobre', 'case', 'destaques', 'trabalhos', 'servicos', 'numeros', 'contato'];
-  const MENU_PADRAO = { sobre: 'Sobre', destaques: 'Destaques', case: 'Case', trabalhos: 'Trabalhos', servicos: 'Serviços', numeros: 'Números', contato: 'Contato' };
+  const MENU_PADRAO = { sobre: 'Sobre', case: '', destaques: '', trabalhos: 'Categorias', servicos: 'Serviços', numeros: '', contato: 'Contato' };
+  const MENU_ORDEM = ['sobre', 'servicos', 'trabalhos', 'contato', 'case', 'destaques', 'numeros'];   /* ordem dos links no menu do topo */
   const FUNDO_ORIGINAL = {};
   PAGINAS_SITE.forEach((id) => {
     const el = document.getElementById(id);
@@ -1587,7 +1585,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const fundo = ['creme', 'bege', 'escuro'].includes(pag(id).fundo) ? pag(id).fundo : FUNDO_ORIGINAL[id];
       sec.classList.toggle('bg-2', fundo === 'bege');
       sec.classList.toggle('escuro', fundo === 'escuro');
-      if (sec.hidden) return;
+    });
+    MENU_ORDEM.forEach((id) => {
+      const sec = document.getElementById(id);
+      if (!sec || sec.hidden) return;
       const nome = typeof pag(id).menu === 'string' ? pag(id).menu.trim() : MENU_PADRAO[id];
       if (!nome) return;
       const a = document.createElement('a');
@@ -1635,6 +1636,48 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof c.titulo === 'string') $('.marcas-titulo').textContent = c.titulo.trim();
     $('.marcas').hidden = c.mostrar === false;
   };
+
+  /* Barra de aviso do topo: contagem de dias até a data; some depois dela */
+  const desenharAviso = (c) => {
+    const k = (chave) => (c && Object.prototype.hasOwnProperty.call(c, chave) ? c[chave] : AVISO_PADRAO[chave]);
+    const t = (v) => String(v == null ? '' : v).trim();
+    const barra = $('#avisoTopo');
+    const data = new Date(`${t(k('data'))}T23:59:59`);
+    const hoje = new Date();
+    const dias = Math.ceil((new Date(data.getFullYear(), data.getMonth(), data.getDate()) - new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate())) / 86400000);
+    const mostrar = k('mostrar') !== false && t(k('texto')) && !Number.isNaN(data.getTime()) && dias >= 0;
+    barra.hidden = !mostrar;
+    if (mostrar) {
+      let texto = t(k('texto')).replace('{dias}', dias === 0 ? 'hoje' : `${dias} ${dias === 1 ? 'dia' : 'dias'}`);
+      if (dias === 1) texto = texto.replace(/^Faltam\b/, 'Falta');
+      if (dias === 0) texto = texto.replace(/^Faltam hoje pra\b/, 'É hoje a');
+      const [principal, ...resto] = texto.split('·');
+      $('#avisoTexto').innerHTML = `<strong>${esc(principal.trim())}</strong>${resto.length ? `<span>· ${esc(resto.join('·').trim())}</span>` : ''}`;
+      $('#avisoSelo').textContent = t(k('selo'));
+      $('#avisoSelo').hidden = !t(k('selo'));
+      $('#avisoLink span').textContent = t(k('link'));
+      $('#avisoLink').hidden = !t(k('link'));
+    }
+    document.documentElement.style.setProperty('--aviso-h', `${mostrar ? barra.offsetHeight : 0}px`);
+  };
+
+  /* PT/EN: o EN abre o site pela tradução automática do Google (traduz tudo, inclusive o que vem do painel) */
+  (() => {
+    const pt = $('#idiomaPT'), en = $('#idiomaEN');
+    if (!pt || !en) return;
+    const host = location.hostname;
+    if (/\.translate\.goog$/.test(host)) {
+      const original = host.replace(/\.translate\.goog$/, '').replace(/--/g, '\u0000').replace(/-/g, '.').replace(/\u0000/g, '-');
+      pt.href = `https://${original}${location.pathname}`;
+      pt.classList.remove('ativo'); pt.removeAttribute('aria-current');
+      en.classList.add('ativo'); en.setAttribute('aria-current', 'true'); en.href = location.href;
+      return;
+    }
+    const base = /github\.io$/.test(host) ? { host, path: location.pathname } : { host: 'esthercustodio.github.io', path: '/portifolio/' };
+    const tradutor = base.host.replace(/-/g, '--').replace(/\./g, '-');
+    en.href = `https://${tradutor}.translate.goog${base.path}?_x_tr_sl=pt&_x_tr_tl=en&_x_tr_hl=en`;
+    pt.href = location.pathname + location.search;
+  })();
 
   let capturaLigada = true;
   const desenharCaptura = (c) => {
@@ -1692,9 +1735,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const lista = (v, padrao) => (Array.isArray(v) && v.length ? v : padrao);
     aplicarSecao('nichos', lista(c.nichos, NICHOS_PADRAO), (n) => { nichosSite = n; desenharNichos(); }, animar);
     aplicarSecao('servicos', lista(c.servicos, SERVICOS), desenharServicos, animar);
-    aplicarSecao('metricas', lista(c.metricas, METRICAS), desenharMetricas, animar);
-    aplicarSecao('resultados', lista(c.resultados, RESULTADOS), desenharResultados, animar);
-    aplicarSecao('depoimentos', lista(c.depoimentos, DEPOIMENTOS), desenharDepoimentos, animar);
+    const soExemplo = (l) => Array.isArray(l) && l.length > 0 && l.every((d) => /^Escreva aqui o depoimento/i.test(String((d && d.texto) || '')));
+    aplicarSecao('depoimentos', soExemplo(c.depoimentos) ? DEPOIMENTOS : lista(c.depoimentos, DEPOIMENTOS), desenharDepoimentos, animar);
     if (c.capa && typeof c.capa === 'object') aplicarSecao('capa', c.capa, (v) => { desenharCapa(v); desenharCapaExtra(v); }, animar);
     if (c.sobre && typeof c.sobre === 'object') aplicarSecao('sobre', c.sobre, (v) => { desenharSobre(v); desenharSobreExtra(v); }, animar);
     if (c.titulos && typeof c.titulos === 'object') aplicarSecao('titulos', c.titulos, desenharTitulos, animar);
@@ -1705,6 +1747,7 @@ document.addEventListener('DOMContentLoaded', () => {
     aplicarSecao('logos', logos.length ? logos : LOGOS_MARCAS.map((m) => ({ src: `img/marcas/${m.arquivo}.webp`, alt: m.alt })), desenharMarcas, animar);
     aplicarSecao('marcas_faixa', objeto(c.marcas_faixa), desenharFaixa, animar);
     aplicarSecao('captura', objeto(c.captura), desenharCaptura, animar);
+    aplicarSecao('aviso_topo', objeto(c.aviso_topo), desenharAviso, animar);
     aplicarSecao('cores', objeto(c.cores), desenharCores, animar);
     aplicarSecao('contato', objeto(c.contato), desenharContato, animar);
   };
@@ -1944,6 +1987,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <!-- ============================ MENU ============================ -->
 <header class="site-header" id="topo">
+  <!-- Barra de aviso (Black Friday): texto, data e botão no painel, página Capa, cartão "Barra de aviso do topo" -->
+  <div class="aviso-topo" id="avisoTopo" hidden>
+    <div class="container aviso-topo-in">
+      <span class="aviso-selo" id="avisoSelo">Black Friday</span>
+      <span class="aviso-texto" id="avisoTexto"></span>
+      <a class="aviso-link" href="#contato" id="avisoLink"><span>reservar agenda</span> <span aria-hidden="true">→</span></a>
+    </div>
+  </div>
   <div class="container nav">
     <a class="brand" href="#topo">Esther Custódio</a>
     <nav aria-label="Principal">
@@ -1956,7 +2007,13 @@ document.addEventListener('DOMContentLoaded', () => {
         <a href="#contato">Contato</a>
       </div>
     </nav>
-    <a class="nav-cta" href="#contato" id="navCta">Trabalhe comigo</a>
+    <div class="nav-acoes">
+      <div class="nav-idioma" role="group" aria-label="Idioma">
+        <a href="./" id="idiomaPT" class="ativo" lang="pt-BR" aria-current="true">PT</a>
+        <a href="#" id="idiomaEN" lang="en" translate="no">EN</a>
+      </div>
+      <a class="nav-cta" href="#contato" id="navCta">Trabalhe comigo</a>
+    </div>
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="menu" aria-label="Abrir menu">
       <span></span><span></span><span></span>
     </button>
@@ -2084,26 +2141,17 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- ============================ 6. NÚMEROS E DEPOIMENTOS ============================ -->
 <section class="secao" id="numeros" aria-labelledby="titulo-numeros">
   <div class="container">
-    <header class="secao-topo">
-      <p class="eyebrow reveal"><b>05</b>Resultados</p>
-      <h2 class="titulo reveal" id="titulo-numeros" style="--d:.06s">Números e <em>depoimentos</em></h2>
-    </header>
-
-    <ul class="metricas" id="metricasLista" aria-label="Métricas"></ul>
-    <div class="resultados" id="resultadosLista" role="group" aria-label="Resultados de campanha"></div>
-    <div class="depo-bloco">
-      <div class="depo-cab">
-        <div>
-          <p class="eyebrow reveal"><i></i><span id="depoRotulo">Depoimentos</span></p>
-          <h3 class="titulo depo-titulo reveal" id="depoTitulo">O que dizem <em>sobre o trabalho</em></h3>
-        </div>
-        <p class="depo-lead reveal" id="depoTexto">O retorno de marcas que já criaram conteúdo comigo.</p>
+    <div class="depo-cab">
+      <div class="secao-topo">
+        <p class="eyebrow reveal"><b>05</b>Depoimentos</p>
+        <h2 class="titulo depo-titulo reveal" id="titulo-numeros" style="--d:.06s">O que dizem <em>sobre o trabalho</em></h2>
       </div>
-      <div class="depo-carrossel reveal" role="region" aria-roledescription="carrossel" aria-label="Depoimentos de clientes">
-        <button type="button" class="carrossel-seta ant" id="depoAnt" aria-label="Depoimento anterior" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button>
-        <div class="depo-trilho" id="depoimentosLista"></div>
-        <button type="button" class="carrossel-seta prox" id="depoProx" aria-label="Próximo depoimento"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
-      </div>
+      <p class="lead depo-lead reveal" style="--d:.12s">O retorno de marcas que já criaram conteúdo comigo.</p>
+    </div>
+    <div class="depo-carrossel reveal" role="region" aria-roledescription="carrossel" aria-label="Depoimentos de clientes">
+      <button type="button" class="carrossel-seta ant" id="depoAnt" aria-label="Depoimento anterior" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button>
+      <div class="depo-trilho" id="depoimentosLista"></div>
+      <button type="button" class="carrossel-seta prox" id="depoProx" aria-label="Próximo depoimento"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
     </div>
   </div>
 </section>

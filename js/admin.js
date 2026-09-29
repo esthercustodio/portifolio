@@ -4171,7 +4171,7 @@
       destaques: { rotulo: 'Em evidência', titulo: 'Conteúdos de *destaque*', texto: 'Vídeos que mostram como uma boa ideia, contada com verdade, vira resultado. Toque em um card para assistir.' },
       trabalhos: { rotulo: 'Categorias', titulo: 'Que tipo de *conteúdo* você precisa?', texto: 'Navegue pelos nichos. Cada linha é uma especialidade. Deslize para o lado para ver mais.' },
       servicos: { rotulo: 'Serviços', titulo: 'Como eu te *ajudo*', texto: 'Do roteiro à publicação, cada etapa pensada para a sua marca aparecer melhor.', botao: 'Bora criar juntos' },
-      numeros: { rotulo: 'Resultados', titulo: 'Números e *depoimentos*', depoRotulo: 'Depoimentos', depoTitulo: 'O que dizem *sobre o trabalho*', depoTexto: 'O retorno de marcas que já criaram conteúdo comigo.' },
+      numeros: { rotulo: 'Depoimentos', titulo: 'O que dizem *sobre o trabalho*', texto: 'O retorno de marcas que já criaram conteúdo comigo.' },
       contato: { rotulo: 'Contato', titulo: 'Bora criar *juntos*', texto: 'Conte um pouco sobre a sua marca e o que você quer comunicar. Eu respondo com carinho e com uma proposta pensada para você.' }
     };
     var TITULOS_NOMES = { sobre: 'Sobre mim', destaques: 'Destaques', trabalhos: 'Trabalhos por nicho', servicos: 'Serviços', numeros: 'Números', contato: 'Contato' };
@@ -4225,11 +4225,19 @@
       texto: 'Sou criadora de conteúdo UGC em Hortolândia e já entreguei 250 vídeos para marcas de beleza, skincare, moda, casa e decoração, fitness e viagem. Cada projeto começa com uma conversa para entender o que a sua marca quer dizer e termina com um conteúdo que você vai ter orgulho de postar.',
       selo1: '+150 marcas parceiras', selo2: 'Hortolândia · SP · Brasil'
     };
+    var DEPOIMENTOS_PADRAO = [
+      { logo: 'img/marcas/inoar.webp', nome: 'Inoar Cosméticos', estrelas: '5', empresa: '', texto: 'Esther, é um privilégio trabalhar com você! Sua dedicação e talento são notáveis, e o resultado final do cabelo sempre supera nossas expectativas. Desde o início da nossa parceria, você tem nos impressionado com seu profissionalismo e atenção aos detalhes. Que venham muitos outros projetos juntos!', numero: '', numeroRotulo: '' },
+      { logo: 'img/marcas/vizcaya.webp', nome: 'Vizcaya Cosméticos', estrelas: '5', empresa: '', texto: 'Esther, como sempre, foi MUITO comprometida. É a nossa 3ª campanha com ela e, em todas, nos entregou vídeos impecáveis e com a estética muito próxima a nossa. Arrasou demais! 🫶', numero: '3', numeroRotulo: 'campanhas com a marca' },
+      { logo: '', nome: 'Forever Liss', estrelas: '5', empresa: '', texto: 'Conteúdos muito bons, recomendo!', numero: '', numeroRotulo: '' },
+      { logo: '', nome: 'Mensagem de uma marca', estrelas: '0', empresa: 'Recebida no WhatsApp', texto: 'Que diva!!!! 💖😭 Ficou absolutamente TUDO esse vídeo Esther, aprovadíssimo ✨', numero: '', numeroRotulo: '' }
+    ];
+    function depoimentosDeExemplo(l) { return Array.isArray(l) && l.length > 0 && l.every(function (d) { return /^Escreva aqui o depoimento/i.test(String((d && d.texto) || '')); }); }
+    var AVISO_PADRAO = { mostrar: true, selo: 'Black Friday', data: '2026-11-27', texto: 'Faltam {dias} pra Black Friday · garanta os vídeos da sua campanha', link: 'reservar agenda' };
     var CAPTURA_PADRAO = { mostrar: true, titulo: 'Quer meu mídia kit *completo?*', sub: 'Deixe o seu nome e o seu e-mail que eu envio para você.', botao: 'Quero receber' };
     var LOGOS_PADRAO = [{"imagem": "img/marcas/mac.webp", "nome": "M·A·C"}, {"imagem": "img/marcas/natura.webp", "nome": "Natura"}, {"imagem": "img/marcas/truss.webp", "nome": "Truss Professional"}, {"imagem": "img/marcas/canva.webp", "nome": "Canva"}, {"imagem": "img/marcas/creamy.webp", "nome": "Creamy"}, {"imagem": "img/marcas/beleza-na-web.webp", "nome": "Beleza na Web"}, {"imagem": "img/marcas/mascavo.webp", "nome": "Mascavo"}, {"imagem": "img/marcas/loreal.webp", "nome": "L'Oréal Groupe"}, {"imagem": "img/marcas/fini.webp", "nome": "Fini"}, {"imagem": "img/marcas/lola-from-rio.webp", "nome": "Lola from Rio"}, {"imagem": "img/marcas/ifood.webp", "nome": "iFood"}, {"imagem": "img/marcas/pantene.webp", "nome": "Pantene"}, {"imagem": "img/marcas/ca.webp", "nome": "C&A"}, {"imagem": "img/marcas/sallve.webp", "nome": "Sallve"}, {"imagem": "img/marcas/marca-simbolo.webp", "nome": "com um símbolo preto em um círculo rosa"}, {"imagem": "img/marcas/rohto.webp", "nome": "Rohto"}, {"imagem": "img/marcas/marca-m-rosa.webp", "nome": "com a letra m em um círculo rosa"}, {"imagem": "img/marcas/dabelle.webp", "nome": "DaBelle"}, {"imagem": "img/marcas/amazon.webp", "nome": "Amazon"}, {"imagem": "img/marcas/hiven.webp", "nome": "Hiven"}, {"imagem": "img/marcas/matrix.webp", "nome": "Matrix Professional"}, {"imagem": "img/marcas/marca-p-roxo.webp", "nome": "com a letra p roxa em um círculo lilás"}, {"imagem": "img/marcas/dafiti.webp", "nome": "Dafiti"}, {"imagem": "img/marcas/epile.webp", "nome": "Épilé"}, {"imagem": "img/marcas/99food.webp", "nome": "99Food"}, {"imagem": "img/marcas/nina-makeup.webp", "nome": "Nina Makeup"}, {"imagem": "img/marcas/salton.webp", "nome": "Salton"}, {"imagem": "img/marcas/abela.webp", "nome": "Abela Cosmetics"}, {"imagem": "img/marcas/color-wow.webp", "nome": "Color Wow"}, {"imagem": "img/marcas/oceane.webp", "nome": "Oceane"}, {"imagem": "img/marcas/vizcaya.webp", "nome": "Vizcaya"}, {"imagem": "img/marcas/rildy.webp", "nome": "Rildy"}, {"imagem": "img/marcas/inoar.webp", "nome": "Inoar"}, {"imagem": "img/marcas/marca-p-preto.webp", "nome": "com a letra P branca em um círculo preto"}, {"imagem": "img/marcas/bioderma.webp", "nome": "Bioderma"}, {"imagem": "img/marcas/fenzza.webp", "nome": "Fenzza"}, {"imagem": "img/marcas/petrizi.webp", "nome": "Petrizi"}, {"imagem": "img/marcas/ruby-kisses.webp", "nome": "Ruby Kisses"}, {"imagem": "img/marcas/garnier.webp", "nome": "Garnier"}, {"imagem": "img/marcas/kiss-new-york.webp", "nome": "Kiss New York"}, {"imagem": "img/marcas/authentic-feet.webp", "nome": "Authentic Feet"}];
     var PAGINAS_SITE = ['sobre', 'case', 'destaques', 'trabalhos', 'servicos', 'numeros', 'contato'];
-    var NOMES_PAGINAS = { sobre: 'Sobre mim', destaques: 'Conteúdos em destaque', case: 'Por que essa marca fechou 100 conteúdos comigo', trabalhos: 'Que tipo de conteúdo você precisa', servicos: 'Como eu te ajudo', numeros: 'Números e depoimentos', contato: 'Bora criar juntos' };
-    var MENU_PADRAO = { sobre: 'Sobre', destaques: 'Destaques', case: 'Case', trabalhos: 'Trabalhos', servicos: 'Serviços', numeros: 'Números', contato: 'Contato' };
+    var NOMES_PAGINAS = { sobre: 'Sobre mim', destaques: 'Conteúdos em destaque', case: 'Por que essa marca fechou 100 conteúdos comigo', trabalhos: 'Que tipo de conteúdo você precisa', servicos: 'Como eu te ajudo', numeros: 'Depoimentos', contato: 'Bora criar juntos' };
+    var MENU_PADRAO = { sobre: 'Sobre', case: '', destaques: '', trabalhos: 'Categorias', servicos: 'Serviços', numeros: '', contato: 'Contato' };
 
     /* Formulário de objeto que começa com o texto original: o que não foi salvo aparece preenchido com o padrão */
     function comPadrao(padrao) {
@@ -4242,6 +4250,18 @@
 
     /* As partes editáveis do site */
     var SECOES = [
+      Object.assign({
+        chave: 'aviso_topo', titulo: 'Barra de aviso do topo', tipo: 'objeto',
+        descricao: 'A faixa amarela acima do menu (como a da Black Friday). {dias} vira a contagem até a data, e a barra some sozinha depois dela.',
+        campos: [
+          { nome: 'mostrar', rotulo: 'Mostrar a barra no site', tipo: 'checkbox' },
+          { nome: 'selo', rotulo: 'Selo (etiqueta preta)', placeholder: 'Black Friday' },
+          { nome: 'data', rotulo: 'Data do evento', tipo: 'date' },
+          { nome: 'texto', rotulo: 'Texto', largo: true, ajuda: '{dias} vira "60 dias", "1 dia" ou "hoje". O que vier depois do · aparece mais claro.' },
+          { nome: 'link', rotulo: 'Texto do botão (leva ao Contato)', placeholder: 'reservar agenda' }
+        ],
+        resumo: function (v) { return [v && v.mostrar === false ? 'Escondida' : 'Aparece até ' + textoOuPadrao(v, AVISO_PADRAO, 'data'), textoOuPadrao(v, AVISO_PADRAO, 'texto')]; }
+      }, comPadrao(AVISO_PADRAO)),
       Object.assign({
         chave: 'capa', titulo: 'Capa', tipo: 'objeto',
         descricao: 'O selo, o título grande, a frase, os dois números, os botões, o botão do menu, a foto e os dois avisos que flutuam sobre ela.',
@@ -4388,7 +4408,7 @@
         resumo: function (v) { return (Array.isArray(v) ? v : []).map(function (r) { return texto(r.numero) + ' ' + texto(r.titulo); }); }
       },
       {
-        chave: 'depoimentos', titulo: 'Depoimentos', tipo: 'lista', item: 'Depoimento',
+        chave: 'depoimentos', titulo: 'Depoimentos', tipo: 'lista', item: 'Depoimento', padrao: DEPOIMENTOS_PADRAO, eExemplo: depoimentosDeExemplo,
         descricao: 'Os cards de depoimento: logo redondo, nome da marca ou @, estrelas, categoria, o que a marca falou e um resultado. Use só depoimentos reais das suas marcas.',
         colunas: [
           { nome: 'logo', rotulo: 'Logo da marca (redondo)', tipo: 'arquivo', pasta: 'depoimentos', maxLado: 256, largo: true },
@@ -4445,11 +4465,6 @@
       ];
       if ('texto' in TITULOS_PADRAO[pid]) campos.push({ nome: 'texto', rotulo: 'Texto de abertura', tipo: 'textarea', largo: true });
       if ('botao' in TITULOS_PADRAO[pid]) campos.push({ nome: 'botao', rotulo: 'Texto do botão (leva ao Contato)', largo: true });
-      if ('depoTitulo' in TITULOS_PADRAO[pid]) {
-        campos.push({ nome: 'depoRotulo', rotulo: 'Depoimentos: etiqueta pequena' });
-        campos.push({ nome: 'depoTitulo', rotulo: 'Depoimentos: título', largo: true, ajuda: AJUDA_ASTERISCO });
-        campos.push({ nome: 'depoTexto', rotulo: 'Depoimentos: texto ao lado do título', tipo: 'textarea', largo: true });
-      }
       SECOES.push({
         id: 'titulos_' + pid, chave: 'titulos', titulo: 'Título da página', tipo: 'objeto',
         descricao: 'A etiqueta pequena, o título e o texto de abertura. Campo vazio mantém o texto original.',
@@ -4469,14 +4484,14 @@
 
     /* As páginas do site: cada uma abre só os seus cartões */
     var PAGINAS_CONTEUDO = [
-      { id: 'capa', titulo: 'Capa', desc: 'Selo, título, frase, botões, foto e os avisos sobre a foto.', secoes: ['capa'] },
+      { id: 'capa', titulo: 'Capa', desc: 'Barra de aviso do topo (Black Friday), selo, título, frase, botões, foto e os avisos sobre a foto.', secoes: ['aviso_topo', 'capa'] },
       { id: 'marcas', titulo: 'Marcas trabalhadas', desc: 'A faixa de logos logo depois da capa: título, logos e ordem.', secoes: ['marcas_faixa', 'logos'] },
       { id: 'sobre', titulo: 'Sobre mim', desc: 'Título, foto, textos, promessas e assinatura.', secoes: ['titulos_sobre', 'sobre'] },
       { id: 'case', titulo: 'Por que essa marca fechou 100 conteúdos comigo', desc: 'O case da Box Magenta: textos, selos com ícone, vídeos e áudio de feedback.', secoes: ['case', 'case_motivos', 'case_videos'] },
       { id: 'destaques', titulo: 'Conteúdos em destaque', desc: 'Título e os vídeos do carrossel de Destaques.', secoes: ['titulos_destaques'], videos: true },
       { id: 'trabalhos', titulo: 'Que tipo de conteúdo você precisa', desc: 'Título, nichos (nome, descrição e ordem) e os vídeos de cada nicho.', secoes: ['titulos_trabalhos', 'nichos'], videos: true },
       { id: 'servicos', titulo: 'Como eu te ajudo', desc: 'Título e os serviços.', secoes: ['titulos_servicos', 'servicos'] },
-      { id: 'numeros', titulo: 'Números e depoimentos', desc: 'Título, números com contador, resultados de campanha e depoimentos.', secoes: ['titulos_numeros', 'metricas', 'resultados', 'depoimentos'] },
+      { id: 'numeros', titulo: 'Depoimentos', desc: 'Título e os depoimentos das marcas.', secoes: ['titulos_numeros', 'depoimentos'] },
       { id: 'contato', titulo: 'Bora criar juntos', desc: 'Título, WhatsApp, e-mail, Instagram, rodapé e o card do mídia kit.', secoes: ['titulos_contato', 'contato', 'captura'] },
       { id: 'aparencia', titulo: 'Cores, ordem e menu', desc: 'As cores do site e a ordem, o fundo e o nome no menu de cada página.', secoes: ['cores'], layout: true }
     ];
@@ -4688,7 +4703,8 @@
     }
 
     function editarLista(sec) {
-      var itens = (Array.isArray(conteudo[sec.chave]) ? conteudo[sec.chave] : (sec.padrao || [])).map(function (x) { return Object.assign({}, x); });
+      var salvoLista = conteudo[sec.chave];
+      var itens = (Array.isArray(salvoLista) && !(sec.eExemplo && sec.eExemplo(salvoLista)) ? salvoLista : (sec.padrao || [])).map(function (x) { return Object.assign({}, x); });
 
       function ler() {
         $$('.linha-editor', corpo).forEach(function (fs) {
@@ -4795,6 +4811,7 @@
 
     function htmlCartaoSecao(sec) {
       var v = conteudo[sec.chave];
+      if (sec.eExemplo && sec.eExemplo(v)) v = sec.padrao;              /* só a lista de exemplo salva: mostra a que está no site */
       var linhas = v == null ? [] : sec.resumo(v);
       var previa = linhas.length
         ? '<ul class="previa">' + linhas.slice(0, 4).map(function (l) { return '<li>' + esc(cortar(l, 120)) + '</li>'; }).join('') + (linhas.length > 4 ? '<li class="mais">e mais ' + (linhas.length - 4) + '</li>' : '') + '</ul>'
