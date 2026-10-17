@@ -673,7 +673,7 @@
       var todas = [];
       try {
         for (var pagina = 0; pagina < 30; pagina++) {
-          var r = await banco.from('visitas').select('data,origem,pagina')
+          var r = await banco.from('visitas').select('*')
             .gte('data', inicio.toISOString()).range(pagina * 1000, pagina * 1000 + 999);
           if (r.error) { problemas.visitas = descreverErro('visitas', r.error); return []; }
           todas = todas.concat(r.data || []);
@@ -684,7 +684,7 @@
         problemas.visitas = descreverErro('visitas', e);
         return [];
       }
-      return todas;
+      return todas.filter(function (v) { return v.tipo !== 'video'; });   /* as linhas de vídeo assistido não são visitas */
     }
 
     /* Mensagens do formulário do site: ficam na tabela "mensagens_site" (contato.sql), uma linha para cada mensagem,
@@ -3827,7 +3827,7 @@
     var todas = [];
     try {
       for (var pagina = 0; pagina < 40; pagina++) {
-        var r = await banco.from('visitas').select('data,origem,pagina')
+        var r = await banco.from('visitas').select('*')
           .gte('data', inicio.toISOString()).range(pagina * 1000, pagina * 1000 + 999);
         if (r.error) { problemas.visitas = descreverErro('visitas', r.error); return []; }
         todas = todas.concat(r.data || []);
@@ -3847,6 +3847,7 @@
     for (var i = dias - 1; i >= 0; i--) { var iso = somarDias(hoje, -i); lista.push(iso); porDia[iso] = 0; }
     var origens = {}, paginas = {}, total = 0;
     visitas.forEach(function (v) {
+      if (v.tipo === 'video') return;                                 /* vídeo assistido não conta como visita */
       var d = new Date(v.data);
       if (isNaN(d.getTime())) return;
       var k = isoLocal(d);
@@ -3862,6 +3863,72 @@
     var melhor = '';
     lista.forEach(function (d) { if (porDia[d] > (melhor ? porDia[melhor] : 0)) melhor = d; });
     return { dias: lista, porDia: porDia, total: total, hoje: porDia[hoje] || 0, media: total / dias, melhorDia: melhor, origens: ordenar(origens), paginas: ordenar(paginas) };
+  }
+
+  /* Vídeos assistidos (linhas de "visitas" com tipo "video", gravadas pelo site quando alguém fecha um vídeo) */
+  function fmtTempo(seg) {
+    seg = Math.round(seg || 0);
+    if (seg < 60) return seg + ' s';
+    var h = Math.floor(seg / 3600), m = Math.floor((seg % 3600) / 60), s = seg % 60;
+    return h ? h + ' h ' + pad(m) + ' min' : m + ' min ' + pad(s) + ' s';
+  }
+  function resumirVideos(linhas) {
+    var videos = {}, nichos = {}, total = 0, segundos = 0, somaPct = 0, comPct = 0;
+    linhas.forEach(function (v) {
+      if (v.tipo !== 'video') return;
+      var seg = Number(v.segundos) || 0, dur = Number(v.duracao) || 0;
+      var pct = dur > 0 ? Math.min(1, seg / dur) : null;
+      total++; segundos += seg;
+      if (pct != null) { somaPct += pct; comPct++; }
+      var chave = String(v.video_codigo || v.video_nome || '?');
+      var x = videos[chave] || (videos[chave] = { nome: String(v.video_nome || 'Vídeo'), nicho: String(v.video_nicho || ''), codigo: String(v.video_codigo || ''), qtd: 0, seg: 0, somaPct: 0, comPct: 0, completos: 0 });
+      x.qtd++; x.seg += seg;
+      if (pct != null) { x.somaPct += pct; x.comPct++; if (pct >= 0.9) x.completos++; }
+      var n = String(v.video_nicho || 'Sem nicho').trim() || 'Sem nicho';
+      var y = nichos[n] || (nichos[n] = { nome: n, qtd: 0, seg: 0, somaPct: 0, comPct: 0 });
+      y.qtd++; y.seg += seg;
+      if (pct != null) { y.somaPct += pct; y.comPct++; }
+    });
+    function lista(mapa) {
+      return Object.keys(mapa).map(function (k) { var o = mapa[k]; o.media = o.qtd ? o.seg / o.qtd : 0; o.pct = o.comPct ? o.somaPct / o.comPct : null; return o; })
+        .sort(function (p, q) { return q.seg - p.seg || q.qtd - p.qtd; });
+    }
+    return { total: total, segundos: segundos, media: total ? segundos / total : 0, pct: comPct ? somaPct / comPct : null, videos: lista(videos), nichos: lista(nichos) };
+  }
+  function htmlPct(p) { return p == null ? '<span style="color:var(--muted)">sem dado</span>' : Math.round(p * 100) + '%'; }
+  function htmlVideosAssistidos(rv, semCampos) {
+    if (semCampos) {
+      return '<div class="cartao" style="margin-bottom:1rem"><div class="cartao-cab"><h2>Vídeos assistidos</h2></div><div class="cartao-corpo">' +
+        '<p>Para começar a medir quais vídeos as pessoas assistem e por quanto tempo, o banco precisa de mais alguns campos. É rápido:</p>' +
+        '<ol class="passos"><li>Abra o Supabase e clique em <strong>SQL Editor</strong>, depois em <strong>New query</strong>.</li>' +
+        '<li>Cole o conteúdo do arquivo <strong>videos-assistidos.sql</strong> (está na pasta do seu portfólio) e clique em <strong>Run</strong>.</li>' +
+        '<li>Volte aqui e recarregue a página. A partir daí, cada vídeo aberto no site passa a ser contado.</li></ol></div></div>';
+    }
+    var nichoTop = rv.nichos[0], videoTop = rv.videos[0];
+    var faixa = '<div class="cartao faixa-numeros quatro" role="group" aria-label="Resumo dos vídeos assistidos">' +
+      '<div class="numero"><div class="numero-rotulo">Vídeos abertos</div><div class="numero-valor">' + fmtInt(rv.total) + '</div><div class="numero-sub">no período</div></div>' +
+      '<div class="numero"><div class="numero-rotulo">Tempo assistido</div><div class="numero-valor texto">' + esc(fmtTempo(rv.segundos)) + '</div><div class="numero-sub">somando todos</div></div>' +
+      '<div class="numero"><div class="numero-rotulo">Tempo médio</div><div class="numero-valor texto">' + esc(fmtTempo(rv.media)) + '</div><div class="numero-sub">por vídeo aberto</div></div>' +
+      '<div class="numero"><div class="numero-rotulo">Nicho que mais prende</div><div class="numero-valor texto">' + (nichoTop ? esc(nichoTop.nome) : 'Ainda nenhum') + '</div>' +
+        (nichoTop ? '<div class="numero-sub">' + esc(fmtTempo(nichoTop.seg)) + ' assistidos</div>' : '') + '</div>' +
+      '</div>';
+    if (!rv.total) {
+      return faixa + '<div class="cartao" style="margin-bottom:1rem"><div class="cartao-corpo"><p class="vazio">Ainda nenhum vídeo assistido no período. Cada vez que alguém abrir um vídeo no seu site e fechar, ele aparece aqui com o tempo assistido. Os vídeos que você mesma assiste logada no painel não contam.</p></div></div>';
+    }
+    var maxSegN = Math.max.apply(null, rv.nichos.map(function (n) { return n.seg; })) || 1;
+    var nichosHtml = '<ul class="origens">' + rv.nichos.map(function (n) {
+      return '<li><span>' + esc(n.nome) + ' <small style="color:var(--muted)">· ' + fmtInt(n.qtd) + (n.qtd === 1 ? ' vídeo aberto' : ' vídeos abertos') + ' · média ' + esc(fmtTempo(n.media)) + ' · assistem ' + htmlPct(n.pct) + '</small></span>' +
+        '<strong>' + esc(fmtTempo(n.seg)) + '</strong><span class="trilho"><i style="width:' + Math.round((n.seg / maxSegN) * 100) + '%"></i></span></li>';
+    }).join('') + '</ul>';
+    var tabela = '<div class="rolagem"><table class="tabela"><thead><tr><th>Vídeo</th><th>Nicho</th><th>Aberto</th><th>Tempo total</th><th>Tempo médio</th><th>Quanto assistem</th><th>Até o fim</th></tr></thead><tbody>' +
+      rv.videos.slice(0, 30).map(function (v) {
+        var link = v.codigo ? 'https://youtube.com/shorts/' + encodeURIComponent(v.codigo) : '';
+        return '<tr><td>' + (link ? '<a href="' + esc(link) + '" target="_blank" rel="noopener noreferrer">' + esc(v.nome) + '</a>' : esc(v.nome)) + '</td><td>' + esc(v.nicho || '') + '</td><td>' + fmtInt(v.qtd) + 'x</td><td>' + esc(fmtTempo(v.seg)) +
+          '</td><td>' + esc(fmtTempo(v.media)) + '</td><td>' + htmlPct(v.pct) + '</td><td>' + fmtInt(v.completos) + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+    return faixa +
+      '<div class="cartao" style="margin-bottom:1rem"><div class="cartao-cab"><h2>Nichos que mais assistem</h2><span style="color:var(--muted);font-size:.8rem">Ordenados pelo tempo total assistido. "Assistem" é quanto do vídeo, em média, as pessoas veem.</span></div><div class="cartao-corpo">' + nichosHtml + '</div></div>' +
+      '<div class="cartao" style="margin-bottom:1rem"><div class="cartao-cab"><h2>Vídeos mais assistidos</h2>' + (videoTop ? '<span style="color:var(--muted);font-size:.8rem">Campeão: ' + esc(videoTop.nome) + '</span>' : '') + '</div>' + tabela + '</div>';
   }
 
   function fmtDataHora(valor) {
@@ -4106,8 +4173,14 @@
       var visitas = await buscarVisitas(estado.dias);
       var r = resumirVisitas(visitas, estado.dias);
       var media = r.media.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
+      var semCampos = false;
+      try { var teste = await banco.from('visitas').select('tipo,segundos').limit(1); semCampos = !!teste.error; } catch (e) { semCampos = true; }
+      var rv = resumirVideos(visitas);
+      visitas = visitas.filter(function (v) { return v.tipo !== 'video'; });
       var recentes = visitas.slice().sort(function (a, b) { return String(b.data).localeCompare(String(a.data)); }).slice(0, 50);
       alvo.innerHTML =
+        '<h2 class="titulo-bloco">Vídeos assistidos</h2>' + htmlVideosAssistidos(rv, semCampos) +
+        '<h2 class="titulo-bloco">Visitas</h2>' +
         '<div class="cartao faixa-numeros quatro" role="group" aria-label="Resumo das visitas">' +
           '<div class="numero"><div class="numero-rotulo">Visitas no período</div><div class="numero-valor">' + fmtInt(r.total) + '</div><div class="numero-sub">últimos ' + estado.dias + ' dias</div></div>' +
           '<div class="numero"><div class="numero-rotulo">Média por dia</div><div class="numero-valor">' + media + '</div></div>' +

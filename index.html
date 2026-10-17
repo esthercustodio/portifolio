@@ -966,7 +966,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return codigo ? `https://i.ytimg.com/vi/${codigo}/oardefault.jpg` : '';                /* imagem em pé do próprio vídeo (Shorts) */
   };
   const prepararVideo = (v) => ({
-    yt: idYoutube(v.link), link: seguro(v.link), marca: String(v.marca || '').trim(), titulo: String(v.titulo || '').trim(),
+    id: v.id || '', yt: idYoutube(v.link), link: seguro(v.link), marca: String(v.marca || '').trim(), titulo: String(v.titulo || '').trim(),
     nicho: String(v.nicho || '').trim(), destaque: String(v.destaque || '').trim(), capa: capaDoVideo(v),
     emDestaques: Boolean(v.em_destaques || v.emDestaques)
   });
@@ -1147,6 +1147,36 @@ document.addEventListener('DOMContentLoaded', () => {
   let iframePlayer = null;
   let pediuSom = false;
 
+  /* Vídeos assistidos (aba Visitas do painel): conta os segundos em que o vídeo esteve tocando e grava ao fechar.
+     Vai para a tabela "visitas" com tipo "video" (precisa do videos-assistidos.sql). Não guarda dado pessoal.
+     Não conta no computador de teste nem quando você está logada no painel. */
+  let assistindo = null;
+  const contaVideos = () => {
+    try {
+      return !!(window.BANCO_CONFIG && location.protocol !== 'file:' && !['localhost', '127.0.0.1'].includes(location.hostname) &&
+        !localStorage.getItem('sb-dhqnfqpasuterxedplyb-auth-token'));
+    } catch (erro) { return false; }
+  };
+  const gravarAssistido = () => {
+    const a = assistindo;
+    assistindo = null;
+    if (!a || a.segundos < 1 || !contaVideos()) return;
+    const linha = {
+      tipo: 'video', pagina: location.pathname.slice(0, 200), origem: descobrirOrigem(),
+      video_id: /^[0-9a-f-]{36}$/i.test(a.id) ? a.id : null, video_codigo: a.yt.slice(0, 20),
+      video_nome: a.nome.slice(0, 160), video_nicho: a.nicho.slice(0, 80),
+      segundos: Math.min(7200, Math.round(a.segundos)), duracao: Math.min(7200, Math.round(a.duracao || 0))
+    };
+    try {
+      fetch(`${window.BANCO_CONFIG.url}/rest/v1/visitas`, {
+        method: 'POST', keepalive: true,                              /* keepalive: grava mesmo se a pessoa fechar a aba */
+        headers: { apikey: window.BANCO_CONFIG.chave, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify(linha)
+      }).catch(() => {});
+    } catch (erro) { /* o site segue normal */ }
+  };
+  window.addEventListener('pagehide', gravarAssistido);
+
   const falarComPlayer = (funcao, args) => {
     if (iframePlayer && iframePlayer.contentWindow) iframePlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: funcao, args: args || [], id: 1, channel: 'widget' }), '*');
   };
@@ -1156,6 +1186,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const nome = nomeDoVideo(v);
     quemAbriu = origem || null;
     pediuSom = false;
+    gravarAssistido();
+    assistindo = { id: String(v.id || ''), yt: v.yt, nome: `${v.marca || nome}${legendaDoVideo(v) ? ` · ${legendaDoVideo(v)}` : ''}`, nicho: v.nicho || 'Destaques', segundos: 0, duracao: 0, ultimo: null };
     $('#playerNicho').textContent = v.nicho || 'Destaque';
     $('#playerTitulo').textContent = legendaDoVideo(v) || nome;
     $('#playerMarca').textContent = nome;
@@ -1173,6 +1205,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (janelaPlayer) {
     const fecharPlayer = () => { if (janelaPlayer.open) janelaPlayer.close(); };
     janelaPlayer.addEventListener('close', () => {
+      gravarAssistido();
       quadroPlayer.innerHTML = '';                                   /* tira o iframe: o vídeo para de tocar */
       pausarPrevias(false);
       iframePlayer = null;
@@ -1185,10 +1218,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /* Na primeira resposta do YouTube: som ligado (ele pode começar mudo e lembra do mudo da vez anterior) e sem legenda automática */
     window.addEventListener('message', (e) => {
-      if (!iframePlayer || e.source !== iframePlayer.contentWindow || pediuSom) return;
+      if (!iframePlayer || e.source !== iframePlayer.contentWindow) return;
       let d = null;
       try { d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data; } catch (erro) { return; }
       if (!d || !d.info) return;
+      if (assistindo) {                                              /* soma o tempo que andou tocando (pulos na barra não contam) */
+        if (typeof d.info.duration === 'number' && d.info.duration > 0) assistindo.duracao = d.info.duration;
+        if (typeof d.info.currentTime === 'number') {
+          const passo = assistindo.ultimo == null ? 0 : d.info.currentTime - assistindo.ultimo;
+          if (passo > 0 && passo <= 2) assistindo.segundos += passo;
+          assistindo.ultimo = d.info.currentTime;
+        }
+      }
+      if (pediuSom) return;
       pediuSom = true;
       falarComPlayer('unMute');
       falarComPlayer('setVolume', [100]);
