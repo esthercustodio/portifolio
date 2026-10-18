@@ -5079,4 +5079,721 @@
     };
   })();
 
+  /* =========================================================
+     ABA: CARROSSÉIS
+     Você escreve o pedido e envia as fotos; a função "criar-carrossel" no Supabase
+     pede ao Claude (com a sua direção criativa) e devolve os slides. Aqui você ajusta
+     tamanho, cor, letra, posição e ícone (nos controles ou pela barra de comandos),
+     salva na tabela "carrosseis" (carrosseis.sql) e baixa cada slide em PNG.
+     ========================================================= */
+  (function () {
+    var TABELAS = ['carrosseis'];
+    var secaoAtual = null;
+    var salvos = [];
+    var atual = null;                 /* { id, titulo, comando, dados } */
+    var sel = 0;
+    var criando = false;
+    var rascunho = { comando: '', objetivo: '', pilar: '', proporcao: '4:5', fotos: [], referencias: [] };
+    var DIM = { '4:5': [1080, 1350], '1:1': [1080, 1080], '9:16': [1080, 1920] };
+    var OBJETIVOS = ['Atrair novas pessoas alinhadas ao meu perfil', 'Gerar identificação e compartilhamentos', 'Incentivar salvamentos', 'Criar conversas nos comentários',
+      'Fortalecer minha autoridade em beleza e cuidados pessoais', 'Compartilhar experiências e aprendizados', 'Aproximar minha comunidade da minha rotina',
+      'Fortalecer minha imagem profissional para marcas', 'Apoiar uma campanha comercial'];
+    var PILARES = ['A. Cabelos', 'B. Pele e beleza', 'C. Lifestyle e rotina', 'D. Bem-estar e experiências pessoais', 'E. Conteúdo profissional e criativo', 'F. Alimentação e acompanhamento pessoal'];
+    var CORES = { branco: '#ffffff', branca: '#ffffff', preto: '#14110d', preta: '#14110d', creme: '#f3eee9', bege: '#ebe4dc', marrom: '#4d301b', cinza: '#808080',
+      rosa: '#c2134f', 'rosa claro': '#f4c6d4', dourado: '#c9a67f', dourada: '#c9a67f', vermelho: '#b3261e', vermelha: '#b3261e', verde: '#2f6b4f', azul: '#24476b', caramelo: '#a8693a' };
+    var ICONES_SLIDE = {
+      seta: 'M4 12h15M13 6l6 6-6 6',
+      coracao: 'M12 20s-7.5-4.4-7.5-10A4.3 4.3 0 0 1 12 7a4.3 4.3 0 0 1 7.5 3c0 5.6-7.5 10-7.5 10z',
+      estrela: 'M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z',
+      check: 'M5 12.5l4.5 4.5L19 7.5',
+      brilho: 'M12 3v5M12 16v5M3 12h5M16 12h5M6.5 6.5l2.5 2.5M15 15l2.5 2.5M6.5 17.5L9 15M15 9l2.5-2.5',
+      aspas: 'M9.5 7C6.5 7.5 5 9.5 5 12.5V17h5v-5H7.5c0-1.8.9-2.8 2.5-3.1zM18.5 7c-3 .5-4.5 2.5-4.5 5.5V17h5v-5h-2.5c0-1.8.9-2.8 2.5-3.1z',
+      cacho: 'M12 4c-3 0-4.5 2-4.5 4s1.5 3.2 3.2 3.2S13.5 10 13.5 8.6 12.5 7 11.4 7.4M12 20c3 0 4.5-2 4.5-4s-1.5-3.2-3.2-3.2-2.8 1.2-2.8 2.6 1 1.6 2.1 1.2'
+    };
+    var NOMES_ICONES = { nenhum: 'Nenhum', seta: 'Seta (arraste)', coracao: 'Coração', estrela: 'Estrela', check: 'Check', brilho: 'Brilho', aspas: 'Aspas', cacho: 'Cacho' };
+    var NOMES_LAYOUT = { foto_fundo: 'Foto de fundo com texto por cima', tipografico: 'Só texto (fundo liso)', foto_menor: 'Texto com foto menor', detalhe: 'Foto de detalhe (produto)' };
+
+    function hexValido(c, padrao) { return /^#[0-9a-f]{6}$/i.test(String(c || '')) ? String(c).toLowerCase() : padrao; }
+    function texto(v) { return v == null ? '' : String(v); }
+    function lerLocal(k, p) { try { var v = JSON.parse(localStorage.getItem(k) || 'null'); return v == null ? p : v; } catch (e) { return p; } }
+    function gravarLocal(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* segue */ } }
+
+    /* ---------- deixa o resultado da IA no formato do editor ---------- */
+    function estiloPadrao(s, visual, i) {
+      var fundoFoto = s.composicao === 'foto_fundo';
+      return {
+        tamTitulo: i === 0 ? 112 : 84, tamTexto: 40,
+        fonte: visual.fonte_titulo === 'sans' ? 'sans' : 'serif',
+        corTexto: fundoFoto ? '#ffffff' : hexValido(visual.texto, '#14110d'),
+        corFundo: hexValido(visual.fundo, '#f3eee9'),
+        corDestaque: fundoFoto ? '#f4c6d4' : hexValido(visual.destaque, '#4d301b'),
+        escurecer: fundoFoto ? 45 : 0, icone: 'nenhum', tamIcone: 72
+      };
+    }
+    function montarDados(c, fotos, referencias, proporcao, anterior) {
+      var visual = c.visual || {};
+      var slides = (c.slides || []).map(function (s, i) {
+        var velho = anterior && anterior.slides && anterior.slides[i];
+        return {
+          funcao: texto(s.funcao), titulo: texto(s.titulo), texto: texto(s.texto), destaque: texto(s.destaque),
+          composicao: NOMES_LAYOUT[s.composicao] ? s.composicao : 'tipografico',
+          foto: Math.max(0, Math.min(fotos.length, parseInt(s.foto, 10) || 0)),
+          posicao: ['topo', 'meio', 'base'].indexOf(s.posicao) >= 0 ? s.posicao : 'meio',
+          alinhamento: s.alinhamento === 'centro' ? 'centro' : 'esquerda',
+          direcao_arte: texto(s.direcao_arte), foto_sugerida: texto(s.foto_sugerida),
+          estilo: velho && velho.estilo ? Object.assign({}, velho.estilo) : estiloPadrao(s, visual, i)
+        };
+      });
+      return {
+        proporcao: DIM[proporcao] ? proporcao : '4:5', fotos: fotos.slice(), referencias: referencias.slice(),
+        visual: { fundo: hexValido(visual.fundo, '#f3eee9'), texto: hexValido(visual.texto, '#14110d'), destaque: hexValido(visual.destaque, '#4d301b'), fonte_titulo: visual.fonte_titulo === 'sans' ? 'sans' : 'serif', direcao: texto(visual.direcao) },
+        ideia_central: texto(c.ideia_central), objetivo: texto(c.objetivo), pilar: texto(c.pilar), perguntas: (c.perguntas || []).map(texto).filter(Boolean),
+        legenda: texto(c.legenda), cta: texto(c.cta), observacoes: texto(c.observacoes),
+        handle: anterior ? anterior.handle : '@esthercustodio_', mostrarHandle: anterior ? anterior.mostrarHandle : true, mostrarNumero: anterior ? anterior.mostrarNumero : true,
+        slides: slides
+      };
+    }
+
+    /* ---------- desenho do slide (o mesmo para a prévia e para o PNG) ---------- */
+    var cacheImg = {};
+    function carregarImg(url) {
+      if (!url) return Promise.resolve(null);
+      if (!cacheImg[url]) {
+        cacheImg[url] = new Promise(function (ok) {
+          var im = new Image();
+          im.crossOrigin = 'anonymous';
+          im.onload = function () { ok(im); };
+          im.onerror = function () { ok(null); };
+          im.src = /^img\//.test(url) ? '../' + url : url;
+        });
+      }
+      return cacheImg[url];
+    }
+    var fontesProntas = null;
+    function esperarFontes() {
+      if (!fontesProntas) {
+        fontesProntas = document.fonts && document.fonts.load
+          ? Promise.all(['700 60px Fraunces', 'italic 700 60px Fraunces', '400 40px "Plus Jakarta Sans"', '700 40px "Plus Jakarta Sans"'].map(function (f) { return document.fonts.load(f); })).catch(function () {})
+          : Promise.resolve();
+      }
+      return fontesProntas;
+    }
+    function fonteTitulo(est, italico, px) {
+      return est.fonte === 'sans' ? (italico ? 'italic ' : '') + '700 ' + px + 'px "Plus Jakarta Sans", sans-serif' : (italico ? 'italic ' : '') + '700 ' + px + 'px Fraunces, Georgia, serif';
+    }
+    /* quebra o título em linhas; a palavra de destaque ganha a cor e o itálico */
+    function linhasTitulo(ctx, s, est, largura) {
+      var t = texto(s.titulo).trim(), d = texto(s.destaque).trim();
+      var palavras = [];
+      var ini = d ? t.toLowerCase().indexOf(d.toLowerCase()) : -1;
+      function juntar(trecho, dest) { trecho.split(/\s+/).filter(Boolean).forEach(function (p) { palavras.push({ p: p, d: dest }); }); }
+      if (ini >= 0) { juntar(t.slice(0, ini), false); juntar(t.slice(ini, ini + d.length), true); juntar(t.slice(ini + d.length), false); } else juntar(t, false);
+      var linhas = [], linha = [], larg = 0;
+      var espaco = function (dest) { ctx.font = fonteTitulo(est, dest, est.tamTitulo); return ctx.measureText(' ').width; };
+      palavras.forEach(function (w) {
+        ctx.font = fonteTitulo(est, w.d, est.tamTitulo);
+        var lw = ctx.measureText(w.p).width;
+        var add = (linha.length ? espaco(w.d) : 0) + lw;
+        if (linha.length && larg + add > largura) { linhas.push({ itens: linha, larg: larg }); linha = []; larg = 0; add = lw; }
+        linha.push({ p: w.p, d: w.d, w: lw });
+        larg += add;
+      });
+      if (linha.length) linhas.push({ itens: linha, larg: larg });
+      return linhas;
+    }
+    function linhasTexto(ctx, txt, px, largura) {
+      ctx.font = '400 ' + px + 'px "Plus Jakarta Sans", sans-serif';
+      var linhas = [];
+      texto(txt).split(/\n/).forEach(function (par) {
+        var linha = '';
+        par.split(/\s+/).filter(Boolean).forEach(function (p) {
+          var teste = linha ? linha + ' ' + p : p;
+          if (linha && ctx.measureText(teste).width > largura) { linhas.push(linha); linha = p; } else linha = teste;
+        });
+        linhas.push(linha);
+      });
+      return linhas;
+    }
+    function caixaCover(ctx, im, x, y, w, h, raio) {
+      ctx.save();
+      if (raio) { ctx.beginPath(); ctx.roundRect(x, y, w, h, raio); ctx.clip(); }
+      var esc = Math.max(w / im.width, h / im.height);
+      var iw = im.width * esc, ih = im.height * esc;
+      ctx.drawImage(im, x + (w - iw) / 2, y + (h - ih) / 2, iw, ih);
+      ctx.restore();
+    }
+    async function desenharSlide(canvas, dados, i) {
+      var s = dados.slides[i];
+      if (!s) return;
+      var dim = DIM[dados.proporcao] || DIM['4:5'];
+      var W = dim[0], H = dim[1], M = 96;
+      canvas.width = W; canvas.height = H;
+      await esperarFontes();
+      var est = s.estilo;
+      var im = s.foto > 0 ? await carregarImg(dados.fotos[s.foto - 1]) : null;
+      var ctx = canvas.getContext('2d');
+      ctx.fillStyle = est.corFundo; ctx.fillRect(0, 0, W, H);
+      var larguraTexto = W - 2 * M;
+      var tl = linhasTitulo(ctx, s, est, larguraTexto);
+      var tx = texto(s.texto).trim() ? linhasTexto(ctx, s.texto, est.tamTexto, larguraTexto) : [];
+      var altIcone = est.icone !== 'nenhum' && ICONES_SLIDE[est.icone] ? est.tamIcone + 28 : 0;
+      var altTitulo = tl.length * est.tamTitulo * 1.08;
+      var altTexto = tx.length ? 30 + tx.length * est.tamTexto * 1.4 : 0;
+      var altBloco = altIcone + altTitulo + altTexto;
+      var rodape = (dados.mostrarHandle || dados.mostrarNumero) ? 70 : 0;
+      var topo = M, base = H - M - rodape;
+      /* foto */
+      if (im && s.composicao === 'foto_fundo') {
+        caixaCover(ctx, im, 0, 0, W, H, 0);
+        var e = Math.max(0, Math.min(90, est.escurecer)) / 100;
+        if (e > 0) {
+          var g;
+          if (s.posicao === 'topo') { g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, 'rgba(0,0,0,' + e + ')'); g.addColorStop(0.65, 'rgba(0,0,0,' + (e * 0.25) + ')'); g.addColorStop(1, 'rgba(0,0,0,' + (e * 0.35) + ')'); }
+          else if (s.posicao === 'base') { g = ctx.createLinearGradient(0, H, 0, 0); g.addColorStop(0, 'rgba(0,0,0,' + e + ')'); g.addColorStop(0.65, 'rgba(0,0,0,' + (e * 0.25) + ')'); g.addColorStop(1, 'rgba(0,0,0,' + (e * 0.2) + ')'); }
+          else { g = 'rgba(0,0,0,' + (e * 0.8) + ')'; }
+          ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+        }
+      } else if (im && (s.composicao === 'foto_menor' || s.composicao === 'detalhe')) {
+        var espaco = H - 2 * M - rodape - altBloco - 56;
+        var fh = Math.max(240, Math.min(s.composicao === 'detalhe' ? larguraTexto : H * 0.58, espaco));
+        var fw = s.composicao === 'detalhe' ? Math.min(larguraTexto, fh) : larguraTexto;
+        var fx = s.alinhamento === 'centro' || s.composicao === 'detalhe' ? (W - fw) / 2 : M;
+        if (s.posicao === 'topo') { caixaCover(ctx, im, fx, base - fh, fw, fh, 28); base = base - fh - 56; }
+        else { caixaCover(ctx, im, fx, M, fw, fh, 28); topo = M + fh + 56; }
+      }
+      /* bloco de texto */
+      var y = s.posicao === 'topo' ? topo : (s.posicao === 'base' ? base - altBloco : topo + Math.max(0, (base - topo - altBloco) / 2));
+      var centro = s.alinhamento === 'centro';
+      var x0 = centro ? W / 2 : M;
+      if (altIcone) {
+        ctx.save();
+        var ix = centro ? W / 2 - est.tamIcone / 2 : M;
+        ctx.translate(ix, y); ctx.scale(est.tamIcone / 24, est.tamIcone / 24);
+        ctx.strokeStyle = est.corDestaque; ctx.lineWidth = 1.8; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        ctx.stroke(new Path2D(ICONES_SLIDE[est.icone]));
+        ctx.restore();
+        y += altIcone;
+      }
+      ctx.textBaseline = 'alphabetic';
+      tl.forEach(function (ln) {
+        y += est.tamTitulo * 1.08;
+        var x = centro ? x0 - ln.larg / 2 : x0;
+        ln.itens.forEach(function (w, k) {
+          ctx.font = fonteTitulo(est, w.d, est.tamTitulo);
+          if (k) x += ctx.measureText(' ').width;
+          ctx.fillStyle = w.d ? est.corDestaque : est.corTexto;
+          ctx.textAlign = 'left';
+          ctx.fillText(w.p, x, y - est.tamTitulo * 0.18);
+          x += w.w;
+        });
+      });
+      if (tx.length) {
+        y += 30;
+        ctx.font = '400 ' + est.tamTexto + 'px "Plus Jakarta Sans", sans-serif';
+        ctx.fillStyle = est.corTexto; ctx.globalAlpha = 0.88; ctx.textAlign = centro ? 'center' : 'left';
+        tx.forEach(function (l) { y += est.tamTexto * 1.4; ctx.fillText(l, x0, y - est.tamTexto * 0.3); });
+        ctx.globalAlpha = 1;
+      }
+      /* rodapé: @ e número da página */
+      if (rodape) {
+        ctx.font = '500 26px "Plus Jakarta Sans", sans-serif';
+        ctx.fillStyle = est.corTexto; ctx.globalAlpha = 0.7;
+        if (dados.mostrarHandle) { ctx.textAlign = 'left'; ctx.fillText(texto(dados.handle), M, H - M + 10); }
+        if (dados.mostrarNumero) { ctx.textAlign = 'right'; ctx.fillText((i + 1) + '/' + dados.slides.length, W - M, H - M + 10); }
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    /* ---------- barra de comandos ---------- */
+    function lerCor(v) {
+      v = texto(v).toLowerCase().replace(/^(o|a|para|pra|em)\s+/, '').trim();
+      var m = v.match(/#?([0-9a-f]{6})\b/);
+      if (m) return '#' + m[1];
+      return CORES[v] || null;
+    }
+    function tamanho(atualPx, v, min, max) {
+      if (/maior/.test(v)) return Math.min(max, Math.round(atualPx * 1.15));
+      if (/menor/.test(v)) return Math.max(min, Math.round(atualPx / 1.15));
+      var n = parseInt(v, 10);
+      return isNaN(n) ? null : Math.max(min, Math.min(max, n));
+    }
+    var CHAVES = 't[ií]tulo|texto|fonte|letra|cor|fundo|destaque|[ií]cone|alinh|centraliz|posi|escurec|propor|formato|foto|layout|slide|todos|duplic|apag|exclu|novo|mostr|escond|sem\\s';
+    function aplicarComandos(entrada) {
+      if (!atual) return { feitos: [], nao: [entrada] };
+      var d = atual.dados;
+      var feitos = [], nao = [];
+      var todos = /\btodos\b|todas as|em tudo/i.test(entrada);
+      var partes = entrada.split(new RegExp('\\s*(?:,|;|\\n|\\s+e\\s+(?=(?:' + CHAVES + ')))\\s*', 'i')).filter(function (p) { return p && p.trim(); });
+      partes.forEach(function (bruto) {
+        var c = bruto.trim().toLowerCase().replace(/\b(em|nos|de)\s+todos(\s+os\s+slides)?\b|\btodos\s+os\s+slides\b|\btodos\b/g, '').replace(/\s+/g, ' ').trim();
+        var alvo = todos ? d.slides : [d.slides[sel]];
+        var m, ok = true;
+        function cadaEstilo(f) { alvo.forEach(function (s) { f(s.estilo, s); }); }
+        if ((m = c.match(/^slide\s+(\d+)$/))) { var n = parseInt(m[1], 10) - 1; if (d.slides[n]) { sel = n; } else ok = false; }
+        else if ((m = c.match(/^(?:tamanho d[oa] )?t[ií]tulo\s+(maior|menor|\d+)/))) cadaEstilo(function (e) { e.tamTitulo = tamanho(e.tamTitulo, m[1], 36, 220); });
+        else if ((m = c.match(/^(?:tamanho d[oa] )?texto\s+(maior|menor|\d+)/))) cadaEstilo(function (e) { e.tamTexto = tamanho(e.tamTexto, m[1], 18, 90); });
+        else if ((m = c.match(/^(?:letras?|fonte)\s+(maior|menor)$/))) cadaEstilo(function (e) { e.tamTitulo = tamanho(e.tamTitulo, m[1], 36, 220); e.tamTexto = tamanho(e.tamTexto, m[1], 18, 90); });
+        else if ((m = c.match(/^(?:tamanho d[oa] )?[ií]cone\s+(maior|menor|\d+)$/))) cadaEstilo(function (e) { e.tamIcone = tamanho(e.tamIcone, m[1], 20, 260); if (e.icone === 'nenhum') e.icone = 'seta'; });
+        else if ((m = c.match(/^[ií]cone\s+(seta|cora[cç][aã]o|estrela|check|brilho|aspas|cacho|nenhum)$/))) { var nome = m[1].replace(/cora[cç][aã]o/, 'coracao'); cadaEstilo(function (e) { e.icone = nome; }); }
+        else if (/^sem [ií]cone$/.test(c)) cadaEstilo(function (e) { e.icone = 'nenhum'; });
+        else if ((m = c.match(/^(?:fonte|letra)\s+(serif|serifa|com serifa|sans|sem serifa|reta|moderna|elegante|cl[aá]ssica)$/))) { var f = /sans|sem|reta|moderna/.test(m[1]) ? 'sans' : 'serif'; cadaEstilo(function (e) { e.fonte = f; }); }
+        else if ((m = c.match(/^cor(?: d[oa]s?)?(?: texto| letras?)?\s+(.+)$/)) && lerCor(m[1])) { var ct = lerCor(m[1]); cadaEstilo(function (e) { e.corTexto = ct; }); }
+        else if ((m = c.match(/^(?:cor d[oa] )?fundo\s+(.+)$/)) && lerCor(m[1])) { var cf = lerCor(m[1]); cadaEstilo(function (e) { e.corFundo = cf; }); }
+        else if ((m = c.match(/^(?:cor d[oa] )?destaque\s+(.+)$/)) && lerCor(m[1])) { var cd = lerCor(m[1]); cadaEstilo(function (e) { e.corDestaque = cd; }); }
+        else if ((m = bruto.trim().match(/^destaque\s+["“'](.+)["”']$/i))) alvo.forEach(function (s) { s.destaque = m[1]; });
+        else if (/^(alinhar|alinhamento)\s+(ao\s+)?centro$|^centralizar$/.test(c)) alvo.forEach(function (s) { s.alinhamento = 'centro'; });
+        else if (/^(alinhar|alinhamento)\s+([àa]\s+)?esquerda$/.test(c)) alvo.forEach(function (s) { s.alinhamento = 'esquerda'; });
+        else if ((m = c.match(/^(?:posi[cç][aã]o|texto)\s+(?:no |em |na )?(topo|cima|meio|centro|base|baixo|embaixo)$/))) { var p = /topo|cima/.test(m[1]) ? 'topo' : (/base|baixo/.test(m[1]) ? 'base' : 'meio'); alvo.forEach(function (s) { s.posicao = p; }); }
+        else if ((m = c.match(/^escurecer\s+(\d+)/))) cadaEstilo(function (e) { e.escurecer = Math.max(0, Math.min(90, parseInt(m[1], 10))); });
+        else if (/^sem escurecer$/.test(c)) cadaEstilo(function (e) { e.escurecer = 0; });
+        else if ((m = c.match(/^(?:propor[cç][aã]o|formato|tamanho)\s+(4:5|1:1|9:16)$/))) d.proporcao = m[1];
+        else if ((m = c.match(/^foto\s+(\d+)$/))) { var fn = parseInt(m[1], 10); if (fn >= 1 && fn <= d.fotos.length) alvo.forEach(function (s) { s.foto = fn; if (s.composicao === 'tipografico') s.composicao = 'foto_fundo'; }); else ok = false; }
+        else if (/^sem foto$/.test(c)) alvo.forEach(function (s) { s.foto = 0; s.composicao = 'tipografico'; });
+        else if ((m = c.match(/^layout\s+(.+)$/))) { var l = /fundo/.test(m[1]) ? 'foto_fundo' : (/tipo|texto/.test(m[1]) ? 'tipografico' : (/menor/.test(m[1]) ? 'foto_menor' : (/detalhe|produto/.test(m[1]) ? 'detalhe' : ''))); if (l) alvo.forEach(function (s) { s.composicao = l; }); else ok = false; }
+        else if (/^duplicar( slide)?$/.test(c)) { d.slides.splice(sel + 1, 0, JSON.parse(JSON.stringify(d.slides[sel]))); sel++; }
+        else if (/^(apagar|excluir)( slide)?$/.test(c)) { if (d.slides.length > 1) { d.slides.splice(sel, 1); sel = Math.max(0, sel - 1); } else ok = false; }
+        else if (/^novo slide$/.test(c)) { var base = d.slides[sel]; d.slides.splice(sel + 1, 0, { funcao: '', titulo: 'Novo slide', texto: '', destaque: '', composicao: 'tipografico', foto: 0, posicao: 'meio', alinhamento: base.alinhamento, direcao_arte: '', foto_sugerida: '', estilo: Object.assign({}, base.estilo, { escurecer: 0 }) }); sel++; }
+        else if (/^mostrar (o )?n[uú]mero$/.test(c)) d.mostrarNumero = true;
+        else if (/^(esconder|sem) (o )?n[uú]mero$/.test(c)) d.mostrarNumero = false;
+        else if (/^mostrar (o )?@/.test(c)) d.mostrarHandle = true;
+        else if (/^(esconder|sem) (o )?@/.test(c)) d.mostrarHandle = false;
+        else ok = false;
+        (ok ? feitos : nao).push(bruto.trim());
+      });
+      return { feitos: feitos, nao: nao };
+    }
+
+    /* ---------- falar com a função criar-carrossel ---------- */
+    var MSG_SEM_FUNCAO = 'Não consegui falar com a função criar-carrossel. Confira se ela foi criada no Supabase (Edge Functions) e se a internet está funcionando.';
+    async function chamarIA(corpo) {
+      try {
+        var r = await banco.functions.invoke('criar-carrossel', { body: corpo });
+        if (r.error) {
+          var resp = r.error.context, det = null;
+          try { det = resp && typeof resp.json === 'function' ? await resp.json() : null; } catch (e) { det = null; }
+          if (det && det.erro) return { ok: false, erro: det.erro };
+          var st = resp && resp.status;
+          if (st === 404) return { ok: false, erro: 'A função criar-carrossel ainda não foi criada no Supabase. Siga o passo a passo para criá-la.' };
+          if (st === 401 || st === 403) return { ok: false, erro: 'A função recusou o seu login. Saia do painel, entre de novo e tente outra vez.' };
+          return { ok: false, erro: MSG_SEM_FUNCAO };
+        }
+        var d = r.data;
+        if (!d || typeof d !== 'object') return { ok: false, erro: 'A função respondeu algo inesperado. Tente de novo.' };
+        if (d.ok === false) return { ok: false, erro: d.erro || 'A função recusou o pedido.' };
+        return d;
+      } catch (e) { return { ok: false, erro: MSG_SEM_FUNCAO }; }
+    }
+
+    /* ---------- salvar ---------- */
+    async function salvar(silencioso) {
+      if (!atual) return false;
+      var campos = { titulo: texto(atual.titulo).trim() || 'Carrossel sem título', comando: atual.comando, dados: atual.dados, atualizado_em: new Date().toISOString() };
+      try {
+        if (atual.id) {
+          var r = await banco.from('carrosseis').update(campos).eq('id', atual.id);
+          if (r.error) { aviso(descreverErro('carrosseis', r.error), 'erro'); return false; }
+        } else {
+          var n = await banco.from('carrosseis').insert(campos).select('id').single();
+          if (n.error) { aviso(descreverErro('carrosseis', n.error), 'erro'); return false; }
+          atual.id = n.data.id;
+        }
+      } catch (e) { aviso(descreverErro('carrosseis', e), 'erro'); return false; }
+      if (!silencioso) aviso('Carrossel salvo.');
+      return true;
+    }
+
+    /* ---------- tela: criação ---------- */
+    function htmlFotos(lista, tipo) {
+      return lista.map(function (u, i) {
+        return '<span class="car-foto"><img src="' + esc(u) + '" alt="">' + (tipo === 'fotos' ? '<b>' + (i + 1) + '</b>' : '') +
+          '<button type="button" class="btn-icone" data-tirar="' + tipo + '" data-i="' + i + '" aria-label="Tirar">' + ic('fechar') + '</button></span>';
+      }).join('');
+    }
+    function htmlCriacao() {
+      var refs = rascunho.referencias;
+      return '<div class="cartao" style="margin-bottom:1rem"><div class="cartao-cab"><h2>Novo carrossel</h2></div><div class="cartao-corpo">' +
+        '<div class="campo largo"><label for="carComando">O que você quer no carrossel? *</label>' +
+        '<textarea id="carComando" rows="5" placeholder="Ex.: quero um carrossel sobre como eu finalizo meu cabelo cacheado com química e cor, contando que o frizz melhorou quando troquei o leave-in. Tom leve, para gerar salvamentos.">' + esc(rascunho.comando) + '</textarea>' +
+        '<span class="ajuda">Quanto mais fatos reais seus, melhor: a IA não inventa história nem resultado. Se faltar algo, ela devolve perguntas.</span></div>' +
+        '<div class="grade-campos">' +
+          '<div class="campo"><label for="carObjetivo">Objetivo</label><select id="carObjetivo"><option value="">A IA escolhe</option>' + OBJETIVOS.map(function (o) { return '<option' + (o === rascunho.objetivo ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select></div>' +
+          '<div class="campo"><label for="carPilar">Pilar</label><select id="carPilar"><option value="">A IA escolhe</option>' + PILARES.map(function (o) { return '<option' + (o === rascunho.pilar ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select></div>' +
+          '<div class="campo"><label for="carProporcao">Formato</label><select id="carProporcao">' + ['4:5', '1:1', '9:16'].map(function (p) { return '<option' + (p === rascunho.proporcao ? ' selected' : '') + '>' + p + '</option>'; }).join('') + '</select></div>' +
+        '</div>' +
+        '<div class="campo largo"><label>Suas fotos para os slides (até 10)</label><div class="car-fotos" id="carFotos">' + htmlFotos(rascunho.fotos, 'fotos') + '</div>' +
+          '<button type="button" class="btn pequeno" data-enviar="fotos">' + ic('mais') + 'Enviar fotos</button><input type="file" id="carArqFotos" accept="image/*" multiple hidden></div>' +
+        '<div class="campo largo"><label>Prints do seu feed como referência visual (até 6)</label><div class="car-fotos" id="carRefs">' + htmlFotos(refs, 'referencias') + '</div>' +
+          '<button type="button" class="btn pequeno" data-enviar="referencias">' + ic('mais') + 'Enviar prints</button><input type="file" id="carArqRefs" accept="image/*" multiple hidden>' +
+          '<span class="ajuda">Ficam guardados neste navegador para os próximos carrosséis. Com eles, a IA segue as cores e a tipografia do seu feed.</span></div>' +
+        '<div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap"><button type="button" class="btn principal-btn" id="carCriar">' + ic('zap') + 'Criar carrossel</button>' +
+        '<span id="carStatus" style="color:var(--muted);font-size:.86rem"></span></div>' +
+        '</div></div>';
+    }
+    function htmlSalvos() {
+      if (!salvos.length) return '<p class="vazio" style="text-align:left">Os carrosséis que você criar ficam guardados aqui.</p>';
+      return '<div class="car-lista">' + salvos.map(function (c) {
+        var n = (c.dados && c.dados.slides && c.dados.slides.length) || 0;
+        return '<button type="button" class="car-item" data-abrir="' + esc(c.id) + '"><strong>' + esc(c.titulo) + '</strong><small>' + n + (n === 1 ? ' slide' : ' slides') + ' · ' + esc(fmtDataHora(c.atualizado_em || c.criado_em)) + '</small></button>';
+      }).join('') + '</div>';
+    }
+
+    /* ---------- tela: editor ---------- */
+    function opcoes(mapa, valor) { return Object.keys(mapa).map(function (k) { return '<option value="' + k + '"' + (k === valor ? ' selected' : '') + '>' + esc(mapa[k]) + '</option>'; }).join(''); }
+    function htmlControles() {
+      var d = atual.dados, s = d.slides[sel], e = s.estilo;
+      function faixa(campo, rotulo, min, max, valor) {
+        return '<div class="campo"><label for="ce_' + campo + '">' + rotulo + ' <output id="ceo_' + campo + '">' + valor + '</output></label><input type="range" id="ce_' + campo + '" data-est="' + campo + '" min="' + min + '" max="' + max + '" value="' + valor + '"></div>';
+      }
+      return '<div class="car-ctrl">' +
+        '<h3>Slide ' + (sel + 1) + ' de ' + d.slides.length + (s.funcao ? ' · <span style="font-weight:400;color:var(--muted)">' + esc(s.funcao) + '</span>' : '') + '</h3>' +
+        '<div class="campo"><label for="cs_titulo">Título</label><textarea id="cs_titulo" data-s="titulo" rows="2">' + esc(s.titulo) + '</textarea></div>' +
+        '<div class="campo"><label for="cs_destaque">Palavra de destaque (cor e itálico)</label><input id="cs_destaque" data-s="destaque" value="' + esc(s.destaque) + '"></div>' +
+        '<div class="campo"><label for="cs_texto">Texto de apoio</label><textarea id="cs_texto" data-s="texto" rows="3">' + esc(s.texto) + '</textarea></div>' +
+        '<div class="grade-campos">' +
+          '<div class="campo largo"><label for="cs_composicao">Layout</label><select id="cs_composicao" data-s="composicao">' + opcoes(NOMES_LAYOUT, s.composicao) + '</select></div>' +
+          '<div class="campo"><label for="cs_foto">Foto</label><select id="cs_foto" data-s="foto"><option value="0">Nenhuma</option>' + d.fotos.map(function (u, i) { return '<option value="' + (i + 1) + '"' + (s.foto === i + 1 ? ' selected' : '') + '>Foto ' + (i + 1) + '</option>'; }).join('') + '</select></div>' +
+          '<div class="campo"><label for="cs_posicao">Posição do texto</label><select id="cs_posicao" data-s="posicao">' + opcoes({ topo: 'Em cima', meio: 'No meio', base: 'Embaixo' }, s.posicao) + '</select></div>' +
+          '<div class="campo"><label for="cs_alinhamento">Alinhamento</label><select id="cs_alinhamento" data-s="alinhamento">' + opcoes({ esquerda: 'À esquerda', centro: 'Centralizado' }, s.alinhamento) + '</select></div>' +
+          '<div class="campo"><label for="ce_fonte">Letra do título</label><select id="ce_fonte" data-est="fonte">' + opcoes({ serif: 'Com serifa (Fraunces)', sans: 'Sem serifa (Jakarta)' }, e.fonte) + '</select></div>' +
+          faixa('tamTitulo', 'Tamanho do título', 36, 220, e.tamTitulo) + faixa('tamTexto', 'Tamanho do texto', 18, 90, e.tamTexto) +
+          '<div class="campo"><label for="ce_corTexto">Cor do texto</label><input type="color" id="ce_corTexto" data-est="corTexto" value="' + e.corTexto + '"></div>' +
+          '<div class="campo"><label for="ce_corFundo">Cor do fundo</label><input type="color" id="ce_corFundo" data-est="corFundo" value="' + e.corFundo + '"></div>' +
+          '<div class="campo"><label for="ce_corDestaque">Cor do destaque</label><input type="color" id="ce_corDestaque" data-est="corDestaque" value="' + e.corDestaque + '"></div>' +
+          faixa('escurecer', 'Escurecer a foto (%)', 0, 90, e.escurecer) +
+          '<div class="campo"><label for="ce_icone">Ícone</label><select id="ce_icone" data-est="icone">' + opcoes(NOMES_ICONES, e.icone) + '</select></div>' +
+          faixa('tamIcone', 'Tamanho do ícone', 20, 260, e.tamIcone) +
+        '</div>' +
+        '<button type="button" class="btn pequeno" data-acao="estiloTodos">' + ic('copiar') + 'Usar este estilo em todos os slides</button>' +
+        (s.direcao_arte || s.foto_sugerida ? '<div class="car-nota"><strong>Direção de arte:</strong> ' + esc(s.direcao_arte) + (s.foto_sugerida ? '<br><strong>Foto sugerida:</strong> ' + esc(s.foto_sugerida) : '') + '</div>' : '') +
+        '</div>';
+    }
+    function htmlEditor() {
+      var d = atual.dados;
+      return '<div class="car-topo">' +
+          '<button type="button" class="btn pequeno" data-acao="voltar">' + ic('setaEsquerda') + 'Carrosséis</button>' +
+          '<input class="entrada" id="carTitulo" value="' + esc(atual.titulo) + '" aria-label="Nome do carrossel">' +
+          '<label class="car-check"><input type="checkbox" id="carHandle"' + (d.mostrarHandle ? ' checked' : '') + '> @</label>' +
+          '<input class="entrada" id="carHandleTexto" value="' + esc(d.handle) + '" aria-label="Seu @" style="max-width:11rem">' +
+          '<label class="car-check"><input type="checkbox" id="carNumero"' + (d.mostrarNumero ? ' checked' : '') + '> Número</label>' +
+          '<select class="entrada" id="carFormato" aria-label="Formato" style="max-width:6rem">' + ['4:5', '1:1', '9:16'].map(function (p) { return '<option' + (p === d.proporcao ? ' selected' : '') + '>' + p + '</option>'; }).join('') + '</select>' +
+          '<button type="button" class="btn pequeno" data-acao="salvar">' + ic('check') + 'Salvar</button>' +
+          '<button type="button" class="btn pequeno" data-acao="baixarUm">' + ic('baixar') + 'Baixar este slide</button>' +
+          '<button type="button" class="btn pequeno principal-btn" data-acao="baixarTodos">' + ic('baixar') + 'Baixar todos</button>' +
+          '<button type="button" class="btn pequeno perigo" data-acao="apagar">' + ic('lixo') + 'Apagar</button>' +
+        '</div>' +
+        (d.perguntas.length ? '<div class="aviso"><strong>A IA precisa saber:</strong><ul style="margin:.3rem 0 0 1.1rem">' + d.perguntas.map(function (p) { return '<li>' + esc(p) + '</li>'; }).join('') + '</ul>Responda escrevendo no campo "Pedir para a IA ajustar", lá embaixo.</div>' : '') +
+        '<div class="car-editor">' +
+          '<div class="car-miniaturas" id="carMinis">' + d.slides.map(function (s, i) {
+            return '<button type="button" class="car-mini' + (i === sel ? ' ativa' : '') + '" data-slide="' + i + '" aria-label="Slide ' + (i + 1) + '"><canvas data-mini="' + i + '"></canvas><span>' + (i + 1) + '</span></button>';
+          }).join('') + '</div>' +
+          '<div class="car-palco"><canvas id="carGrande" class="car-grande-' + d.proporcao.replace(':', 'x') + '"></canvas>' +
+            '<div class="car-mover">' +
+              '<button type="button" class="btn-icone" data-acao="subir" title="Mover para a esquerda" aria-label="Mover para a esquerda"' + (sel === 0 ? ' disabled' : '') + '>' + ic('esq') + '</button>' +
+              '<button type="button" class="btn-icone" data-acao="descer" title="Mover para a direita" aria-label="Mover para a direita"' + (sel === d.slides.length - 1 ? ' disabled' : '') + '>' + ic('dir') + '</button>' +
+              '<button type="button" class="btn pequeno" data-acao="duplicar">' + ic('copiar') + 'Duplicar</button>' +
+              '<button type="button" class="btn pequeno" data-acao="novo">' + ic('mais') + 'Novo slide</button>' +
+              '<button type="button" class="btn pequeno perigo" data-acao="apagarSlide"' + (d.slides.length < 2 ? ' disabled' : '') + '>' + ic('lixo') + 'Apagar slide</button>' +
+              '<button type="button" class="btn pequeno" data-acao="maisFoto">' + ic('mais') + 'Enviar foto</button><input type="file" id="carArqMais" accept="image/*" hidden>' +
+            '</div>' +
+          '</div>' +
+          '<div id="carCtrl">' + htmlControles() + '</div>' +
+        '</div>' +
+        '<div class="cartao" style="margin-top:1rem"><div class="cartao-cab"><h2>Comandos</h2><span style="color:var(--muted);font-size:.8rem">Valem para o slide escolhido; escreva "todos" para mudar todos.</span></div><div class="cartao-corpo">' +
+          '<div class="car-comando"><input class="entrada" id="carComandoRapido" placeholder="Ex.: título 96, texto 38, fundo marrom, cor branco, ícone coração, ícone 80, alinhar centro, posição base" autocomplete="off">' +
+          '<button type="button" class="btn principal-btn" data-acao="comando">Aplicar</button></div>' +
+          '<p id="carRespostaCmd" class="ajuda" style="margin-top:.4rem"></p>' +
+          '<details class="car-ajuda"><summary>Ver todos os comandos</summary><ul>' +
+            '<li><b>título 96</b>, <b>título maior</b>, <b>texto 38</b>, <b>texto menor</b>, <b>letras maiores</b></li>' +
+            '<li><b>fonte serifa</b> ou <b>fonte sem serifa</b></li>' +
+            '<li><b>cor branco</b>, <b>fundo marrom</b>, <b>destaque rosa</b> (nomes: branco, preto, creme, bege, marrom, cinza, rosa, rosa claro, dourado, caramelo, vermelho, verde, azul) ou um código como <b>fundo #f3eee9</b></li>' +
+            '<li><b>destaque "cachos"</b> escolhe a palavra que ganha a cor</li>' +
+            '<li><b>ícone coração</b> (seta, coração, estrela, check, brilho, aspas, cacho), <b>ícone 80</b>, <b>sem ícone</b></li>' +
+            '<li><b>alinhar centro</b>, <b>alinhar esquerda</b>, <b>posição topo</b>, <b>posição meio</b>, <b>posição base</b></li>' +
+            '<li><b>foto 2</b>, <b>sem foto</b>, <b>layout foto de fundo</b>, <b>layout tipográfico</b>, <b>layout foto menor</b>, <b>layout detalhe</b>, <b>escurecer 40</b></li>' +
+            '<li><b>formato 1:1</b> (4:5, 1:1 ou 9:16), <b>slide 3</b>, <b>duplicar</b>, <b>novo slide</b>, <b>apagar slide</b>, <b>esconder número</b>, <b>esconder @</b></li>' +
+            '<li>Junte vários com vírgula: <b>slide 2, título 80, fundo creme</b>. Com <b>todos</b>: <b>fundo creme em todos</b></li>' +
+          '</ul></details>' +
+          '<div class="campo largo" style="margin-top:1rem"><label for="carRevisao">Pedir para a IA ajustar o texto</label><textarea id="carRevisao" rows="2" placeholder="Ex.: deixe o slide 3 mais curto e troque a capa por uma pergunta. Ou responda às perguntas da IA."></textarea></div>' +
+          '<button type="button" class="btn" data-acao="revisar">' + ic('zap') + 'Pedir ajuste para a IA</button> <span id="carStatusRev" style="color:var(--muted);font-size:.86rem"></span>' +
+        '</div></div>' +
+        '<div class="duas-colunas" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-top:1rem">' +
+          '<div class="cartao"><div class="cartao-cab"><h2>Legenda e CTA</h2><button type="button" class="btn pequeno" data-acao="copiarLegenda">' + ic('copiar') + 'Copiar</button></div><div class="cartao-corpo">' +
+            '<div class="campo"><label for="carLegenda">Legenda</label><textarea id="carLegenda" rows="7">' + esc(d.legenda) + '</textarea></div>' +
+            '<div class="campo"><label for="carCta">CTA</label><textarea id="carCta" rows="2">' + esc(d.cta) + '</textarea></div></div></div>' +
+          '<div class="cartao"><div class="cartao-cab"><h2>Estratégia</h2></div><div class="cartao-corpo car-estrategia">' +
+            (d.ideia_central ? '<p><strong>Ideia central:</strong> ' + esc(d.ideia_central) + '</p>' : '') +
+            (d.objetivo ? '<p><strong>Objetivo:</strong> ' + esc(d.objetivo) + '</p>' : '') +
+            (d.pilar ? '<p><strong>Pilar:</strong> ' + esc(d.pilar) + '</p>' : '') +
+            (d.visual.direcao ? '<p><strong>Direção visual:</strong> ' + esc(d.visual.direcao) + '</p>' : '') +
+            (d.observacoes ? '<p><strong>Observações:</strong> ' + esc(d.observacoes) + '</p>' : '') +
+            (atual.comando ? '<p style="color:var(--muted)"><strong>Seu pedido:</strong> ' + esc(atual.comando) + '</p>' : '') +
+          '</div></div>' +
+        '</div>';
+    }
+
+    var desenhoPendente = 0;
+    function redesenhar(tudo) {
+      cancelAnimationFrame(desenhoPendente);
+      desenhoPendente = requestAnimationFrame(function () {
+        if (!atual || !secaoAtual) return;
+        var g = $('#carGrande', secaoAtual);
+        if (g) desenharSlide(g, atual.dados, sel);
+        $$('canvas[data-mini]', secaoAtual).forEach(function (c) {
+          var i = Number(c.getAttribute('data-mini'));
+          if (tudo || i === sel) desenharSlide(c, atual.dados, i);
+        });
+      });
+    }
+    function pintarEditor() {
+      secaoAtual.innerHTML = htmlEditor();
+      redesenhar(true);
+    }
+    function pintarControles() {
+      var alvo = $('#carCtrl', secaoAtual);
+      if (alvo) alvo.innerHTML = htmlControles();
+    }
+    async function pintarInicio() {
+      salvos = (await listar('carrosseis', true)).slice().sort(function (a, b) { return String(b.atualizado_em || '').localeCompare(String(a.atualizado_em || '')); });
+      secaoAtual.innerHTML = (problemas.carrosseis
+        ? '<div class="cartao" style="margin-bottom:1rem"><div class="cartao-cab"><h2>Falta um passo para guardar os carrosséis</h2></div><div class="cartao-corpo"><ol class="passos">' +
+          '<li>Abra o Supabase e clique em <strong>SQL Editor</strong>, depois em <strong>New query</strong>.</li><li>Cole o conteúdo do arquivo <strong>carrosseis.sql</strong> (está na pasta do seu portfólio) e clique em <strong>Run</strong>.</li><li>Volte aqui e recarregue a página.</li></ol></div></div>'
+        : '') +
+        htmlCriacao() +
+        '<div class="cartao"><div class="cartao-cab"><h2>Meus carrosséis</h2></div><div class="cartao-corpo">' + htmlSalvos() + '</div></div>';
+      mostrarProblemas(TABELAS);
+    }
+    function lerCriacao() {
+      var c = $('#carComando', secaoAtual);
+      if (!c) return;
+      rascunho.comando = c.value;
+      rascunho.objetivo = $('#carObjetivo', secaoAtual).value;
+      rascunho.pilar = $('#carPilar', secaoAtual).value;
+      rascunho.proporcao = $('#carProporcao', secaoAtual).value;
+      gravarLocal('carrosselRascunho', { comando: rascunho.comando, objetivo: rascunho.objetivo, pilar: rascunho.pilar, proporcao: rascunho.proporcao, fotos: rascunho.fotos });
+    }
+
+    async function enviarVarios(arquivos, pasta, lista, limite, status) {
+      var faltam = Math.max(0, limite - lista.length);
+      var arr = Array.prototype.slice.call(arquivos, 0, faltam);
+      if (!arr.length) { aviso('Chegou ao limite de ' + limite + ' imagens. Tire alguma para enviar outra.', 'erro'); return; }
+      for (var i = 0; i < arr.length; i++) {
+        if (status) status.textContent = 'Enviando ' + (i + 1) + ' de ' + arr.length + '...';
+        var r = await enviarArquivo(arr[i], pasta, pasta === 'referencias' ? 1200 : 1600);
+        if (!r.ok) { aviso(r.erro, 'erro'); break; }
+        lista.push(r.url);
+      }
+      if (status) status.textContent = '';
+    }
+
+    async function criar() {
+      if (criando) return;
+      lerCriacao();
+      var comando = rascunho.comando.trim();
+      if (!comando) { aviso('Escreva o que você quer no carrossel.', 'erro'); $('#carComando', secaoAtual).focus(); return; }
+      criando = true;
+      var bt = $('#carCriar', secaoAtual), st = $('#carStatus', secaoAtual);
+      bt.disabled = true;
+      st.textContent = 'Criando o carrossel... pode levar até 2 minutos. Não feche esta página.';
+      var r = await chamarIA({ comando: comando, objetivo: rascunho.objetivo, pilar: rascunho.pilar, proporcao: rascunho.proporcao, fotos: rascunho.fotos, referencias: rascunho.referencias });
+      criando = false;
+      if (bt) bt.disabled = false;
+      if (st) st.textContent = '';
+      if (!r.ok) { aviso(r.erro, 'erro'); return; }
+      var dados = montarDados(r.carrossel, r.fotos || rascunho.fotos, rascunho.referencias, rascunho.proporcao, null);
+      atual = { id: null, titulo: texto(r.carrossel.titulo_interno).trim() || 'Carrossel sem título', comando: comando, dados: dados };
+      sel = 0;
+      await salvar(true);
+      rascunho.comando = ''; rascunho.fotos = [];
+      gravarLocal('carrosselRascunho', { comando: '', objetivo: rascunho.objetivo, pilar: rascunho.pilar, proporcao: rascunho.proporcao, fotos: [] });
+      pintarEditor();
+      aviso(atual.id ? 'Carrossel criado e salvo. Ajuste o que quiser.' : 'Carrossel criado. Clique em Salvar para guardar.');
+    }
+
+    async function revisar() {
+      if (criando || !atual) return;
+      var pedido = texto($('#carRevisao', secaoAtual).value).trim();
+      if (!pedido) { aviso('Escreva o que a IA deve ajustar.', 'erro'); return; }
+      criando = true;
+      var st = $('#carStatusRev', secaoAtual);
+      st.textContent = 'Ajustando... pode levar até 2 minutos.';
+      var d = atual.dados;
+      var resumo = { slides: d.slides.map(function (s) { return { funcao: s.funcao, titulo: s.titulo, texto: s.texto, destaque: s.destaque, composicao: s.composicao, foto: s.foto, posicao: s.posicao, alinhamento: s.alinhamento }; }),
+        legenda: d.legenda, cta: d.cta, ideia_central: d.ideia_central, objetivo: d.objetivo, pilar: d.pilar, perguntas: d.perguntas };
+      var r = await chamarIA({ comando: pedido, proporcao: d.proporcao, fotos: d.fotos, referencias: d.referencias, atual: resumo });
+      criando = false;
+      if (st) st.textContent = '';
+      if (!r.ok) { aviso(r.erro, 'erro'); return; }
+      atual.dados = montarDados(r.carrossel, d.fotos, d.referencias, d.proporcao, d);
+      sel = Math.min(sel, atual.dados.slides.length - 1);
+      await salvar(true);
+      pintarEditor();
+      aviso('Carrossel ajustado pela IA e salvo.');
+    }
+
+    function baixar(i) {
+      return new Promise(function (ok) {
+        var c = document.createElement('canvas');
+        desenharSlide(c, atual.dados, i).then(function () {
+          try {
+            c.toBlob(function (blob) {
+              if (!blob) { ok(false); return; }
+              var a = document.createElement('a');
+              a.href = URL.createObjectURL(blob);
+              a.download = (texto(atual.titulo).normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'carrossel') + '-' + String(i + 1).padStart(2, '0') + '.png';
+              document.body.appendChild(a); a.click(); a.remove();
+              setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+              ok(true);
+            }, 'image/png');
+          } catch (e) { ok(false); }
+        });
+      });
+    }
+
+    function ligarEventos(secao) {
+      secao.addEventListener('click', async function (e) {
+        var b;
+        if ((b = e.target.closest('[data-enviar]'))) { $(b.getAttribute('data-enviar') === 'fotos' ? '#carArqFotos' : '#carArqRefs', secao).click(); return; }
+        if ((b = e.target.closest('[data-tirar]'))) {
+          lerCriacao();
+          var lista = b.getAttribute('data-tirar') === 'fotos' ? rascunho.fotos : rascunho.referencias;
+          lista.splice(Number(b.getAttribute('data-i')), 1);
+          if (b.getAttribute('data-tirar') === 'referencias') gravarLocal('carrosselReferencias', rascunho.referencias);
+          gravarLocal('carrosselRascunho', rascunho);
+          await pintarInicio();
+          return;
+        }
+        if (e.target.closest('#carCriar')) { criar(); return; }
+        if ((b = e.target.closest('[data-abrir]'))) {
+          var c = salvos.filter(function (x) { return x.id === b.getAttribute('data-abrir'); })[0];
+          if (!c || !c.dados || !Array.isArray(c.dados.slides)) return;
+          atual = { id: c.id, titulo: c.titulo, comando: c.comando, dados: JSON.parse(JSON.stringify(c.dados)) };
+          sel = 0;
+          pintarEditor();
+          return;
+        }
+        if ((b = e.target.closest('[data-slide]'))) { sel = Number(b.getAttribute('data-slide')); pintarEditor(); return; }
+        if (!(b = e.target.closest('[data-acao]')) || b.disabled) return;
+        var acao = b.getAttribute('data-acao');
+        var d = atual && atual.dados;
+        if (acao === 'voltar') { if (atual) await salvar(true); atual = null; await pintarInicio(); return; }
+        if (acao === 'salvar') { await salvar(false); return; }
+        if (acao === 'baixarUm') { if (!(await baixar(sel))) aviso('Não consegui gerar a imagem deste slide.', 'erro'); return; }
+        if (acao === 'baixarTodos') {
+          for (var i = 0; i < d.slides.length; i++) { if (!(await baixar(i))) { aviso('Não consegui gerar a imagem do slide ' + (i + 1) + '.', 'erro'); return; } await new Promise(function (r) { setTimeout(r, 350); }); }
+          aviso(d.slides.length + ' imagens baixadas. Se o navegador perguntar, permita baixar vários arquivos.');
+          return;
+        }
+        if (acao === 'apagar') {
+          if (!(await confirmar('Apagar este carrossel? Não dá para desfazer.', 'Apagar'))) return;
+          if (atual.id) { var ra = await apagar('carrosseis', atual.id); if (!ra.ok) { aviso(ra.erro, 'erro'); return; } }
+          atual = null; aviso('Carrossel apagado.'); await pintarInicio(); return;
+        }
+        if (acao === 'subir' || acao === 'descer') {
+          var j = sel + (acao === 'subir' ? -1 : 1);
+          if (j < 0 || j >= d.slides.length) return;
+          var t = d.slides[sel]; d.slides[sel] = d.slides[j]; d.slides[j] = t; sel = j;
+          pintarEditor(); return;
+        }
+        if (acao === 'duplicar' || acao === 'novo' || acao === 'apagarSlide') {
+          aplicarComandos(acao === 'duplicar' ? 'duplicar' : (acao === 'novo' ? 'novo slide' : 'apagar slide'));
+          pintarEditor(); return;
+        }
+        if (acao === 'maisFoto') { $('#carArqMais', secao).click(); return; }
+        if (acao === 'estiloTodos') {
+          var est = d.slides[sel].estilo;
+          d.slides.forEach(function (s) { s.estilo = Object.assign({}, est, { escurecer: s.composicao === 'foto_fundo' ? est.escurecer : 0 }); });
+          redesenhar(true); aviso('Estilo copiado para todos os slides.'); return;
+        }
+        if (acao === 'comando') { executarComando(); return; }
+        if (acao === 'revisar') { revisar(); return; }
+        if (acao === 'copiarLegenda') {
+          var txt = texto(d.legenda) + (d.cta ? '\n\n' + d.cta : '');
+          try { await navigator.clipboard.writeText(txt); aviso('Legenda copiada.'); } catch (er) { aviso('Não consegui copiar. Selecione o texto e copie manualmente.', 'erro'); }
+        }
+      });
+      secao.addEventListener('change', async function (e) {
+        var t = e.target;
+        if (t.id === 'carArqFotos' || t.id === 'carArqRefs') {
+          lerCriacao();
+          var refs = t.id === 'carArqRefs';
+          await enviarVarios(t.files, refs ? 'referencias' : 'carrossel', refs ? rascunho.referencias : rascunho.fotos, refs ? 6 : 10, $('#carStatus', secao));
+          t.value = '';
+          if (refs) gravarLocal('carrosselReferencias', rascunho.referencias);
+          gravarLocal('carrosselRascunho', rascunho);
+          await pintarInicio();
+          return;
+        }
+        if (t.id === 'carArqMais' && atual) {
+          var antes = atual.dados.fotos.length;
+          await enviarVarios(t.files, 'carrossel', atual.dados.fotos, 20, null);
+          t.value = '';
+          if (atual.dados.fotos.length > antes) {
+            var s = atual.dados.slides[sel];
+            s.foto = atual.dados.fotos.length;
+            if (s.composicao === 'tipografico') { s.composicao = 'foto_fundo'; s.estilo.escurecer = s.estilo.escurecer || 45; }
+            pintarEditor();
+          }
+          return;
+        }
+        if (!atual) { if (t.closest && t.closest('#carComando, #carObjetivo, #carPilar, #carProporcao')) lerCriacao(); return; }
+        if (t.id === 'carFormato') { atual.dados.proporcao = t.value; pintarEditor(); return; }
+        if (t.id === 'carHandle') { atual.dados.mostrarHandle = t.checked; redesenhar(true); return; }
+        if (t.id === 'carNumero') { atual.dados.mostrarNumero = t.checked; redesenhar(true); return; }
+        if (t.matches('select[data-s], select[data-est]')) { aoMudarCampo(t); pintarControles(); }
+      });
+      secao.addEventListener('input', function (e) {
+        var t = e.target;
+        if (!atual) return;
+        if (t.id === 'carTitulo') { atual.titulo = t.value; return; }
+        if (t.id === 'carHandleTexto') { atual.dados.handle = t.value; redesenhar(true); return; }
+        if (t.id === 'carLegenda') { atual.dados.legenda = t.value; return; }
+        if (t.id === 'carCta') { atual.dados.cta = t.value; return; }
+        if (t.matches('[data-s], [data-est]') && t.tagName !== 'SELECT') aoMudarCampo(t);
+      });
+      secao.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && e.target.id === 'carComandoRapido') { e.preventDefault(); executarComando(); }
+      });
+    }
+    function aoMudarCampo(t) {
+      var s = atual.dados.slides[sel];
+      if (t.hasAttribute('data-s')) {
+        var k = t.getAttribute('data-s');
+        s[k] = k === 'foto' ? Number(t.value) : t.value;
+        if (k === 'foto' && s.foto > 0 && s.composicao === 'tipografico') s.composicao = 'foto_fundo';
+      } else {
+        var ke = t.getAttribute('data-est');
+        s.estilo[ke] = t.type === 'range' ? Number(t.value) : t.value;
+        var o = $('#ceo_' + ke, secaoAtual);
+        if (o) o.textContent = t.value;
+      }
+      redesenhar(false);
+    }
+    function executarComando() {
+      var inp = $('#carComandoRapido', secaoAtual);
+      var v = texto(inp && inp.value).trim();
+      if (!v) return;
+      var r = aplicarComandos(v);
+      pintarEditor();
+      var resp = $('#carRespostaCmd', secaoAtual);
+      if (resp) resp.innerHTML = (r.feitos.length ? '<span style="color:var(--verde-texto,#1d4f27)">Feito: ' + esc(r.feitos.join(', ')) + '.</span> ' : '') +
+        (r.nao.length ? '<span style="color:var(--vermelho-texto,#9b1c1c)">Não entendi: ' + esc(r.nao.join(', ')) + '. Veja a lista de comandos.</span>' : '');
+      if (!r.nao.length) { var i2 = $('#carComandoRapido', secaoAtual); if (i2) { i2.value = ''; i2.focus(); } }
+      else { var i3 = $('#carComandoRapido', secaoAtual); if (i3) { i3.value = r.nao.join(', '); i3.focus(); } }
+    }
+
+    Abas.carrosseis = {
+      titulo: 'Carrosséis',
+      tabelas: TABELAS,
+      abrir: async function (secao) {
+        secaoAtual = secao;
+        var r0 = lerLocal('carrosselRascunho', null);
+        if (r0) { rascunho.comando = texto(r0.comando); rascunho.objetivo = texto(r0.objetivo); rascunho.pilar = texto(r0.pilar); rascunho.proporcao = DIM[r0.proporcao] ? r0.proporcao : '4:5'; rascunho.fotos = Array.isArray(r0.fotos) ? r0.fotos : []; }
+        rascunho.referencias = lerLocal('carrosselReferencias', []);
+        if (!secao.getAttribute('data-ligada')) { secao.setAttribute('data-ligada', '1'); ligarEventos(secao); }
+        if (atual) pintarEditor(); else await pintarInicio();
+      }
+    };
+    window.__carrosselTeste = { aplicarComandos: aplicarComandos, montarDados: montarDados, definir: function (a) { atual = a; sel = 0; } };
+  })();
+
 })();

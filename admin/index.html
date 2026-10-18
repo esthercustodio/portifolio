@@ -10,7 +10,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23808080'/%3E%3Ctext x='32' y='46' font-size='40' text-anchor='middle' fill='%2314110d' font-family='Georgia,serif' font-style='italic'%3EE%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
 /* A página fica escondida até o script conferir que existe login aberto */
@@ -577,6 +577,49 @@ li.v-erro .v-ico{background:var(--vermelho-fundo);color:var(--vermelho-texto)}
 @media (max-width:640px){.paginas-grid{grid-template-columns:1fr}}
 .titulo-bloco{margin:1.4rem 0 .7rem;font-size:1rem;font-weight:700}
 .titulo-bloco:first-child{margin-top:0}
+
+/* ---------- carrosséis ---------- */
+.car-fotos{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.5rem}
+.car-fotos:empty{display:none}
+.campo>.btn.pequeno{align-self:flex-start}
+.car-foto{position:relative;width:76px;height:95px;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+.car-foto img{width:100%;height:100%;object-fit:cover}
+.car-foto b{position:absolute;left:4px;top:4px;min-width:20px;height:20px;border-radius:10px;background:var(--ink);color:var(--cream);font-size:.7rem;display:grid;place-items:center}
+.car-foto .btn-icone{position:absolute;right:2px;top:2px;width:24px;height:24px;background:rgba(255,255,255,.9)}
+.car-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.6rem}
+.car-item{text-align:left;padding:.75rem .9rem;border:1px solid var(--line);border-radius:var(--radius);background:#fff;cursor:pointer;display:flex;flex-direction:column;gap:.15rem}
+.car-item:hover{border-color:var(--line-forte)}
+.car-item small{color:var(--muted);font-size:.76rem}
+.car-topo{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-bottom:1rem}
+.car-topo #carTitulo{flex:1;min-width:12rem;font-weight:600}
+.car-check{display:inline-flex;align-items:center;gap:.3rem;font-size:.82rem}
+.car-editor{display:grid;grid-template-columns:92px minmax(0,1fr) minmax(280px,360px);gap:1rem;align-items:start}
+.car-miniaturas{display:flex;flex-direction:column;gap:.5rem;max-height:78vh;overflow:auto;padding:2px}
+.car-mini{position:relative;padding:0;border:2px solid transparent;border-radius:8px;background:none;cursor:pointer;line-height:0}
+.car-mini.ativa{border-color:var(--ink)}
+.car-mini canvas{width:100%;height:auto;border-radius:6px;box-shadow:0 0 0 1px var(--line)}
+.car-mini span{position:absolute;left:4px;bottom:4px;line-height:1;font-size:.66rem;padding:2px 5px;border-radius:5px;background:rgba(20,17,13,.75);color:#fff}
+.car-palco{display:flex;flex-direction:column;align-items:center;gap:.6rem}
+.car-palco canvas{width:100%;max-width:520px;height:auto;border-radius:10px;box-shadow:var(--shadow),0 0 0 1px var(--line)}
+.car-palco canvas.car-grande-9x16{max-width:400px}
+.car-mover{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center;align-items:center}
+.car-ctrl{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-lg);padding:1rem;max-height:78vh;overflow:auto}
+.car-ctrl h3{font-size:.92rem;margin-bottom:.8rem}
+.car-ctrl .campo{margin-bottom:.7rem}
+.car-ctrl .campo label{display:flex;justify-content:space-between;gap:.4rem}
+.car-ctrl output{font-weight:400;color:var(--muted)}
+.car-ctrl .campo input[type=range]{padding:0;border:0;background:none;accent-color:var(--ink)}
+.car-ctrl .campo input[type=color]{height:38px;padding:2px}
+.car-nota{margin-top:.8rem;padding:.6rem .7rem;border-radius:var(--radius);background:rgba(128,128,128,.1);font-size:.8rem}
+.car-comando{display:flex;gap:.5rem}
+.car-comando .entrada{flex:1;min-width:0}
+.car-ajuda{margin-top:.5rem;font-size:.82rem}
+.car-ajuda summary{cursor:pointer;color:var(--muted)}
+.car-ajuda ul{margin:.4rem 0 0 1.1rem;list-style:disc}
+.car-ajuda li{margin:.2rem 0}
+.car-estrategia p{font-size:.86rem;margin-bottom:.55rem}
+@media (max-width:1100px){.car-editor{grid-template-columns:72px minmax(0,1fr)}.car-editor>#carCtrl{grid-column:1/-1}.car-ctrl{max-height:none}}
+@media (max-width:640px){.car-editor{grid-template-columns:1fr}.car-miniaturas{flex-direction:row;max-height:none}.car-mini{flex:0 0 64px}.car-comando{flex-direction:column}}
 </style>
 </head>
 
@@ -623,6 +666,9 @@ li.v-erro .v-ico{background:var(--vermelho-fundo);color:var(--vermelho-texto)}
       <a class="nav-item" href="#campanhas" data-aba="campanhas">
         <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l14-6v14L3 13z"/><path d="M7 13v5a2 2 0 0 0 2 2h1v-6"/><path d="M21 9v6"/></svg>Campanhas
       </a>
+      <a class="nav-item" href="#carrosseis" data-aba="carrosseis">
+        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4" width="12" height="16" rx="2"/><path d="M3 7v10M21 7v10"/></svg>Carrosséis
+      </a>
       <a class="nav-item" href="#checklist" data-aba="checklist">
         <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M3.5 6l1.2 1.2L7 5M3.5 12l1.2 1.2L7 11M3.5 18l1.2 1.2L7 17"/></svg>Checklist
       </a>
@@ -659,6 +705,7 @@ li.v-erro .v-ico{background:var(--vermelho-fundo);color:var(--vermelho-texto)}
       <section id="aba-calendario" hidden></section>
       <section id="aba-campanhas" hidden></section>
       <section id="aba-checklist" hidden></section>
+      <section id="aba-carrosseis" hidden></section>
     </main>
   </div>
 </div>
@@ -683,6 +730,6 @@ li.v-erro .v-ico{background:var(--vermelho-fundo);color:var(--vermelho-texto)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../js/banco.js"></script>
 <script src="../js/biblioteca.js"></script>
-<script src="../js/admin.js?v=20261017"></script>
+<script src="../js/admin.js?v=20261017b"></script>
 </body>
 </html>
